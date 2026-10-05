@@ -1,0 +1,26 @@
+# Motor de procesamiento geoespacial — TerraFoco
+# GDAL viene de la imagen base de OSGeo, no se instala por pip.
+
+psycopg[binary]==3.2.3      # cliente PostgreSQL
+rasterio==1.4.3             # lectura y escritura de raster
+geopandas==1.0.1            # vectorial sobre pandas
+shapely==2.0.6              # geometrias
+numpy==2.1.3
+pandas==2.2.3
+python-dotenv==1.0.1        # carga del .env
+earthaccess==0.12.0         # descarga desde NASA Earthdata
+requests==2.32.3
+openpyxl==3.1.5             # planillas del SIRSD-S
+# CR2MET viene en NetCDF y la imagen de GDAL no trae ese controlador:
+# sin esta biblioteca los archivos de precipitacion no se pueden abrir.
+netCDF4==1.7.2              # lectura de CR2MET (factor R)
+# Acumulacion de flujo y TWI para el modulo de inundaciones. Puro Python
+# sobre numba: no hay que compilar nada, a diferencia de richdem.
+pysheds==0.5
+# Transformada de distancia para la distancia a cauces. pysheds ya la trae,
+# pero cauces.py la importa directo y una dependencia usada se declara.
+scipy>=1.11
+# Teselas del visor en un solo archivo por capa (teselas.py). Sin dependencias
+# y sin servidor de mapas: el navegador lee el archivo por rangos HTTP.
+pmtiles==3.8.1
+pytest==8.3.4
