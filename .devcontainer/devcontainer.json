@@ -1,0 +1,12 @@
+{
+  "name": "TerraFoco",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "hostRequirements": { "cpus": 2, "memory": "8gb", "storage": "32gb" },
+  "forwardPorts": [8000, 8081],
+  "portsAttributes": {
+    "8000": { "label": "API", "onAutoForward": "silent" },
+    "8081": { "label": "Visor", "onAutoForward": "notify" }
+  },
+  "postCreateCommand": "bash .devcontainer/construir.sh",
+  "postStartCommand": "bash .devcontainer/arrancar.sh"
+}

@@ -1,0 +1,136 @@
+# =============================================================================
+# TerraFoco — Entorno de desarrollo
+#
+# Levantar todo:      docker compose up -d
+# Cargar el esquema:  docker compose exec bd psql -U terrafoco -d terrafoco \
+#                       -f /docker-entrypoint-initdb.d/esquema.sql
+# Ver la API:         http://localhost:8000/docs
+#
+# El objetivo es que los tres integrantes tengan exactamente la misma versión
+# de GDAL, PROJ y PostGIS. Instalar GDAL a mano difiere entre máquinas y es la
+# primera fuente de "en mi computador funciona".
+# =============================================================================
+
+services:
+
+  bd:
+    image: postgis/postgis:16-3.4
+    container_name: terrafoco-bd
+    environment:
+      POSTGRES_DB: terrafoco
+      POSTGRES_USER: terrafoco
+      POSTGRES_PASSWORD: ${BD_PASSWORD:-desarrollo_local}
+      # Acelera la carga masiva de raster en desarrollo. No usar en producción.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "5432:5432"
+    volumes:
+      - bd_datos:/var/lib/postgresql/data
+      # El esquema y las migraciones quedan disponibles dentro del contenedor
+      - "./bd:/docker-entrypoint-initdb.d:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U terrafoco -d terrafoco"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  motor:
+    build:
+      context: ./motor
+      dockerfile: Dockerfile
+    container_name: terrafoco-motor
+    depends_on:
+      bd:
+        condition: service_healthy
+    environment:
+      BD_URL: postgresql://terrafoco:${BD_PASSWORD:-desarrollo_local}@bd:5432/terrafoco
+      ID_REGION: ${ID_REGION:-6}
+      # Credenciales de los repositorios satelitales. Nunca versionar el .env.
+      # Los nombres deben coincidir EXACTAMENTE con los que lee motor/config.py:
+      # decían COPERNICUS_* y el código busca CDSE_*, así que llegaban vacías.
+      EARTHDATA_USER: ${EARTHDATA_USER:-}
+      EARTHDATA_PASS: ${EARTHDATA_PASS:-}
+      EARTHDATA_TOKEN: ${EARTHDATA_TOKEN:-}
+      CDSE_USER: ${CDSE_USER:-}
+      CDSE_PASS: ${CDSE_PASS:-}
+      CDSE_S3_ACCESS_KEY: ${CDSE_S3_ACCESS_KEY:-}
+      CDSE_S3_SECRET_KEY: ${CDSE_S3_SECRET_KEY:-}
+      SH_CLIENT_ID: ${SH_CLIENT_ID:-}
+      SH_CLIENT_SECRET: ${SH_CLIENT_SECRET:-}
+      USGS_USER: ${USGS_USER:-}
+      USGS_TOKEN: ${USGS_TOKEN:-}
+    volumes:
+      - ./motor:/app
+      # Solo lectura, y solo para las pruebas: test_bitacora_fuente compara los
+      # codigos que usa la ingesta contra los que siembra la migracion. Un
+      # codigo mal escrito no lanza ninguna excepcion en produccion, asi que
+      # tiene que saltar aqui.
+      - ./bd:/bd:ro
+      - datos_crudos:/datos
+    # Sin comando por defecto: el motor corre por lotes, no como servicio.
+    # Ejecutar procesos con:  docker compose run --rm motor python -m ingesta.srtm
+    command: ["tail", "-f", "/dev/null"]
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: terrafoco-api
+    depends_on:
+      bd:
+        condition: service_healthy
+    environment:
+      BD_URL: postgresql://terrafoco:${BD_PASSWORD:-desarrollo_local}@bd:5432/terrafoco
+      # Sin clave la API arranca igual, pero no escribe (ver api/seguridad.py).
+      TERRAFOCO_CLAVE_ADMIN: ${TERRAFOCO_CLAVE_ADMIN:-}
+      TERRAFOCO_ORIGENES: ${TERRAFOCO_ORIGENES:-*}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  programador:
+    build:
+      context: ./motor
+      dockerfile: Dockerfile
+    container_name: terrafoco-programador
+    depends_on:
+      bd:
+        condition: service_healthy
+    environment:
+      BD_URL: postgresql://terrafoco:${BD_PASSWORD:-desarrollo_local}@bd:5432/terrafoco
+      ID_REGION: ${ID_REGION:-6}
+      EARTHDATA_USER: ${EARTHDATA_USER:-}
+      EARTHDATA_PASS: ${EARTHDATA_PASS:-}
+      CDSE_USER: ${CDSE_USER:-}
+      CDSE_PASS: ${CDSE_PASS:-}
+      CDSE_S3_ACCESS_KEY: ${CDSE_S3_ACCESS_KEY:-}
+      CDSE_S3_SECRET_KEY: ${CDSE_S3_SECRET_KEY:-}
+      SH_CLIENT_ID: ${SH_CLIENT_ID:-}
+      SH_CLIENT_SECRET: ${SH_CLIENT_SECRET:-}
+      USGS_USER: ${USGS_USER:-}
+      USGS_TOKEN: ${USGS_TOKEN:-}
+      EARTHDATA_TOKEN: ${EARTHDATA_TOKEN:-}
+    volumes:
+      - ./motor:/app
+      # El mismo montaje que en motor. La guia de ejecucion y el README corren
+      # las pruebas aqui (docker exec terrafoco-programador pytest), y sin el
+      # test_bitacora_fuente no encuentra la migracion 012: diez pruebas fallan
+      # siguiendo las instrucciones al pie de la letra.
+      - ./bd:/bd:ro
+      - datos_crudos:/datos
+    # Revisa cada hora qué tareas vencieron. La cadencia de cada una vive en la
+    # tabla operacion.tarea_programada, no aquí.
+    command: ["python", "-m", "orquestacion.orquestador", "--demonio", "--intervalo", "3600"]
+    restart: unless-stopped
+
+# Los volumenes llevan nombre EXPLICITO. Por defecto Docker los prefija con el
+# nombre de la carpeta del proyecto, asi que mover el repositorio de sitio los
+# desconecta: aparece una base vacia y los datos quedan huerfanos en el volumen
+# anterior, sin ningun error de por medio.
+volumes:
+  bd_datos:
+    name: terrafoco_bd
+  datos_crudos:
+    name: terrafoco_datos
