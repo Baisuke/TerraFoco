@@ -1,0 +1,61 @@
+# --- Credenciales: nunca versionar ---
+# Si una clave se sube por accidente a un repositorio publico, no basta con
+# borrarla en un commit posterior: queda en el historial. Hay que cambiarla en
+# el servicio.
+.env
+# La del servidor la genera despliegue/preparar_servidor.sh y no sale de ahí.
+despliegue/.env
+*.pem
+*.key
+credenciales*.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Datos pesados: no suben al repositorio ---
+# Los rasteres crudos se descargan con los cargadores; versionarlos seria
+# meter gigabytes reproducibles en la historia.
+# La copia estatica del prototipo SI se versiona: pesa poco y es lo que hace
+# que funcione sin backend (prototipo/datos/).
+*.tif
+*.tiff
+*.img
+*.hgt
+*.nc
+*.hdf
+*.zip
+datos/crudos/
+datos/intermedios/
+
+# Teselas PMTiles del visor (motor/teselas.py): unos 60 MB entre las cuatro
+# capas, y cambian con cada corrida del motor, así que cada regeneración
+# sumaría otros 60 al historial. Se generan en el entorno que tiene los datos:
+#   docker exec -i terrafoco-programador python -m teselas --todas
+# Sin ellas el visor funciona igual, con los PNG por comuna (que sí suben).
+prototipo/datos/teselas/*.pmtiles
+
+# --- Editores y sistema operativo ---
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# --- Node, si se agrega frontend con build ---
+node_modules/
+dist/
+build/
+npm-debug.log*
+
+# Obsidian: su configuración la reescribe la aplicación cada vez que alguien
+# abre la bóveda (zoom del grafo, paneles abiertos); versionarla deja el
+# repositorio siempre con cambios. Cada uno la tiene local.
+boveda/.obsidian/

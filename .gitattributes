@@ -1,0 +1,9 @@
+# Los scripts de shell corren en Linux (contenedores, Codespaces). Con CRLF
+# bash falla con "\r: command not found", y el error aparece solo en la otra
+# maquina. Se fuerzan a LF sin importar la configuracion de cada integrante.
+*.sh text eol=lf
+# Scripts y configuración que corren en Linux: con CRLF, bash falla en la
+# primera línea (": command not found") y Caddy no lee el Caddyfile.
+*.sh text eol=lf
+Caddyfile text eol=lf
+despliegue/*.yml text eol=lf
