@@ -1,0 +1,27 @@
+# TerraFoco — sitio público. Caddy pide y renueva el certificado solo.
+{$DOMINIO} {
+	encode zstd gzip
+
+	# La API bajo /api, sin el prefijo: FastAPI sigue viendo /pertinencia.
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+
+	# El prototipo estático. Las teselas PMTiles se leen por rangos de bytes,
+	# que file_server ya atiende.
+	handle {
+		root * /srv
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Los datos cambian con cada publicación; el HTML no debe quedar pegado.
+	@html path *.html /
+	header @html Cache-Control "no-cache"
+}
