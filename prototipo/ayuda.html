@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayuda y glosario · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content ayuda">
+
+      <div class="grid grid--2">
+        <div class="card">
+          <div class="card__title">Qué es TerraFoco</div>
+          <p class="explica">Una herramienta para decidir <strong>dónde</strong> invertir en el territorio con datos públicos.
+            Cruza tres problemas —la erosión del suelo agrícola, la susceptibilidad a inundación y el calor y la falta de
+            áreas verdes en las ciudades— con lo que el Estado ya invierte, comuna por comuna y, cuando el dato alcanza,
+            celda por celda de 30 metros.</p>
+          <p class="explica">Todo lo que ve sale de fuentes públicas con su origen a la vista (Fuentes de datos). Donde un modelo
+            no funciona o un dato falta, la pantalla lo dice en vez de rellenar.</p>
+        </div>
+        <div class="card">
+          <div class="card__title">Atajos</div>
+          <ul class="ayuda__lista">
+            <li><strong>Ir a una comuna</strong> desde cualquier pantalla: el buscador de la barra superior abre su ficha.</li>
+            <li><strong>Compartir lo que ve:</strong> en Inundaciones la dirección guarda la comuna, el umbral y las capas;
+              copiarla basta para que otra persona abra lo mismo.</li>
+            <li><strong>Exportar:</strong> el botón de cada pantalla descarga lo que esa pantalla muestra, en CSV para Excel
+              (punto y coma, coma decimal). Inundaciones tiene además un informe imprimible por comuna.</li>
+            <li><strong>Relieve en 3D:</strong> el botón 3D del mapa levanta el terreno; arrastre con la rueda del mouse
+              apretada (o con clic derecho) para girar e inclinar la cámara.</li>
+            <li><strong>La comuna como maqueta:</strong> en el Visor, con la capa Pendiente, al elegir una comuna se abre
+              como un bloque 3D que se gira en todas direcciones, también por debajo; se puede colorear por pendiente o por
+              elevación y descargar como imagen.</li>
+            <li><strong>Modo claro u oscuro:</strong> el botón del sol o la luna, arriba a la derecha.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__title">Qué responde cada pantalla</div>
+        <div class="pasos ayuda__pantallas">
+          <div class="paso"><strong><a href="index.html">Panel general</a></strong>
+            <span>¿Cómo está la región? Erosión, inversión del programa y la mayor brecha entre ambas, de un vistazo.</span></div>
+          <div class="paso"><strong><a href="visor.html">Visor cartográfico</a></strong>
+            <span>¿Dónde está cada cosa? Una capa a la vez; con clic en una comuna, la erosión a 30 m.</span></div>
+          <div class="paso"><strong><a href="predios.html">Mis predios</a></strong>
+            <span>¿Cuáles de mis predios tienen riesgo de inundación, erosión severa o pendiente fuerte? Se evalúan sin salir del computador.</span></div>
+          <div class="paso"><strong><a href="pertinencia.html">Índice de pertinencia</a></strong>
+            <span>¿Llega la inversión del SIRSD-S adonde más se erosiona el suelo? Y cuánto costaría cerrar la brecha.</span></div>
+          <div class="paso"><strong><a href="comuna.html">Ficha de comuna</a></strong>
+            <span>¿Por qué esta comuna erosiona lo que erosiona, cuánto recibió y cómo está en los otros módulos?</span></div>
+          <div class="paso"><strong><a href="inundaciones.html">Inundaciones</a></strong>
+            <span>¿Qué sectores tienen terreno propenso a inundarse, quién vive ahí y qué escuelas o postas quedan encima?</span></div>
+          <div class="paso"><strong><a href="urbano.html">Ciudades</a> <span class="muted">(complementario)</span></strong>
+            <span>¿Qué comunas y zonas de la conurbación de Rancagua tienen más calor y menos áreas verdes por habitante?</span></div>
+          <div class="paso"><strong><a href="fuentes.html">Fuentes de datos</a></strong>
+            <span>¿De dónde sale cada número, cuándo se cargó por última vez y qué falta?</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">Glosario</div>
+          <label class="buscador" style="margin-left:auto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="filtroGlosario" placeholder="Buscar un término" aria-label="Buscar en el glosario">
+          </label>
+        </div>
+        <dl class="glosario" id="glosario">
+
+          <dt>Erosión (t/ha/año)</dt>
+          <dd>Toneladas de suelo que pierde cada hectárea en un año. Se clasifica en Ligera (hasta 10), Moderada (10 a 18),
+            Severa (18 a 26), Muy severa (26 a 34) y Extrema (más de 34).</dd>
+
+          <dt>Erosión severa o superior</dt>
+          <dd>La superficie sobre 18 t/ha/año. Es la que el índice de pertinencia usa como "hectáreas que necesitan inversión".</dd>
+
+          <dt>CIREN (línea base)</dt>
+          <dd>El inventario oficial de erosión del Centro de Información de Recursos Naturales. Es la referencia contra la
+            que se compara el cálculo propio.</dd>
+
+          <dt>Cálculo propio · RUSLE</dt>
+          <dd>La erosión que TerraFoco estima con la ecuación universal de pérdida de suelo:
+            A = R × K × LS × C × P. R es la fuerza de la lluvia, K qué tan fácil se desarma el suelo, LS la pendiente y su
+            largo, C la vegetación que lo protege y P las obras de conservación. R, K y LS son naturales; C y P dependen de
+            la gestión, y sobre ellos actúan los programas.</dd>
+
+          <dt>Dominio de validez</dt>
+          <dd>Dónde el cálculo propio es confiable. En seis comunas precordilleranas (Machalí, San Fernando, Mostazal,
+            Requínoa, Codegua y Rengo) la ecuación de lluvia sobreestima la erosión entre 20 y 300 veces; esas comunas se
+            muestran marcadas y quedan fuera del índice salvo que se marque "fuera de dominio".</dd>
+
+          <dt>SIRSD-S</dt>
+          <dd>Sistema de Incentivos para la Sustentabilidad Agroambiental de los Suelos Agropecuarios (INDAP y SAG): el
+            programa que bonifica prácticas de recuperación de suelos. Se usa su serie 2012–2025 por comuna.</dd>
+
+          <dt>UF por hectárea erosionada</dt>
+          <dd>El incentivo del SIRSD-S pagado en una comuna, en UF de cada año, dividido por su superficie con erosión
+            severa o superior. Permite comparar comunas grandes y chicas.</dd>
+
+          <dt>Índice de pertinencia</dt>
+          <dd>De 0 a 1: cruza cuánta erosión hay con cuánta inversión llegó por hectárea erosionada. Cerca de 1 es mucha
+            erosión y poca inversión. Categorías: Sobre-cobertura (hasta 0,25), Cobertura adecuada (hasta 0,40), Alineación
+            parcial (hasta 0,60), Brecha alta (hasta 0,75) y Brecha crítica (sobre 0,75).</dd>
+
+          <dt>Brecha (UF que faltan)</dt>
+          <dd>Lo que le faltaría a una comuna para recibir, por hectárea erosionada, lo que recibe la comuna típica de la
+            región (la mediana).</dd>
+
+          <dt>Susceptibilidad a inundación</dt>
+          <dd>Qué tan favorable es el terreno para que el agua se acumule, de 0 a 1, por celda de 30 m. Es estática: dice
+            <em>dónde</em>, no <em>cuándo</em> ni con qué profundidad. Se calcula con la acumulación de flujo (cuánta área
+            drena hacia la celda) y la curvatura (si el terreno es cóncavo).</dd>
+
+          <dt>Clases Baja, Media, Alta, Muy alta</dt>
+          <dd>Cuartiles: cada clase es un cuarto del territorio de la región. Son relativas: "Muy alta" es el cuarto más
+            susceptible de O'Higgins, no un nivel absoluto de peligro.</dd>
+
+          <dt>Umbral de riesgo</dt>
+          <dd>Desde qué valor del índice una celda se marca como riesgo. Más a la izquierda es más sensible: marca más
+            territorio. Por omisión parte en el corte de la clase Alta.</dd>
+
+          <dt>Celda de 30 m</dt>
+          <dd>La unidad de cálculo: un cuadrado de 30 por 30 metros (0,09 ha), el tamaño del modelo de elevación NASADEM.</dd>
+
+          <dt>Localidad</dt>
+          <dd>Ciudad o pueblo según el Límite Urbano Censal 2017 del INE.</dd>
+
+          <dt>Personas expuestas</dt>
+          <dd>Las personas del Censo que viven en celdas sobre el umbral: cada manzana reparte su población entre sus celdas.
+            Solo cuenta la población urbana, porque la manzana es la unidad censal de ciudades y pueblos.</dd>
+
+          <dt>Cultivo y pradera</dt>
+          <dd>La superficie agrícola de cada celda según ESA WorldCover (imagen satelital a 10 m, 2021): cultivo y
+            pradera. Los frutales y viñedos densos pueden figurar como cobertura arbórea y no contarse como cultivo.</dd>
+
+          <dt>Población rural</dt>
+          <dd>Las personas del Censo 2024 que viven en aldeas y en entidades rurales (caseríos, parcelas, fundos). Su
+            entidad es grande, así que se reparten de forma aproximada entre sus celdas.</dd>
+
+          <dt>Zonas descargables</dt>
+          <dd>Lo marcado en una comuna —lo que supera el umbral de inundación, la erosión severa, la pendiente
+            fuerte— se descarga para Google Earth (KML) o QGIS (GeoJSON) desde el panel del mapa o el menú Exportar.</dd>
+
+          <dt>Servicios críticos</dt>
+          <dd>Escuelas, jardines infantiles, centros de salud, cuarteles de bomberos y de policía: lo que un plan de
+            emergencia revisa primero. Vienen de OpenStreetMap, completo en las ciudades y con huecos en lo rural.</dd>
+
+          <dt>Validación · ρ de Spearman</dt>
+          <dd>Cómo se comprueba el índice de inundación: cuántos eventos históricos (DesInventar) cayeron en comunas Alta o
+            Muy alta frente a lo que daría el azar, y si el orden de las comunas por índice coincide con el orden por
+            número de eventos. ρ va de −1 (orden contrario) a +1 (mismo orden); 0 es sin relación.</dd>
+
+          <dt>DesInventar</dt>
+          <dd>La base de desastres de la ONU (UNDRR), alimentada por la ONEMI. Es la única fuente pública estructurada de
+            eventos de inundación en Chile: registros de prensa por comuna, sin coordenadas.</dd>
+
+          <dt>Temperatura superficial (ECOSTRESS)</dt>
+          <dd>La temperatura del suelo y los techos medida desde la Estación Espacial, no la del aire. Muestra dónde se
+            acumula el calor en la ciudad.</dd>
+
+          <dt>Área verde por habitante · SIEDU</dt>
+          <dd>Metros cuadrados de plazas y parques públicos por persona. El estándar del Sistema de Indicadores y Estándares
+            de Desarrollo Urbano es 10 m², una plaza a no más de 400 m y un parque a no más de 3 km.</dd>
+
+          <dt>Zona censal</dt>
+          <dd>La unidad oficial más fina con población publicada: grupos de manzanas de unos pocos miles de personas. Se
+            nombra por distrito y número ("Distrito 5 · zona 3").</dd>
+        </dl>
+      </div>
+
+      <div class="grid grid--2">
+        <div class="card">
+          <div class="card__title">Lo que esta herramienta no dice</div>
+          <ul class="ayuda__lista">
+            <li>No predice inundaciones: la susceptibilidad es del terreno. La lluvia pronosticada se muestra al lado para
+              saber cuándo mirar, no como alerta.</li>
+            <li>La población rural vive en entidades grandes y su ubicación dentro de ellas es aproximada.</li>
+            <li>La inversión del SIRSD-S que se compara con la erosión incluye todos sus subprogramas, también los de
+              fertilidad; falta el detalle por práctica para comparar solo conservación.</li>
+            <li>Los eventos que validan el índice son de prensa, entre 1972 y 2007; los frontales recientes (2021–2023) no
+              están en ninguna base pública estructurada.</li>
+            <li>El cálculo propio de erosión no es confiable en seis comunas precordilleranas (dominio de validez).</li>
+            <li>OpenStreetMap puede no tener todas las escuelas o postas rurales.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card__title">Licencias de los datos</div>
+          <ul class="ayuda__lista">
+            <li>Límite Urbano Censal 2017 y Censo 2017 por manzana: INE, copia del Observatorio de Ciudades UC,
+              <strong>CC BY-NC 4.0</strong> (uso no comercial, con atribución).</li>
+            <li>Censo 2024: INE.</li>
+            <li>Cobertura del suelo: ESA WorldCover 10 m 2021, CC BY 4.0.</li>
+            <li>OpenStreetMap (servicios críticos, áreas verdes, mapa base): ODbL, © colaboradores de OpenStreetMap.</li>
+            <li>Pronóstico de lluvia: Open-Meteo, CC BY 4.0.</li>
+            <li>NASADEM (NASA), Sentinel-2 (ESA/Copernicus), ECOSTRESS (NASA), red hídrica (IDE Chile), CIREN, SoilGrids
+              (ISRIC), CR2MET (CR2) y DesInventar (UNDRR): datos públicos con su atribución en Fuentes de datos.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shell.js"></script>
+<script>
+pintarShell('ayuda', 'Ayuda y glosario', 'Núcleo · cómo usar TerraFoco',
+            '', 'Qué responde cada pantalla, qué significa cada término y qué no dicen los datos.');
+/* Esta página no muestra datos: el aviso de origen no tiene nada que decir. */
+const aviso = document.querySelector('.badge--proto');
+if (aviso) aviso.hidden = true;
+
+/* Filtro del glosario: deja los términos cuyo nombre o definición contienen
+   lo escrito, sin tildes ni mayúsculas. */
+(function () {
+  const quitar = function (t) {
+    return String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  };
+  const dts = Array.from(document.querySelectorAll('#glosario dt'));
+  document.getElementById('filtroGlosario').addEventListener('input', function (e) {
+    const q = quitar(e.target.value.trim());
+    dts.forEach(function (dt) {
+      const dd = dt.nextElementSibling;
+      const ver = !q || quitar(dt.textContent + ' ' + dd.textContent).indexOf(q) >= 0;
+      dt.hidden = !ver; dd.hidden = !ver;
+    });
+  });
+})();
+</script>
+</body>
+</html>

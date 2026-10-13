@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuentes de datos · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">Motor de procesamiento geoespacial</div>
+          <div class="card__note" id="ultimaEjec">—</div>
+        </div>
+        <div class="pipeline" id="pipeline"></div>
+      </div>
+
+      <div class="grid grid--4">
+        <div class="card">
+          <div class="card__title">Fuentes conectadas</div>
+          <div class="kpi__value" id="kOk">—</div>
+          <div class="kpi__foot" id="kTotal">—</div>
+        </div>
+        <div class="card">
+          <div class="card__title">Comunas con indicadores</div>
+          <div class="kpi__value" id="kComunas">—</div>
+          <div class="kpi__foot">erosión calculada y almacenada</div>
+        </div>
+        <div class="card">
+          <div class="card__title">Procesos ejecutados</div>
+          <div class="kpi__value" id="kProcesos">—</div>
+          <div class="kpi__foot" id="kProcesosPie">registrados en la bitácora</div>
+        </div>
+        <div class="card">
+          <div class="card__title">Requiere gestión</div>
+          <div class="kpi__value" id="kPend" style="color:var(--naranja)">—</div>
+          <div class="kpi__foot">fuentes parciales o pendientes</div>
+        </div>
+      </div>
+
+      <div class="card card--flush">
+        <div style="padding:16px 16px 0">
+          <div class="card__head">
+            <div class="card__title">Catálogo de fuentes</div>
+            <!-- Aparece cuando hay una clave guardada en la pestaña. -->
+            <button type="button" class="btn btn--chico" id="salirAdmin" hidden style="margin-left:auto"
+                    title="Olvidar la clave de administración en esta pestaña">
+              Modo administración · salir
+            </button>
+          </div>
+        </div>
+        <div class="table__wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Fuente</th>
+                <th>Organismo</th>
+                <th>Tipo</th>
+                <th class="num">Registros</th>
+                <th>Última carga</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card card--flush">
+          <div style="padding:16px 16px 0">
+            <div class="card__title">Últimas ejecuciones</div>
+          </div>
+          <div class="table__wrap">
+            <table class="table">
+              <thead>
+                <tr><th>Fecha</th><th>Proceso</th><th class="num">Duración</th><th>Estado</th></tr>
+              </thead>
+              <tbody id="ejecuciones"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__title">Gestión pendiente</div>
+          <!-- Se arma desde el catálogo. Antes eran dos bloques escritos a
+               mano —SIRSD-S de INDAP y de SAG, con solicitudes fechadas el
+               12-08-2026— que no salían de ninguna parte y no cambiaban
+               aunque la fuente se pusiera al día. -->
+          <div class="stack" style="gap:14px" id="gestion"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Clave de administración (RF-31). Un <dialog> y no prompt(): prompt()
+     muestra lo que se escribe y no se puede rotular. -->
+<dialog class="dialogo" id="dlgClave" aria-labelledby="dlgClaveTitulo">
+  <form method="dialog" id="frmClave">
+    <div class="card__title" id="dlgClaveTitulo">Clave de administración</div>
+    <p class="small muted" id="dlgClaveMotivo" style="margin:0;line-height:1.5"></p>
+    <input type="password" id="inpClave" autocomplete="off" spellcheck="false"
+           aria-label="Clave de administración" required minlength="24">
+    <p class="tiny muted" style="margin:0;line-height:1.5">
+      Es la variable TERRAFOCO_CLAVE_ADMIN del servidor. Queda guardada solo en
+      esta pestaña y se olvida al cerrarla.
+    </p>
+    <div class="row" style="justify-content:flex-end;gap:8px">
+      <button type="button" class="btn" id="btnCancelarClave">Cancelar</button>
+      <button type="submit" class="btn btn--primary">Guardar cambio</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/graficos.js"></script>
+<script>
+pintarShell('fuentes', 'Fuentes de datos', 'Núcleo · ingesta, normalización y almacenamiento',
+            BOTON_EXPORTAR,
+            "Estado de las fuentes de datos que alimentan el sistema y de los procesos que las mantienen actualizadas.");
+
+/* ==========================================================================
+   Panel de administración de fuentes — UC-10 y UC-12.
+
+   Es la única pantalla del prototipo que ESCRIBE. Lee el catálogo y la
+   bitácora de la API, y cambiar el estado de una fuente dispara un PATCH.
+
+   Si la API no responde cae a los datos de ejemplo de data.js, igual que el
+   visor, y lo declara en pantalla. Callarlo sería peor: la tabla se vería
+   idéntica y nadie sabría que está mirando números inventados.
+   ========================================================================== */
+
+const etiquetaEstado = {
+  ok:        '<span class="badge badge--ok"><span class="dot"></span>Actualizada</span>',
+  parcial:   '<span class="badge badge--warn"><span class="dot"></span>Parcial</span>',
+  pendiente: '<span class="badge badge--pend"><span class="dot"></span>Pendiente</span>',
+  error:     '<span class="badge badge--warn"><span class="dot"></span>Error</span>'
+};
+const ESTADOS = ['ok', 'parcial', 'pendiente', 'error'];
+
+document.getElementById('pipeline').innerHTML = GT.pipeline.map(function (p) {
+  return '<div class="pipeline__step">' +
+           '<div class="pipeline__n">' + p.n + '</div>' +
+           '<div class="pipeline__t">' + p.t + '</div>' +
+           '<div class="pipeline__d">' + p.d + '</div>' +
+         '</div>';
+}).join('');
+
+function escapar(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+function fecha(iso) {
+  return GT_fecha(iso);
+}
+
+/* Aquí lo que se mira es el catálogo: eso es lo que se exporta. */
+window.GT_exportar = function () {
+  GT_exportarTabla(document.getElementById('tabla').closest('table'), 'terrafoco_fuentes',
+    ['TerraFoco — catálogo de fuentes de datos · exportado el ' + GT_hoy(),
+     'Estado: el declarado por el equipo. Última carga: la última ejecución correcta registrada en la bitácora.']);
+};
+
+function duracion(seg) {
+  if (seg == null) return 'en curso';
+  if (seg < 60) return seg + ' s';
+  return Math.round(seg / 60) + ' min';
+}
+
+/* El badge de la barra superior lo pinta shell.js como "datos de ejemplo".
+   Esta página no carga datos-api.js, que es quien normalmente lo corrige, así
+   que lo hace ella con los mismos colores: dos avisos que se contradicen en
+   la misma pantalla son peores que ninguno. */
+function rotularBadge(enVivo) {
+  const badge = document.querySelector('.badge--proto');
+  if (!badge) return;
+  if (enVivo) {
+    badge.innerHTML = '<span class="dot"></span>Datos reales · catálogo en PostGIS';
+    estadoBadge(badge, 'vivo');
+  } else {
+    badge.innerHTML = '<span class="dot"></span>Prototipo · datos de ejemplo';
+    estadoBadge(badge, null);
+  }
+}
+
+function avisar(texto, alerta) {
+  let caja = document.getElementById('avisoOrigen');
+  if (!caja) {
+    caja = document.createElement('div');
+    caja.id = 'avisoOrigen';
+    const cont = document.getElementById('pipeline').closest('.card');
+    cont.parentNode.insertBefore(caja, cont);
+  }
+  caja.className = 'small aviso-origen ' + (alerta ? 'aviso-origen--alerta' : 'aviso-origen--ok');
+  caja.textContent = texto;
+}
+
+function pintarFuentes(fuentes, enVivo) {
+  const ok = fuentes.filter(function (f) { return f.estado === 'ok'; }).length;
+  document.getElementById('kOk').innerHTML =
+    ok + ' <span class="kpi__unit">de ' + fuentes.length + '</span>';
+  document.getElementById('kTotal').textContent = 'operativas y al día';
+  document.getElementById('kPend').textContent = fuentes.length - ok;
+
+  document.getElementById('tabla').innerHTML = fuentes.map(function (f) {
+    /* La nota dice POR QUE una fuente esta pendiente o que limitacion tiene.
+       Sin ella, "pendiente" no distingue entre falta gestion, faltan
+       credenciales o la fuente no existe. */
+    const nota = f.nota
+      ? '<div class="tiny muted">' + escapar(f.nota) + '</div>' : '';
+    const celdaEstado = enVivo
+      ? '<select data-id="' + f.id_fuente + '" data-actual="' + escapar(f.estado) + '" class="small">' +
+          ESTADOS.map(function (e) {
+            return '<option value="' + e + '"' +
+                   (e === f.estado ? ' selected' : '') + '>' + e + '</option>';
+          }).join('') +
+        '</select>'
+      : (etiquetaEstado[f.estado] || escapar(f.estado));
+    return '<tr>' +
+      '<td><strong>' + escapar(f.nombre) + '</strong>' + nota + '</td>' +
+      '<td class="muted">' + escapar(f.organismo || f.org) + '</td>' +
+      '<td class="small">' + escapar(f.tipo) + '</td>' +
+      /* Registros de la ultima ejecucion. Antes se contaban las ejecuciones
+         cruzando por nombre de fuente y siempre daba "—": la respuesta de
+         /ejecuciones no trae ese nombre. */
+      '<td class="num small">' +
+        (enVivo
+          ? (f.ultimos_registros !== null && f.ultimos_registros !== undefined
+               ? GT.fmt(f.ultimos_registros) : '—')
+          : escapar(f.registros)) + '</td>' +
+      /* La fecha de la ultima ejecucion real; la del catalogo es el respaldo
+         administrativo. */
+      '<td class="mono small">' +
+        (enVivo ? fecha(f.ultima_ejecucion || f.ultima_carga) : escapar(f.act)) + '</td>' +
+      '<td>' + celdaEstado + '</td>' +
+    '</tr>';
+  }).join('');
+
+  if (!enVivo) return;
+  document.querySelectorAll('#tabla select').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      cambiarEstado(sel.dataset.id, sel.value, sel);
+    });
+  });
+}
+
+/* Las fuentes que no están al día, con el motivo que guarda el catálogo.
+   Sin el motivo, un "pendiente" no distingue entre falta gestión, faltan
+   credenciales o la fuente simplemente no existe. */
+function pintarGestion(fuentes) {
+  const faltan = fuentes.filter(function (f) { return f.estado !== 'ok'; });
+  const caja = document.getElementById('gestion');
+  if (!faltan.length) {
+    caja.innerHTML = '<p class="small muted" style="margin:0;line-height:1.6">' +
+      'Todas las fuentes del catálogo están al día.</p>';
+    return;
+  }
+  caja.innerHTML = faltan.map(function (f) {
+    return '<div>' +
+        '<div class="row" style="gap:8px">' +
+          (etiquetaEstado[f.estado] || escapar(f.estado)) +
+          '<strong class="small">' + escapar(f.nombre) + '</strong>' +
+        '</div>' +
+        '<p class="small muted" style="margin:6px 0 0;line-height:1.6">' +
+          escapar(f.nota || (f.organismo || f.org || '') ) +
+        '</p>' +
+      '</div>';
+  }).join('<div class="sep"></div>');
+}
+
+function pintarEjecuciones(filas, enVivo) {
+  document.getElementById('ejecuciones').innerHTML = filas.map(function (e) {
+    return '<tr>' +
+      '<td class="mono small">' + (enVivo ? fecha(e.inicio) : escapar(e.fecha)) + '</td>' +
+      '<td class="small">' + escapar(e.proceso) + '</td>' +
+      '<td class="num small">' + (enVivo ? duracion(e.segundos) : escapar(e.dur)) + '</td>' +
+      '<td>' + (etiquetaEstado[e.estado] || escapar(e.estado)) + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+/* ---- Clave de administración (RF-31) ----
+   La API pide `Authorization: Bearer <clave>` en las escrituras. La clave la
+   escribe la persona, nunca va en el código, y se guarda en sessionStorage:
+   dura lo que la pestaña y no queda en el equipo, como sí quedaría en
+   localStorage. */
+const CLAVE_SESION = 'terrafoco_clave_admin';
+const CANCELADO = 'cancelado';
+
+function claveGuardada() {
+  try { return sessionStorage.getItem(CLAVE_SESION) || ''; } catch (e) { return ''; }
+}
+function guardarClave(clave) {
+  try {
+    if (clave) sessionStorage.setItem(CLAVE_SESION, clave);
+    else sessionStorage.removeItem(CLAVE_SESION);
+  } catch (e) { /* almacenamiento bloqueado: se pedirá cada vez */ }
+  document.getElementById('salirAdmin').hidden = !clave;
+}
+
+/* Abre el diálogo y resuelve con la clave, o con null si se cancela. */
+function pedirClave(motivo) {
+  const dlg = document.getElementById('dlgClave');
+  const inp = document.getElementById('inpClave');
+  document.getElementById('dlgClaveMotivo').textContent = motivo;
+  inp.value = '';
+  return new Promise(function (resolver) {
+    const cerrar = function (valor) {
+      dlg.removeEventListener('close', alCerrar);
+      resolver(valor);
+    };
+    const alCerrar = function () {
+      cerrar(dlg.returnValue === 'ok' ? inp.value : null);
+    };
+    dlg.addEventListener('close', alCerrar);
+    document.getElementById('frmClave').onsubmit = function (ev) {
+      ev.preventDefault();
+      dlg.close('ok');
+    };
+    document.getElementById('btnCancelarClave').onclick = function () { dlg.close('cancelar'); };
+    dlg.returnValue = '';
+    dlg.showModal();
+    inp.focus();
+  });
+}
+
+/* Escribe con la clave; si falta o no sirve, la pide y reintenta. */
+function escribir(metodo, ruta, cuerpo) {
+  const intentar = function (clave) {
+    return fetch(GT_API_BASE + ruta, {
+      method: metodo,
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + clave },
+      body: JSON.stringify(cuerpo)
+    }).then(function (r) {
+      if (r.status === 401) {
+        guardarClave('');
+        return pedir('La clave no es correcta. Vuelve a escribirla.');
+      }
+      if (!r.ok) {
+        // 503: el servidor no tiene clave y no escribe. El detalle lo explica.
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          throw new Error(d.detail || 'HTTP ' + r.status);
+        });
+      }
+      guardarClave(clave);
+      return r.json();
+    });
+  };
+  const pedir = function (motivo) {
+    return pedirClave(motivo).then(function (clave) {
+      if (!clave) throw new Error(CANCELADO);
+      return intentar(clave);
+    });
+  };
+  const guardada = claveGuardada();
+  return guardada ? intentar(guardada)
+    : pedir('Cambiar el estado de una fuente modifica la base de datos.');
+}
+
+document.getElementById('salirAdmin').addEventListener('click', function () {
+  guardarClave('');
+  avisar('Se olvidó la clave de administración en esta pestaña.');
+});
+guardarClave(claveGuardada());
+
+/* La escritura. Es lo único de todo el prototipo que modifica la base. */
+function cambiarEstado(id, estado, sel) {
+  sel.disabled = true;
+  escribir('PATCH', '/fuentes/' + id, { estado: estado, marcar_carga: true })
+    .then(function () {
+      // Se recarga desde la base, no se retoca la fila en pantalla: así lo que
+      // se ve es lo que quedó guardado, no lo que creemos haber guardado.
+      cargar();
+    }).catch(function (e) {
+      sel.disabled = false;
+      // Cancelar no es un error: la fila vuelve a lo que dice la base.
+      sel.value = sel.dataset.actual;
+      if (e.message !== CANCELADO) avisar('No se pudo guardar el cambio: ' + e.message, true);
+    });
+}
+
+/* Los tres indicadores de arriba venían escritos a mano en el HTML —138
+   escenas, 84,2 GB, una fecha de agosto— y no los sostenía ningún dato. Se
+   reemplazan por cifras que la base sí conoce. */
+function pintarResumen(resumen, comunas) {
+  document.getElementById('kComunas').textContent = comunas;
+  document.getElementById('kProcesos').textContent = resumen.total;
+  document.getElementById('kProcesosPie').textContent =
+    resumen.ok + ' correctos · ' + resumen.error + ' con error' +
+    (resumen.en_curso ? ' · ' + resumen.en_curso + ' en curso' : '');
+  document.getElementById('ultimaEjec').textContent =
+    resumen.ultima ? 'última ejecución: ' + fecha(resumen.ultima)
+                   : 'sin ejecuciones registradas';
+}
+
+function cargar() {
+  const traer = function (ruta) {
+    return fetch(GT_API_BASE + ruta, { signal: AbortSignal.timeout(4000) })
+      .then(function (r) {
+        if (!r.ok) throw new Error(ruta + ' devolvió ' + r.status);
+        return r.json();
+      });
+  };
+  Promise.all([
+    traer('/fuentes'),
+    traer('/ejecuciones?limite=12'),
+    traer('/ejecuciones/resumen'),
+    /* Con las fuera de dominio: el indicador cuenta las comunas con erosión
+       calculada y almacenada, no las que entran al índice. Sin el parámetro
+       decía 27 de 33 y parecía que a seis les faltaba el cálculo. */
+    traer('/pertinencia?incluir_fuera_de_dominio=true')
+  ]).then(function (res) {
+    const fuentes = res[0], ejec = res[1];
+    pintarResumen(res[2], res[3].length);
+    rotularBadge(true);
+    pintarFuentes(fuentes, true);
+    pintarGestion(fuentes);
+    pintarEjecuciones(ejec, true);
+    avisar('Datos reales · ' + fuentes.length + ' fuentes y ' + ejec.length +
+           ' ejecuciones leídas desde PostGIS. El estado se puede cambiar con la ' +
+           'clave de administración y se guarda en la base.', false);
+  }).catch(function () {
+    rotularBadge(false);
+    pintarFuentes(GT.fuentes, false);
+    pintarGestion(GT.fuentes);
+    pintarEjecuciones(GT.ejecuciones, false);
+    // Sin API no hay cifra que mostrar. Antes había un 138 y un 84,2 GB
+    // escritos a mano, que se veían igual de convincentes con la base caída.
+    ['kComunas', 'kProcesos'].forEach(function (id) {
+      document.getElementById(id).textContent = '—';
+    });
+    document.getElementById('kProcesosPie').textContent = 'sin conexión con la base';
+    document.getElementById('ultimaEjec').textContent = 'sin conexión con la base';
+    avisar('Prototipo · datos de ejemplo. La API no respondió, así que estas ' +
+           'cifras son ilustrativas y no se pueden editar.', true);
+  });
+}
+
+cargar();
+</script>
+</body>
+</html>

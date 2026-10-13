@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de comuna · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <div class="grid grid--4">
+        <div class="card">
+          <div class="card__title">Erosión estimada</div>
+          <div class="kpi__value" id="kEro">—</div>
+          <div class="kpi__foot" id="kClase">—</div>
+        </div>
+        <div class="card">
+          <div class="card__title" title="La cifra oficial es la de CIREN; el modelo propio la complementa y explica de qué depende">Modelo propio (complementario)</div>
+          <div class="kpi__value" id="kVar">—</div>
+          <div class="kpi__foot" id="kVarPie">—</div>
+        </div>
+        <div class="card">
+          <div class="card__title" id="kHaTitulo">Superficie intervenida</div>
+          <div class="kpi__value" id="kHa">—</div>
+          <div class="kpi__foot" id="kInt">—</div>
+        </div>
+        <div class="card">
+          <div class="card__title">Índice de pertinencia</div>
+          <div class="kpi__value" id="kIdx">—</div>
+          <div class="kpi__foot"><strong id="kCat">—</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">Descomposición del modelo RUSLE</div>
+          <div class="card__note" id="factoresNota">pérdida de suelo = producto de los cinco factores</div>
+        </div>
+        <div class="notice notice--alerta" id="factoresAviso" hidden></div>
+        <div class="formula" id="formula">A = R × K × LS × <em>C</em> × <em>P</em></div>
+        <div class="tiny muted" id="formulaPie" style="text-align:center;margin-top:-6px"></div>
+        <div class="grid factores" id="factores"></div>
+        <div class="factores__lectura" id="factoresLectura" hidden></div>
+        <div class="notice">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <span>Los factores <strong>R</strong>, <strong>K</strong> y <strong>LS</strong> corresponden a condiciones naturales y no son modificables por gestión.
+          Los factores <strong>C</strong> y <strong>P</strong>, destacados, sí dependen de la acción humana — y son exactamente sobre los que actúan
+          los programas de INDAP y MINAGRI.</span>
+        </div>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Incentivo SIRSD-S por año</div>
+            <div class="card__note" id="serieNota">UF del año de la declaración jurada</div>
+          </div>
+          <div id="serie"><p class="small muted" style="margin:0">Cargando la serie…</p></div>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">El programa en la comuna</div>
+            <div class="card__note" id="programaPeriodo"></div>
+          </div>
+          <div class="stack" id="programa" style="gap:8px"></div>
+          <div class="sep"></div>
+          <div class="tiny muted">Planes en estado ejecutado (declaración jurada o traspaso a
+            Tesorería). La superficie con erosión severa es la del cálculo propio,
+            sobre 18 t/ha/año.</div>
+        </div>
+      </div>
+
+      <div class="card card--dark">
+        <div class="card__title">Lectura del cruce</div>
+        <div id="lectura" style="font-size:16px;line-height:1.6;max-width:75ch"></div>
+      </div>
+
+      <!-- Qué hacer con esta comuna, en una frase por tema. -->
+      <div class="card" id="recomendacionCard">
+        <div class="card__head">
+          <div class="card__title">Recomendación para INDAP</div>
+          <div class="card__note">sale de los datos de esta ficha</div>
+        </div>
+        <ul class="recomendaciones" id="recomendaciones"><li class="muted">Cargando…</li></ul>
+      </div>
+
+      <!-- La misma comuna en los otros módulos. Antes la ficha solo hablaba de
+           erosión, y para saber si la comuna también se inunda o le faltan
+           plazas había que ir a otra pantalla y volver a buscarla. -->
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">La comuna en los otros módulos</div>
+          <div class="card__note">inundación, calor y áreas verdes</div>
+        </div>
+        <div class="grid grid--3 otros" id="otrosModulos">
+          <p class="small muted" style="margin:0">Cargando…</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/graficos.js"></script>
+<script>
+/* --- La comuna en los otros módulos ------------------------------------- */
+(function () {
+  const params = new URLSearchParams(location.search);
+  const c0 = GT.comuna(params.get('id')) || GT.comuna('litueche');
+  if (!c0) return;
+  const norm = function (t) {
+    return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  };
+  const json = function (ruta) {
+    return fetch(GT_api(ruta), { signal: AbortSignal.timeout(6000) })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  };
+  const bloque = function (titulo, cifra, detalle, enlace, textoEnlace) {
+    return '<div class="otro">' +
+      '<div class="otro__titulo">' + titulo + '</div>' +
+      '<div class="otro__cifra">' + cifra + '</div>' +
+      '<div class="small muted">' + detalle + '</div>' +
+      (enlace ? '<a class="small" href="' + enlace + '">' + textoEnlace + ' →</a>' : '') +
+    '</div>';
+  };
+  Promise.all([json('/inundacion'), json('/urbano'), json('/urbano/areas-verdes'),
+               json('/exposicion/agricola'), GT.hidratar()]).then(function (r) {
+    const nombre = norm(c0.nombre);
+    const agr = r[3] && (r[3].comunas || []).filter(function (x) { return norm(x.nombre) === nombre; })[0];
+    const inu = (r[0] || []).filter(function (x) { return norm(x.nombre) === nombre; })[0];
+    const cal = r[1] && (r[1].comunas || []).filter(function (x) { return norm(x.nombre) === nombre; })[0];
+    const ver = r[2] && (r[2].comunas || []).filter(function (x) { return norm(x.nombre) === nombre; })[0];
+    const clases = ['Baja', 'Media', 'Alta', 'Muy alta'];
+    const enlaceInu = 'inundaciones.html?comuna=' + encodeURIComponent(c0.nombre);
+
+    const html = [
+      inu
+        ? bloque('Susceptibilidad a inundación',
+            '<i class="punto" style="background:' + PALETA.rampas.agua[clases.indexOf(inu.clase) + 1] + '"></i>' + inu.clase,
+            (agr && agr.ha_cultivo_susceptible !== null
+              ? '≈ ' + GT.fmt(agr.ha_cultivo_susceptible) + ' ha de cultivo y ' + GT.fmt(agr.ha_pradera_susceptible) +
+                ' ha de pradera en clase Alta o Muy alta · ' : '') +
+            'índice medio ' + GT.fmt(inu.susceptibilidad, 3) + ' · ' +
+            (inu.eventos ? inu.eventos + (inu.eventos === 1 ? ' evento registrado' : ' eventos registrados') +
+              ' (' + inu.eventos_desde + (inu.eventos_hasta !== inu.eventos_desde ? '–' + inu.eventos_hasta : '') + ')'
+              : 'sin eventos registrados en DesInventar'),
+            enlaceInu, 'Ver dónde, a 30 m, y quién queda expuesto')
+        : bloque('Susceptibilidad a inundación', '—', 'Sin conexión con la API o sin índice calculado.', enlaceInu, 'Ir a inundaciones'),
+      cal && typeof cal.temp_superficial === 'number'
+        ? bloque('Temperatura superficial en verano', GT.fmt(cal.temp_superficial, 1) + ' °C',
+            'media de ' + cal.escenas + ' pasadas de ECOSTRESS · ' + cal.anio, 'urbano.html', 'Ver el análisis térmico')
+        : bloque('Temperatura superficial en verano', '—',
+            'El análisis térmico cubre Rancagua y sus comunas vecinas; esta comuna no tiene medición.', null),
+      ver
+        ? bloque('Área verde por habitante', GT.fmt(ver.m2_hab, 1) + ' m²',
+            'estándar 10 m² · ' + Math.round(100 * (ver.pct_plaza_400 || 0)) + ' % vive a menos de 400 m de una plaza · ' +
+            GT.fmt(ver.personas) + ' habitantes urbanos (Censo 2024)', 'urbano.html', 'Ver por zona censal')
+        : bloque('Área verde por habitante', '—', 'Sin área urbana en el Censo 2024 o sin cálculo cargado.', null),
+    ];
+    document.getElementById('otrosModulos').innerHTML = html.join('');
+
+    // La recomendación: suelo (índice de pertinencia) e inundación agrícola.
+    const comuna = GT.comuna(c0.id) || c0;
+    const items = ['<li><strong>Suelo y SIRSD-S.</strong> ' + GT.recomendacion(comuna) +
+                   ' <span class="tiny muted">' + GT.notaInversion + '</span></li>'];
+    if (agr && agr.ha_cultivo_susceptible !== null) {
+      const alta = inu && (inu.clase === 'Alta' || inu.clase === 'Muy alta');
+      items.push('<li><strong>Inundación.</strong> ≈ ' + GT.fmt(agr.ha_cultivo_susceptible) + ' ha de cultivo y ' +
+        GT.fmt(agr.ha_pradera_susceptible) + ' ha de pradera están en terreno de susceptibilidad Alta o Muy alta' +
+        (alta ? ', en una comuna de clase ' + inu.clase.toLowerCase() + ': incluirla entre las primeras del plan de emergencias agrícolas'
+              : ': revisarlas antes de financiar obras de riego o drenaje en esos sectores') +
+        '. <a href="' + enlaceInu + '">Ver dónde</a></li>');
+    }
+    items.push('<li><strong>Predios.</strong> Para bajar esto a los usuarios de la agencia, cargar sus predios en ' +
+               '<a href="predios.html">Mis predios</a>: se evalúan en este computador y no se guardan.</li>');
+    document.getElementById('recomendaciones').innerHTML = items.join('');
+  });
+})();
+</script>
+<script>
+/* Espera a la API antes de pintar. Si no responde, la promesa
+   se resuelve igual con los datos de ejemplo. */
+GT.hidratar().then(function () {
+
+const params = new URLSearchParams(location.search);
+const comuna = GT.comuna(params.get('id')) || GT.comuna('litueche');
+const idx = GT.comunas.indexOf(comuna);
+
+const selector = '<select class="select" id="selComuna">' + GT.comunas.map(function (c) {
+  return '<option value="' + c.id + '"' + (c.id === comuna.id ? ' selected' : '') + '>' + c.nombre + '</option>';
+}).join('') + '</select>';
+
+pintarShell('comuna', 'Ficha de comuna', 'Provincia de ' + comuna.prov + ' · Región de O\'Higgins',
+            selector + SELECTOR_ORIGEN + CASILLA_DOMINIO + BOTON_EXPORTAR,
+            "Ficha completa de una comuna: de qué depende su erosión, cómo se compara el cálculo propio con el inventario de CIREN y cuánto ha recibido del programa.");
+
+document.getElementById('selComuna').addEventListener('change', function (e) {
+  location.search = '?id=' + e.target.value;
+});
+
+/* ---- Indicadores ---- */
+const inversion = GT.inversionDe(comuna);
+const enUF = typeof comuna.inversionUFha === 'number';
+const oculta = comuna.fueraDeDominio && !GT.incluirFueraDeDominio;
+const enIndice = GT.enIndice(comuna);
+const cat = enIndice ? GT.categoriaPertinencia(comuna.indice) : null;
+const periodo = GT.periodoInversion ? GT.periodoInversion[0] + '–' + GT.periodoInversion[1] : '';
+const decUF = function (v) { return v < 1 ? 2 : 1; };
+
+/* La erosión del origen elegido en la barra superior —la que alimenta el
+   índice— y se dice cuál es. El título decía "2026" con cualquier origen. */
+document.getElementById('kEro').innerHTML = GT.fmt(comuna.erosion, 1) + ' <span class="kpi__unit">t/ha/año</span>';
+document.getElementById('kClase').textContent = GT.claseErosion(comuna.erosion).nombre + ' · ' +
+  (GT.origenErosion === 'TerraFoco'
+    ? 'cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')
+    : 'inventario CIREN' + (GT.anioCiren ? ' ' + GT.anioCiren : ''));
+
+/* Cálculo propio frente al inventario CIREN (UC-06). Reemplaza a la
+   "variación desde 2010", que se calculaba contra una erosión inventada: no
+   hay datos de CIREN de 2010 cargados, y los dos que hay son del mismo
+   período, así que la diferencia es de método, no de tiempo. Por eso va en
+   color neutro: más o menos que CIREN no es mejor ni peor. */
+const ero = GTMapa.erosionesDe(comuna, idx);
+const pieVar = document.getElementById('kVarPie');
+if (typeof ero.ciren !== 'number' || typeof ero.propia !== 'number') {
+  document.getElementById('kVar').textContent = '—';
+  pieVar.textContent = 'falta ' + (typeof ero.ciren !== 'number' ? 'el dato de CIREN' : 'el cálculo propio');
+} else if (!ero.enDominio && !GT.incluirFueraDeDominio) {
+  document.getElementById('kVar').textContent = '—';
+  pieVar.textContent = 'comuna fuera del dominio del modelo';
+} else {
+  const diferencia = (ero.propia - ero.ciren) / ero.ciren * 100;
+  document.getElementById('kVar').innerHTML =
+    (diferencia >= 0 ? '+' : '') + GT.fmt(diferencia, 0) + ' <span class="kpi__unit">%</span>';
+  document.getElementById('kVar').style.color = 'var(--texto)';
+  pieVar.textContent = GT.fmt(ero.propia, 1) + ' propio · ' +
+                       GT.fmt(ero.ciren, 1) + ' CIREN (t/ha/año)' +
+                       (ero.enDominio ? '' : ' · fuera del dominio');
+}
+if (periodo) document.getElementById('kHaTitulo').textContent = 'Superficie intervenida ' + periodo;
+document.getElementById('kHa').innerHTML = GT.fmt(comuna.haBonif) + ' <span class="kpi__unit">ha</span>';
+/* Al pie, la inversión con que se calcula el índice. Fuera del dominio se
+   calla por la misma razón que su erosión: el denominador es la superficie
+   severa del modelo, que ahí sobreestima. */
+document.getElementById('kInt').textContent = !enUF
+  ? GT.fmt(inversion, 1) + ' ha por cada 1.000 ha comunales'
+  : oculta ? 'UF por ha erosionada: fuera del dominio del modelo'
+           : GT.fmt(inversion, decUF(inversion)) + ' UF por ha con erosión severa';
+document.getElementById('kIdx').textContent = enIndice ? GT.fmt(comuna.indice, 2) : '—';
+document.getElementById('kCat').textContent = enIndice
+  ? cat.nombre + (comuna.fueraDeDominio ? ' · fuera de dominio' : '')
+  : GT.motivoSinIndice(comuna);
+/* Sin índice, en gris: el verde por defecto lo hacía pasar por buena noticia. */
+document.getElementById('kCat').style.color = enIndice ? cat.hex : 'var(--muted)';
+
+/* ---- Factores RUSLE ----
+   Los medidos, los mismos con que el motor calculó la erosión propia, cada
+   uno con su fuente. Antes se derivaban de la erosión con fórmulas y K se
+   despejaba de la ecuación: el producto cuadraba por construcción y no
+   explicaba nada. Ahora cuadra porque son los del cálculo, y cada factor se
+   compara con la mediana regional para ver cuál empuja la erosión. */
+const DECIMALES = { R: 0, K: 4, LS: 2, C: 3, P: 3 };
+const pct = function (v) { return GT.fmt(v, 0) + ' %'; };
+
+/* Una línea de procedencia por factor, desde el detalle que guarda el
+   motor. Lo que no viene, no se escribe. */
+function detalleFactor(sym, f) {
+  const d = f.detalle || {};
+  switch (sym) {
+    case 'R':
+      return d.mm_anual ? GT.fmt(d.mm_anual, 0) + ' mm/año' + (d.periodo ? ' · ' + d.periodo.replace('-', '–') : '') : '';
+    case 'K':
+      return typeof d.arena_pct === 'number'
+        ? 'arena ' + pct(d.arena_pct) + ' · limo ' + pct(d.limo_pct) + ' · arcilla ' + pct(d.arcilla_pct) : '';
+    case 'LS':
+      return 'modelo de elevación a 30 m' + (d.cobertura ? ' · ' + pct(d.cobertura * 100) + ' de la comuna' : '');
+    case 'C':
+      return typeof d.ndvi_mediana === 'number'
+        ? 'NDVI ' + GT.fmt(d.ndvi_mediana, 2) +
+          (d.periodo ? ' · verano ' + d.periodo.slice(0, 4) + '–' + d.periodo.split('/')[1].slice(2, 4) : '') +
+          (d.resolucion_m ? ' · ' + d.resolucion_m + ' m' : '') : '';
+    case 'P':
+      return typeof d.fraccion_intervenida === 'number'
+        ? GT.fmt(d.fraccion_intervenida * 100, 1) + ' % de la superficie agrícola con prácticas' : '';
+  }
+  return '';
+}
+
+function medianaDe(v) {
+  const s = v.slice().sort(function (a, b) { return a - b; });
+  if (!s.length) return null;
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+/* Cuántas veces la mediana regional, en una barra que diverge desde el
+   centro: a la derecha empuja la erosión hacia arriba, a la izquierda la
+   frena. Escala logarítmica de ×¼ a ×4, porque ×2 y ×½ pesan lo mismo en un
+   producto. */
+function barraRelativa(razon) {
+  if (typeof razon !== 'number' || !isFinite(razon)) return '';
+  const t = Math.max(-1, Math.min(1, Math.log2(razon) / 2));
+  const neutro = Math.abs(razon - 1) < 0.05;
+  const color = neutro ? PALETA.gris : (t > 0 ? PALETA.rampas.erosion[3] : PALETA.turquesa);
+  const ancho = Math.abs(t) * 50;
+  const texto = neutro ? 'como la mediana' : '×' + GT.fmt(razon, razon < 1 ? 2 : 1) + ' la mediana';
+  return '<div class="factor__rel" title="Frente a la mediana de las comunas dentro del dominio">' +
+           '<div class="factor__barra"><span style="' + (t >= 0 ? 'left:50%' : 'right:50%') +
+             ';width:' + ancho.toFixed(1) + '%;background:' + color + '"></span></div>' +
+           '<span class="mono" style="color:' + color + '">' + texto + '</span>' +
+         '</div>';
+}
+
+function tarjetaFactor(d, f, razon, alerta) {
+  const extra = f.detalle !== undefined ? detalleFactor(d.sym, f) : '';
+  return '<div class="factor' + (d.humano ? ' factor--human' : '') + (alerta ? ' factor--alerta' : '') + '">' +
+           '<div class="factor__sym">' + d.sym + '</div>' +
+           '<div class="factor__name">' + d.nombre + '</div>' +
+           '<div class="factor__val">' + GT.fmt(f.valor, DECIMALES[d.sym]) + '</div>' +
+           barraRelativa(razon) +
+           '<div class="tiny muted" style="line-height:1.4">' + d.pregunta + '</div>' +
+           (extra ? '<div class="tiny" style="line-height:1.4;color:var(--texto-2)">' + extra + '</div>' : '') +
+           '<div class="factor__src">' + (f.fuente || d.fuente) + (f.anio ? ' · ' + f.anio : '') + '</div>' +
+         '</div>';
+}
+
+function formula(f, resultado, apagado) {
+  return 'A = ' + GT.fmt(f.R.valor, 0) + ' × ' + GT.fmt(f.K.valor, 4) + ' × ' + GT.fmt(f.LS.valor, 2) +
+    ' × <em>' + GT.fmt(f.C.valor, 3) + '</em> × <em>' + GT.fmt(f.P.valor, 3) + '</em> = ' +
+    (apagado ? '<span style="opacity:.55;text-decoration:line-through">' : '') +
+    GT.fmt(resultado, 1) + ' t/ha/año' + (apagado ? '</span>' : '');
+}
+
+GT.factoresRusle().then(function (datos) {
+  const propia = datos && datos.comunas.find(function (c) { return c.id_comuna === comuna.idComuna; });
+
+  /* Sin API ni copia: los ilustrativos de data.js, rotulados como tales. */
+  if (!propia || !propia.factores) {
+    const g = GT.getFactores(comuna.id);
+    const f = {};
+    ['R', 'K', 'LS', 'C', 'P'].forEach(function (k) { f[k] = { valor: g[k] }; });
+    document.getElementById('factores').innerHTML = GT.descripcionFactores.map(function (d) {
+      return tarjetaFactor(d, f[d.sym], null, false);
+    }).join('');
+    document.getElementById('formula').innerHTML = formula(f, g.A, false);
+    document.getElementById('factoresNota').textContent = datos
+      ? 'esta comuna aún no tiene cálculo propio · valores ilustrativos'
+      : 'valores ilustrativos: sin conexión con la API ni copia local';
+    return;
+  }
+
+  const f = propia.factores;
+  /* La referencia son las comunas dentro del dominio: con las de la
+     precordillera la mediana de R subía y ninguna comuna del valle parecía
+     lluviosa. */
+  const dentro = datos.comunas.filter(function (c) { return c.factores && c.en_dominio; });
+  const razones = {};
+  GT.descripcionFactores.forEach(function (d) {
+    const m = medianaDe(dentro.map(function (c) { return c.factores[d.sym].valor; }));
+    razones[d.sym] = m ? f[d.sym].valor / m : null;
+  });
+
+  const fuera = propia.en_dominio === false;
+  document.getElementById('factores').innerHTML = GT.descripcionFactores.map(function (d) {
+    return tarjetaFactor(d, f[d.sym], razones[d.sym], fuera && d.sym === 'R');
+  }).join('');
+  document.getElementById('formula').innerHTML = formula(f, propia.perdida_ton_ha, fuera);
+  document.getElementById('factoresNota').textContent =
+    'cálculo propio ' + (propia.anio || '') + ' · comparado con la mediana de ' + dentro.length + ' comunas';
+
+  /* Con el origen CIREN la erosión de arriba es la del inventario, que no
+     se descompone: se dice, para que nadie busque por qué el producto no da
+     el número del indicador. */
+  const ero = GTMapa.erosionesDe(comuna, idx);
+  document.getElementById('formulaPie').textContent =
+    (GT.origenErosion === 'CIREN' && typeof ero.ciren === 'number')
+      ? 'El inventario CIREN (' + GT.fmt(ero.ciren, 1) + ' t/ha/año, el indicador de arriba) es una ' +
+        'clasificación del terreno y no se descompone en factores: esta es la del cálculo propio.'
+      : '';
+
+  if (fuera) {
+    const aviso = document.getElementById('factoresAviso');
+    aviso.hidden = false;
+    aviso.innerHTML =
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>' +
+      '<span><strong>Fuera del dominio de validez.</strong> La erosividad de ' + comuna.nombre + ' (R = ' +
+      GT.fmt(f.R.valor, 0) + ') supera el límite de ' + GT.fmt(datos.r_maximo, 0) + ' con que se validó el modelo, ' +
+      'y con la pendiente de la precordillera el producto sobreestima: ' + GT.fmt(propia.perdida_ton_ha, 0) +
+      ' t/ha/año' + (typeof ero.ciren === 'number' ? ' contra ' + GT.fmt(ero.ciren, 1) + ' del inventario CIREN' : '') +
+      '. Los factores son medidos; el resultado no se usa.</span>';
+  }
+
+  /* Qué explica la erosión de esta comuna, en una frase y en palabras, no
+     en símbolos: "erosiona más porque llueve con más fuerza (R ×4,6)". Un
+     factor cuenta si se aleja más de un 15 % de la mediana. */
+  const MOTIVO = {
+    R:  ['llueve con más fuerza', 'llueve con menos fuerza'],
+    K:  ['su suelo se desarma con más facilidad', 'su suelo es más resistente'],
+    LS: ['su terreno es más empinado', 'su terreno es más plano'],
+    C:  ['tiene menos vegetación protegiendo el suelo', 'tiene más vegetación protegiendo el suelo'],
+    P:  ['tiene menos prácticas de conservación', 'tiene más prácticas de conservación'],
+  };
+  const orden = GT.descripcionFactores.map(function (d) { return { sym: d.sym, r: razones[d.sym] }; })
+    .filter(function (x) { return typeof x.r === 'number'; });
+  const suben = orden.filter(function (x) { return x.r >= 1.15; }).sort(function (a, b) { return b.r - a.r; });
+  const bajan = orden.filter(function (x) { return x.r <= 0.87; }).sort(function (a, b) { return a.r - b.r; });
+  /* Se une a mano y no con una expresión regular sobre ", ": con coma
+     decimal "×2,4" también lleva coma. */
+  const enumerar = function (partes) {
+    return partes.length < 2 ? partes.join('')
+      : partes.slice(0, -1).join(', ') + ' y ' + partes[partes.length - 1];
+  };
+  const motivos = function (lista, sube) {
+    return enumerar(lista.map(function (x) {
+      return MOTIVO[x.sym][sube ? 0 : 1] + ' <span class="muted">(' + x.sym + ' ×' +
+             GT.fmt(x.r, x.r < 1 ? 2 : 1) + ')</span>';
+    }));
+  };
+  /* Si erosiona más o menos que la típica lo decide el producto, no el
+     recuento: un factor muy alto pesa más que dos apenas bajos. */
+  const medianaA = medianaDe(dentro.map(function (c) { return c.perdida_ton_ha; }));
+  const mas = propia.perdida_ton_ha >= medianaA;
+  const principales = mas ? suben : bajan;
+  const contrarios = mas ? bajan : suben;
+
+  const fracciones = datos.comunas.map(function (c) {
+    return c.factores && c.factores.P.detalle ? c.factores.P.detalle.fraccion_intervenida : null;
+  }).filter(function (v) { return typeof v === 'number'; });
+  const maxPractica = fracciones.length ? Math.max.apply(null, fracciones) : null;
+
+  const lectura = document.getElementById('factoresLectura');
+  if (principales.length || contrarios.length) {
+    lectura.hidden = false;
+    /* Fuera del dominio el "erosiona más" sería afirmar el resultado que el
+       aviso de arriba descarta: se dice qué dispara el cálculo, no cuánto. */
+    lectura.innerHTML = fuera
+      ? 'Lo que dispara el cálculo en ' + comuna.nombre + ': ' + motivos(suben, true) +
+        ' que la comuna típica de la región. Son condiciones de precordillera, fuera del rango ' +
+        'con que se validó el modelo.' +
+        (bajan.length ? ' Lo modera que ' + motivos(bajan, false) + '.' : '')
+      : 'Frente a la comuna típica de la región (' + GT.fmt(medianaA, 1) + ' t/ha/año), ' +
+        '<strong>' + comuna.nombre + ' erosiona ' + (mas ? 'más' : 'menos') + '</strong>' +
+        (principales.length ? ' porque ' + motivos(principales, mas) : '') +
+        (contrarios.length ? ', aunque ' + motivos(contrarios, !mas) : '') + '.';
+    lectura.innerHTML +=
+      (f.P.valor > 0.99 && maxPractica !== null
+        ? ' P casi no varía en ninguna comuna: las prácticas registradas en IDE MINAGRI cubren, como ' +
+          'máximo, el ' + GT.fmt(maxPractica * 100, 1) + ' % de la superficie agrícola.' : '');
+  }
+});
+
+/* ---- Serie del programa ----
+   La real, por año de la declaración jurada. Antes era el monto total
+   repartido en siete años con una fórmula: una curva que no existía. En UF
+   y no en pesos, porque el índice también la usa en UF: 1.000 UF de 2012 y
+   de 2025 compran la misma práctica, un millón de pesos no. */
+const cajaSerie = document.getElementById('serie');
+GT.serieSirsd(comuna).then(function (serie) {
+  if (!serie) {
+    cajaSerie.innerHTML = '<p class="small muted" style="margin:0">La serie anual del programa ' +
+      'se lee de la API o de la copia local; con los datos de ejemplo no hay serie que mostrar.</p>';
+    document.getElementById('serieNota').textContent = '';
+    return;
+  }
+  /* Los años reservados (1 o 2 planes) van sin valor: el gráfico corta la
+     línea ahí en vez de dibujar un cero, que diría "no hubo planes". */
+  GTGrafico.serie(cajaSerie,
+                  serie.map(function (f) { return String(f.anio); }),
+                  serie.map(function (f) { return f.reservado ? null : (f.incentivo_uf || 0); }),
+                  'UF por año');
+  const pico = serie.reduce(function (a, f) { return (f.incentivo_uf || 0) > (a.incentivo_uf || 0) ? f : a; });
+  const sinPlanes = serie.filter(function (f) { return !f.reservado && !f.planes; }).length;
+  const reservados = serie.filter(function (f) { return f.reservado; }).length;
+  document.getElementById('serieNota').textContent =
+    'máximo en ' + pico.anio + ' · ' + GT.fmt(pico.incentivo_uf || 0) + ' UF' +
+    (sinPlanes ? ' · ' + sinPlanes + (sinPlanes === 1 ? ' año' : ' años') + ' sin planes' : '') +
+    (reservados ? ' · ' + reservados + (reservados === 1 ? ' año reservado' : ' años reservados') +
+                  ' (menos de 3 planes)' : '');
+});
+
+/* ---- El programa en la comuna ---- */
+function renglon(nombre, valor, pie) {
+  return '<div class="row" style="justify-content:space-between;gap:12px;align-items:baseline">' +
+           '<span class="small muted">' + nombre + (pie ? '<div class="tiny">' + pie + '</div>' : '') + '</span>' +
+           '<span class="mono" style="text-align:right">' + valor + '</span>' +
+         '</div>';
+}
+/* Puesto en la región, solo entre las que entran al índice: con las fuera
+   de dominio el último lugar sería siempre Machalí por el denominador. */
+const conIndice = GT.comunasIndice().filter(function (c) { return typeof GT.inversionDe(c) === 'number'; })
+  .sort(function (a, b) { return GT.inversionDe(b) - GT.inversionDe(a); });
+const puesto = conIndice.indexOf(comuna) + 1;
+
+document.getElementById('programaPeriodo').textContent = periodo;
+document.getElementById('programa').innerHTML =
+  renglon('Planes ejecutados', GT.fmt(comuna.planes || 0)) +
+  renglon('Agricultores', GT.fmt(comuna.benef || 0), 'suma de cada año; quien repite, cuenta de nuevo') +
+  renglon('Superficie intervenida', GT.fmt(comuna.haBonif || 0) + ' ha') +
+  renglon('Incentivo pagado',
+          (typeof comuna.incentivoUF === 'number' ? GT.fmt(comuna.incentivoUF) + ' UF' : '—'),
+          '$' + GT.fmt(comuna.monto || 0) + ' millones nominales') +
+  (typeof comuna.haErosionSevera === 'number'
+    ? renglon('Superficie con erosión severa', GT.fmt(comuna.haErosionSevera) + ' ha',
+              oculta ? 'fuera del dominio: el modelo la sobreestima' : null) : '') +
+  (enUF
+    ? renglon('<strong>Incentivo por ha erosionada</strong>',
+              oculta ? '<span class="muted">—</span>'
+                     : '<strong>' + GT.fmt(inversion, decUF(inversion)) + ' UF/ha</strong>',
+              puesto ? 'lugar ' + puesto + ' de ' + conIndice.length + ' en la región' : null)
+    : '') +
+  /* La brecha en UF: cuánto le falta para recibir lo de la comuna típica. */
+  (typeof comuna.brechaUF === 'number'
+    ? renglon('Para llegar a la mediana regional',
+              comuna.brechaUF > 0
+                ? '<strong style="color:' + GT.categoriasPertinencia[4].hex + '">faltan ' + GT.fmt(comuna.brechaUF) + ' UF</strong>'
+                : '<span style="color:' + GT.categoriasPertinencia[1].hex + '">ya la supera</span>',
+              GT.fmt(GT.medianaInversion(), 1) + ' UF por ha erosionada')
+    : '');
+
+/* ---- Lectura ---- */
+const mediana = GT.medianaInversion();
+const unidad = GT.unidadInversion();
+const erosionTxt = '<strong>' + comuna.nombre + '</strong> presenta una erosión estimada de <strong>' +
+  GT.fmt(comuna.erosion, 1) + ' t/ha/año</strong>, clasificada como <strong>' +
+  GT.claseErosion(comuna.erosion).nombre.toLowerCase() + '</strong>. ';
+document.getElementById('lectura').innerHTML = !enIndice
+  ? erosionTxt + (comuna.fueraDeDominio
+      ? 'Queda fuera del índice: su superficie con erosión severa sale del cálculo propio, ' +
+        'que en la precordillera sobreestima, y dividir la inversión por ella daría una brecha que no existe. '
+      : 'No tiene índice con el origen de erosión elegido. ') +
+    'La serie del programa sí es real y se muestra arriba.'
+  : erosionTxt + 'El programa pagó <strong>' + GT.fmt(inversion, decUF(inversion)) + ' ' +
+    (enUF ? 'UF por cada hectárea con erosión severa' : 'ha bonificadas por cada 1.000 hectáreas comunales') +
+    '</strong>' + (periodo ? ' entre ' + periodo.replace('–', ' y ') : '') + ', ' +
+    (inversion < mediana
+      ? 'por debajo de la mediana regional de ' + GT.fmt(mediana, decUF(mediana)) + '. ' +
+        (comuna.indice > 0.6 ? 'La comuna concentra un problema severo con una intervención comparativamente baja.'
+                             : 'Con una erosión también menor, la brecha es moderada.')
+      : 'por sobre la mediana regional de ' + GT.fmt(mediana, decUF(mediana)) + '. ' +
+        (comuna.indice <= 0.4 ? 'La intervención supera lo que la magnitud del problema haría esperar.'
+                              : 'La intervención se corresponde con la magnitud del problema.'));
+
+});
+</script>
+</body>
+</html>
