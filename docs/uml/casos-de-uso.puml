@@ -1,0 +1,81 @@
+@startuml casos-de-uso-terrafoco
+' TerraFoco — Diagrama de casos de uso general
+' Renderizar en https://www.plantuml.com/plantuml/uml/ o con la extensión
+' PlantUML de VS Code (Alt+D para vista previa).
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ArrowColor #2B9C68
+skinparam actorBorderColor #001C41
+skinparam usecaseBorderColor #001C41
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam rectangleBorderColor #BCC7D6
+
+actor "Analista territorial" as ANA
+actor "Encargado de programa" as ENC
+actor "Administrador de datos" as ADM
+
+actor "Repositorios satelitales" as SAT <<sistema externo>>
+actor "Portal de Transparencia" as TRA <<sistema externo>>
+
+rectangle "TerraFoco" {
+
+  package "Consulta y visualización" {
+    usecase "UC-01\nConsultar visor cartográfico" as UC01
+    usecase "UC-02\nCambiar capa temática" as UC02
+    usecase "UC-03\nConsultar ficha de comuna" as UC03
+    usecase "UC-04\nExportar reporte" as UC04
+  }
+
+  package "Módulo 1 — Suelos" {
+    usecase "UC-05\nConsultar índice de pertinencia" as UC05
+    usecase "UC-06\nComparar con línea base CIREN" as UC06
+    usecase "UC-07\nCalcular índice de pertinencia" as UC07
+  }
+
+  package "Módulos 2 y 3" {
+    usecase "UC-08\nConsultar susceptibilidad\na inundación" as UC08
+    usecase "UC-09\nConsultar análisis\ntérmico urbano" as UC09
+  }
+
+  package "Administración del núcleo" {
+    usecase "UC-10\nAdministrar catálogo de fuentes" as UC10
+    usecase "UC-11\nEjecutar proceso de ingesta" as UC11
+    usecase "UC-12\nConsultar bitácora de ejecuciones" as UC12
+    usecase "UC-13\nEntrenar y evaluar modelos" as UC13
+  }
+
+  usecase "UC-14\nAutenticarse" as UC14
+}
+
+ANA --> UC01
+ANA --> UC04
+ANA --> UC05
+ANA --> UC08
+ANA --> UC09
+
+ENC --> UC03
+ENC --> UC04
+ENC --> UC05
+
+ADM --> UC10
+ADM --> UC11
+ADM --> UC12
+ADM --> UC13
+
+UC11 --> SAT
+UC11 --> TRA
+
+UC02 ..> UC01 : <<extend>>
+UC03 ..> UC01 : <<extend>>
+UC06 ..> UC05 : <<extend>>
+
+UC01 ..> UC14 : <<include>>
+UC10 ..> UC14 : <<include>>
+UC11 ..> UC14 : <<include>>
+UC13 ..> UC14 : <<include>>
+
+UC05 ..> UC07 : <<include>>
+
+@enduml
