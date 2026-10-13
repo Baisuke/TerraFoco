@@ -6,7 +6,7 @@
 <title>Ciudades · TerraFoco</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="js/tema.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -59,6 +59,7 @@
             <div class="tabs" style="margin-left:auto;border:none">
               <button class="is-active" data-metrica="temp">Temperatura</button>
               <button data-metrica="verde">Áreas verdes</button>
+              <button data-metrica="simular" title="Pon una plaza o un parque y mira cuánto baja la temperatura">Simular un parque</button>
             </div>
           </div>
           <div class="map" id="mapa">
@@ -71,7 +72,60 @@
         </div>
 
         <div class="stack">
-          <div class="card">
+          <!-- Simulación: si se pone un área verde aquí, ¿cuánto baja la temperatura? -->
+          <div class="card" id="simVerde" hidden>
+            <div class="card__head">
+              <div class="card__title">Simular un área verde</div>
+              <div class="card__note" id="svNota">elige una comuna</div>
+            </div>
+            <p class="small muted sim__intro">Elige el tamaño y el tipo, y haz clic en el mapa donde la pondrías: brotan los
+              árboles y un halo azul muestra cuánto baja la temperatura de la superficie y hasta dónde se nota.</p>
+            <div class="sim__parametros">
+              <div class="sim__fila">
+                <label class="sim__rotulo" for="svComuna">Comuna</label>
+                <select class="select" id="svComuna"></select>
+              </div>
+              <div class="sim__control">
+                <div class="umbral__cab"><label for="svTamano">Tamaño</label><strong id="svTamanoValor">—</strong></div>
+                <input type="range" class="range" id="svTamano" min="0" max="8" step="1" value="3">
+              </div>
+              <div class="sim__fila">
+                <span class="sim__rotulo">Tipo</span>
+                <div class="tabs" id="svTipo">
+                  <button type="button" data-valor="pasto" title="Pasto con riego: enfría menos">Pasto</button>
+                  <button type="button" data-valor="mixto" title="Como la plaza típica: pasto y algunos árboles">Mixto</button>
+                  <button type="button" data-valor="arbolado" title="Muchos árboles: sombra y evapotranspiración">Arbolado</button>
+                </div>
+              </div>
+            </div>
+            <div class="sim__acciones">
+              <button type="button" class="btn btn--primary" id="svUbicar">Ubicar en el mapa</button>
+              <button type="button" class="btn btn--chico" id="svLimpiar">Quitar todo</button>
+            </div>
+            <div class="tiny muted" id="svAyuda"></div>
+            <div id="svResultado"></div>
+            <div id="svParques"></div>
+            <div class="sim__maximo small" id="svLocal"></div>
+            <details class="sim__como">
+              <summary class="small">Cómo se calcula y qué no dice</summary>
+              <ol class="small">
+                <li><strong>Mide lo que ya pasa:</strong> con la temperatura de la superficie (ECOSTRESS, verano, 70 m),
+                  compara cada parque de 1 ha o más (OpenStreetMap, sin los de solo pasto) con su propio entorno urbano
+                  de 100 a 500 m. El promedio es la "isla fresca" de esta ciudad: en Rancagua, 0,44 °C.</li>
+                <li><strong>La aplica al parque nuevo:</strong> crece con el logaritmo del tamaño (Cao et al., 2010), es
+                  mayor con árboles que con pasto (Bowler et al., 2010) y afuera se atenúa con la distancia hasta
+                  más o menos el ancho del parque, entre 60 y 400 m (Aram et al., 2019).</li>
+                <li><strong>A quién le llega:</strong> las personas del Censo 2024 que viven donde baja al menos
+                  0,25 °C, las que quedan con una plaza a 400 m y el área verde por habitante de la zona censal.</li>
+              </ol>
+              <p class="tiny muted" style="margin:6px 0 0">Es la temperatura de la superficie, no la del aire, y promedia escenas
+                de día y de noche: a pleno sol la diferencia es mayor, de noche casi desaparece. Es un escenario: el
+                resultado real depende del riego, las especies y el diseño. Con celdas de 70 m, una plaza muy chica
+                ocupa menos de una celda.</p>
+            </details>
+          </div>
+
+          <div class="card" data-sin-simulacion>
             <div class="card__head">
               <div class="card__title">Déficit de área verde</div>
               <div class="card__note" id="rankingNota">m² por habitante</div>
@@ -79,7 +133,7 @@
             <div class="stack" id="ranking" style="gap:9px"></div>
           </div>
 
-          <div class="card" id="detalle">
+          <div class="card" id="detalle" data-sin-simulacion>
             <div class="card__title">Unidad vecinal</div>
             <p class="small muted" style="margin:0">Selecciona una unidad vecinal en la tabla de abajo.</p>
           </div>
@@ -127,6 +181,9 @@
 <script src="datos/calor/indice.js"></script>
 <script src="js/detalle-comuna.js"></script>
 <script src="js/graficos.js"></script>
+<script src="js/inundacion-calculo.js"></script>
+<script src="js/simulacion-calor.js"></script>
+<script src="js/simulacion-verde.js"></script>
 <script>
 /* Se exporta la tabla de zonas censales tal como está en pantalla. */
 /* La zona censal se numera dentro de su distrito: Rancagua tenía diez
@@ -230,15 +287,22 @@ GTMapaReal.crearConRespaldo(document.getElementById('mapa'), {
   panel: '#panel-filtros',
   alSeleccionar: function (c) {
     if (metrica === 'verde' && conVerde) mostrarComunaVerde(c.nombre, true);
-  }
-}).then(function (api) { mapa = api; });
+  },
+  // Con la simulación activa, un clic dentro de la comuna abierta pone el parque.
+  alClicEnAbierta: function (lngLat) { GTSimVerde.alClic(lngLat); }
+}).then(function (api) {
+  mapa = api;
+  GTSimVerde.iniciar(api, document.getElementById('mapa'));
+});
 
 function conMapa(accion) { if (mapa) accion(mapa); }
 
 function pintarLeyenda() {
   const r = GT.urbanoRango;
   const fmt = function (x) { return GT.fmt(x, 1); };
-  document.getElementById('leyenda').innerHTML = metrica === 'temp'
+  document.getElementById('leyenda').innerHTML = metrica === 'simular'
+    ? leyendaSimulacion()
+    : metrica === 'temp'
     ? GTMapa.leyendaRampa('calor', r ? fmt(r[0]) : '29', r ? fmt(r[1]) : '37', '°C superficial')
     : conVerde
       ? GTMapa.leyendaCortes('verde') +
@@ -247,19 +311,40 @@ function pintarLeyenda() {
         '<span>Pasto (bandejón)</span></div></div>'
       : GTMapa.leyendaRampa('vegetacion', '0,5', '11,5', 'm² / habitante');
 }
+/* Simulación: las clases del mapa de calor por celda (las que se recolorean)
+   y lo que se dibuja encima. */
+function leyendaSimulacion() {
+  const c = window.TERRAFOCO_CALOR;
+  if (!c) return '';
+  const fila = function (muestra, nombre, rango) {
+    return '<div class="legend__row"><span class="legend__swatch" style="' + muestra + '"></span><span>' + nombre +
+           '</span>' + (rango ? '<span class="muted tiny mono" style="margin-left:auto">' + rango + '</span>' : '') + '</div>';
+  };
+  return '<div class="legend">' + c.clases.map(function (n, i) {
+    return fila('background:' + PALETA.rampas.calor[i], n, c.rangos[i] + ' °C');
+  }).join('') +
+  fila('background:linear-gradient(90deg, transparent, ' + (PALETA.azulClaro || PALETA.azul) + ')', 'Enfriamiento simulado') +
+  fila('background:' + PALETA.verde + ';opacity:.6', 'Área verde simulada') +
+  fila('border:1px dashed ' + PALETA.tinta + ';background:none', 'Hasta dónde se nota') +
+  fila('border:1px solid ' + PALETA.verde + ';background:none', 'Áreas verdes existentes') + '</div>';
+}
 pintarLeyenda();
 
-document.querySelectorAll('.tabs button').forEach(function (b) {
+/* Solo las pestañas del mapa: el panel de simulación tiene las suyas. */
+document.querySelectorAll('#panel-filtros .tabs button').forEach(function (b) {
   b.addEventListener('click', function () {
-    document.querySelectorAll('.tabs button').forEach(function (o) { o.classList.remove('is-active'); });
+    document.querySelectorAll('#panel-filtros .tabs button').forEach(function (o) { o.classList.remove('is-active'); });
     b.classList.add('is-active');
     metrica = b.dataset.metrica;
+    // Simular un parque se hace sobre la temperatura por celda.
+    const conTemperatura = metrica === 'temp' || metrica === 'simular';
     conMapa(function (m) {
-      m.cambiarCapa(metrica === 'temp' ? 'urbano-temp' : 'urbano-verde');
+      m.cambiarCapa(conTemperatura ? 'urbano-temp' : 'urbano-verde');
       // El área verde tiene su propio detalle: las zonas censales.
-      if (m.activarDetalle) m.activarDetalle(metrica === 'temp');
+      if (m.activarDetalle) m.activarDetalle(conTemperatura);
       capasVerde(metrica === 'verde');
     });
+    GTSimVerde.activar(metrica === 'simular');
     if (metrica === 'verde' && conVerde) mostrarComunaVerde(comunaVerde || 'Rancagua', true);
     pintarLeyenda();
   });

@@ -9,13 +9,15 @@ cualquier Windows, sin GitHub, sin Docker y sin cuenta de nadie.
 Los mapas siguen necesitando internet —MapLibre y el mapa base vienen de
 sus servidores—, pero la base, la API y las tablas no.
 
-    python herramientas/empaquetar_portable.py            # todo
-    python herramientas/empaquetar_portable.py --solo-exe # recompilar el .exe
-    python herramientas/empaquetar_portable.py --solo-datos  # recargar la base
+    python herramientas/empaquetar_portable.py                  # todo
+    python herramientas/empaquetar_portable.py --solo-lanzador  # API, visor, Python y lanzador
+    python herramientas/empaquetar_portable.py --solo-datos     # recargar la base
 
 Lo que produce, en dist/TerraFoco-portable/:
 
-    TerraFoco.exe    el lanzador
+    TerraFoco.cmd    el lanzador: doble clic
+    python/          Python 3 oficial (firmado) con las librerias de la API
+    lanzador/        el codigo del lanzador (lanzador_portable.py y sus modulos)
     pgsql/           binarios de PostgreSQL 16 + PostGIS 3.4
     datos/           el volcado de la base (terrafoco.sql.gz) y su version
     base/            el cluster ya cargado, si este equipo pudo armarlo
@@ -28,11 +30,31 @@ PostgreSQL aqui, y un Windows con el Control inteligente de aplicaciones
 activo no lo deja; entonces la copia sale solo con el volcado y el lanzador
 crea la base en su primer arranque (ver base_portable.py).
 
-Requiere Docker arriba, porque los datos salen de la base de desarrollo.
+POR QUE UN .cmd Y NO UN .exe
+---------------------------
+Hasta octubre el lanzador se compilaba con PyInstaller a TerraFoco.exe. Un
+.exe recien compilado no tiene firma ni historial, y Windows con el Control
+inteligente de aplicaciones (Smart App Control) lo bloquea sin ofrecer
+"ejecutar de todas formas": en el PC de desarrollo bloqueo casi todas las
+compilaciones. Ahora la copia lleva el Python oficial —python.exe y sus DLL
+firmados por la Python Software Foundation— y TerraFoco.cmd lo usa para
+correr el lanzador. No hay ningun ejecutable nuestro que firmar ni que
+Windows tenga que conocer.
+
+Las librerias de la API van en python/Lib/site-packages. psycopg va en su
+version Python pura y usa la libpq de pgsql/bin: la variante "binary" trae
+su propia libpq y OpenSSL sin firma, que es lo que el control de
+aplicaciones revisa.
+
+Requiere Docker arriba, porque los datos salen de la base de desarrollo, y
+correr con el Python oficial de Windows (el de python.org), porque es el que
+se copia.
 """
 import argparse
 import gzip
 import os
+import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -51,7 +73,12 @@ RAIZ = Path(__file__).resolve().parent.parent
 DIST = Path(os.environ["TERRAFOCO_DIST"]) if os.environ.get("TERRAFOCO_DIST") else RAIZ / "dist"
 DESCARGAS = DIST / "descargas"
 SALIDA = DIST / "TerraFoco-portable"
-VENV = DIST / "venv-build"
+PYTHON = SALIDA / "python"
+LANZADOR = SALIDA / "lanzador"
+# Lo que va de herramientas/ a lanzador/: el lanzador y lo que importa.
+MODULOS_LANZADOR = ("lanzador_portable.py", "base_portable.py", "rangos.py")
+# De api/requirements.txt, lo que no hace falta para correr la API.
+SOLO_PRUEBAS = ("pytest", "httpx")
 
 PGSQL = SALIDA / "pgsql"
 CLUSTER = SALIDA / "base"
@@ -241,7 +268,7 @@ def cargar_datos():
     if not base_portable.postgres_corre(pgexe):
         print("")
         print("  AVISO: este Windows no deja ejecutar PostgreSQL (Control inteligente")
-        print("  de aplicaciones). La copia lleva el volcado y TerraFoco.exe crea la")
+        print("  de aplicaciones). La copia lleva el volcado y TerraFoco.cmd crea la")
         print("  base en su primer arranque, en el computador donde se use (1-2 min).")
         if CLUSTER.exists():
             shutil.rmtree(CLUSTER)
@@ -263,43 +290,89 @@ def copiar_aplicacion():
                         ignore=shutil.ignore_patterns(
                             "__pycache__", "*.pyc", "tests", ".pytest_cache"))
         print("  %-10s %d archivos, %.1f MB" % (nombre, contar(destino), pesa(destino)))
-    # La API se queda en .py y no dentro del .exe: asi un error se corrige
-    # con un editor de texto en la sala, sin recompilar nada.
+    # La API va en .py: un error se corrige con un editor de texto en la
+    # sala, sin rearmar nada.
     (SALIDA / "api" / ".env").unlink(missing_ok=True)
 
 
-def python_venv():
-    return VENV / "Scripts" / "python.exe"
+def dependencias():
+    """Lo de api/requirements.txt que la API necesita para correr.
+
+    Sin las de pruebas, y sin extras: uvicorn[standard] suma httptools,
+    watchfiles y websockets, tres modulos nativos sin firma que la API no
+    usa; psycopg[binary] trae su propia libpq. psycopg puro usa la de pgsql/bin.
+    """
+    salida = []
+    for linea in (RAIZ / "api" / "requirements.txt").read_text(encoding="utf-8").splitlines():
+        linea = linea.split("#")[0].strip()
+        if not linea:
+            continue
+        nombre = re.split(r"[\[<>=!~ ]", linea)[0].lower()
+        if nombre in SOLO_PRUEBAS:
+            continue
+        salida.append(re.sub(r"\[[^\]]*\]", "", linea))
+    return salida
 
 
-def preparar_venv():
-    if not python_venv().exists():
-        print("  creando entorno de compilacion...")
-        correr([sys.executable, "-m", "venv", str(VENV)])
-    print("  instalando dependencias...")
-    correr([str(python_venv()), "-m", "pip", "install", "-q", "--upgrade", "pip"])
-    correr([str(python_venv()), "-m", "pip", "install", "-q",
-            "-r", str(RAIZ / "api" / "requirements.txt"), "pyinstaller==6.11.1"])
+def preparar_python():
+    """Copia el Python oficial con el que corre esto y le instala la API.
+
+    Es el de python.org instalado en el PC que arma la copia: python.exe, sus
+    DLL y los modulos nativos de la biblioteca estandar vienen firmados por la
+    Python Software Foundation. Una instalacion de Python es reubicable:
+    python.exe encuentra Lib/ junto a si mismo, sin registro de Windows.
+    """
+    base = Path(sys.base_prefix)
+    if os.name != "nt" or platform.architecture()[0] != "64bit":
+        raise SystemExit("La copia portable se arma con el Python de Windows de 64 bits.")
+    if not (base / "python.exe").exists() or not (base / "Lib" / "os.py").exists():
+        raise SystemExit("No encuentro una instalacion normal de Python en %s.\n"
+                         "Correr esto con el Python de python.org, no con el de la tienda "
+                         "ni dentro de un entorno conda." % base)
+    if PYTHON.exists():
+        shutil.rmtree(PYTHON)
+    PYTHON.mkdir(parents=True)
+    for patron in ("python.exe", "pythonw.exe", "python3*.dll", "vcruntime*.dll", "LICENSE.txt"):
+        for f in base.glob(patron):
+            shutil.copy2(f, PYTHON / f.name)
+    # Sin tkinter (interfaz grafica), ni pruebas, ni lo instalado en el PC.
+    shutil.copytree(base / "DLLs", PYTHON / "DLLs",
+                    ignore=shutil.ignore_patterns("_tkinter*", "tcl*", "tk*", "*.pdb"))
+    shutil.copytree(base / "Lib", PYTHON / "Lib",
+                    ignore=shutil.ignore_patterns("site-packages", "test", "tests", "idlelib",
+                                                  "tkinter", "turtledemo", "ensurepip",
+                                                  "__pycache__", "*.pyc"))
+    sitio = PYTHON / "Lib" / "site-packages"
+    sitio.mkdir()
+    paquetes = dependencias()
+    print("  Python %s (%s), %.0f MB" % (platform.python_version(), base, pesa(PYTHON)))
+    print("  instalando: %s" % ", ".join(paquetes))
+    correr([sys.executable, "-m", "pip", "install", "-q", "--disable-pip-version-check",
+            "--no-warn-script-location", "--only-binary=:all:",
+            "--target", str(sitio)] + paquetes)
+    print("  -> %d archivos, %.0f MB" % (contar(PYTHON), pesa(PYTHON)))
 
 
-def compilar_exe():
-    preparar_venv()
-    # El lanzador importa main/fastapi en tiempo de ejecucion, asi que
-    # PyInstaller no los ve analizando el codigo: hay que nombrarlos.
-    orden = [str(python_venv()), "-m", "PyInstaller", "--onefile", "--clean",
-             "--name", "TerraFoco",
-             "--distpath", str(SALIDA),
-             "--workpath", str(DIST / "build-exe"),
-             "--specpath", str(DIST / "build-exe"),
-             "--console"]
-    for paquete in ("fastapi", "uvicorn", "pydantic", "psycopg", "dotenv",
-                    "starlette", "anyio"):
-        orden += ["--collect-all", paquete]
-    orden.append(str(RAIZ / "herramientas" / "lanzador_portable.py"))
-    print("  compilando (esto toma un par de minutos)...")
-    correr(orden)
-    exe = SALIDA / "TerraFoco.exe"
-    print("  -> TerraFoco.exe (%.0f MB)" % (exe.stat().st_size / 1e6))
+CMD = """@echo off
+rem TerraFoco - copia portable: base de datos, API y visor en este computador.
+title TerraFoco
+cd /d "%~dp0"
+"%~dp0python\\python.exe" -E -s "%~dp0lanzador\\lanzador_portable.py"
+if errorlevel 1 pause
+"""
+
+
+def instalar_lanzador():
+    if LANZADOR.exists():
+        shutil.rmtree(LANZADOR)
+    LANZADOR.mkdir(parents=True)
+    for nombre in MODULOS_LANZADOR:
+        shutil.copy2(RAIZ / "herramientas" / nombre, LANZADOR / nombre)
+    # CRLF: es un archivo por lotes de Windows.
+    (SALIDA / "TerraFoco.cmd").write_bytes(CMD.replace("\n", "\r\n").encode("ascii"))
+    # El .exe de las copias anteriores: Windows lo bloquea y confunde.
+    (SALIDA / "TerraFoco.exe").unlink(missing_ok=True)
+    print("  TerraFoco.cmd + lanzador/ (%s)" % ", ".join(MODULOS_LANZADOR))
 
 
 LEEME = """TerraFoco - copia portable
@@ -314,17 +387,20 @@ tablas y el panel de Fuentes funcionan igual.
 
 COMO SE USA
   1. Copiar la carpeta TerraFoco completa al escritorio o a un pendrive.
-  2. Doble clic en TerraFoco.exe.
+  2. Doble clic en TerraFoco.cmd.
   3. Se abre el navegador solo. Para cerrar, cerrar la ventana negra.
 
-  La primera vez Windows puede mostrar "Windows protegio tu PC": es porque
-  el .exe no esta firmado. Mas informacion -> Ejecutar de todas formas.
+  Si la carpeta vino en un zip bajado de internet, Windows puede mostrar
+  "Windows protegio tu PC" al abrir TerraFoco.cmd: Mas informacion ->
+  Ejecutar de todas formas.
 
   Si la carpeta no trae base/ (o trae una de otra version de los datos), el
   primer arranque la crea desde datos/terrafoco.sql.gz: uno a dos minutos,
   una sola vez. Conviene abrirlo una vez antes de la presentacion.
 
 QUE LLEVA ADENTRO
+  python/      Python 3 oficial (firmado) con las librerias de la API
+  lanzador/    el programa que abre todo (lo usa TerraFoco.cmd)
   pgsql/       PostgreSQL 16 + PostGIS 3.4, los binarios oficiales
   datos/       el volcado de la base con los datos reales
   base/        la base ya cargada (se crea sola si falta)
@@ -355,19 +431,22 @@ VER LA BASE DURANTE LA PRESENTACION
 
 def main():
     p = argparse.ArgumentParser(description="Arma la copia portable de TerraFoco")
-    p.add_argument("--solo-exe", action="store_true", help="recompilar solo el .exe")
+    p.add_argument("--solo-lanzador", "--solo-exe", dest="solo_lanzador", action="store_true",
+                   help="rearmar API, visor, Python y lanzador (sin tocar la base)")
     p.add_argument("--solo-datos", action="store_true", help="recargar solo la base")
     args = p.parse_args()
 
     inicio = time.time()
-    if args.solo_exe:
+    if args.solo_lanzador:
         # Tambien copia api/ y prototipo/: son la aplicacion, igual que el
-        # lanzador, y separarlos deja la carpeta con un .exe nuevo contra un
-        # visor viejo, que es la clase de incoherencia que aparece en la sala.
-        paso("1/2", "Copiando la API y el visor")
+        # lanzador, y separarlos deja un lanzador nuevo contra un visor viejo,
+        # que es la clase de incoherencia que aparece en la sala.
+        paso("1/3", "Copiando la API y el visor")
         copiar_aplicacion()
-        paso("2/2", "Compilando el lanzador")
-        compilar_exe()
+        paso("2/3", "Python y librerias de la API")
+        preparar_python()
+        paso("3/3", "Lanzador")
+        instalar_lanzador()
     elif args.solo_datos:
         paso("1/1", "Recargando la base")
         cargar_datos()
@@ -376,12 +455,14 @@ def main():
         descargar()
         paso("2/6", "Extrayendo PostgreSQL y PostGIS")
         extraer_binarios()
-        paso("3/5", "Volcando los datos y armando la base")
+        paso("3/6", "Volcando los datos y armando la base")
         cargar_datos()
-        paso("4/5", "Copiando la API y el visor")
+        paso("4/6", "Copiando la API y el visor")
         copiar_aplicacion()
-        paso("5/5", "Compilando el lanzador")
-        compilar_exe()
+        paso("5/6", "Python y librerias de la API")
+        preparar_python()
+        paso("6/6", "Lanzador")
+        instalar_lanzador()
 
     (SALIDA / "LEEME.txt").write_text(LEEME, encoding="utf-8")
     print("")

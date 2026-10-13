@@ -137,6 +137,50 @@ https://www.geoportal.cl
 
 ---
 
+## Simulaciones de escenario
+
+**U.S. Department of Agriculture, Natural Resources Conservation Service.
+(1986).** *Urban hydrology for small watersheds* (Technical Release 55, 2.ª
+ed.).
+
+> Método del Número de Curva y su tabla por cobertura y grupo hidrológico del
+> suelo: cuánta lluvia escurre en la simulación de inundaciones.
+
+**Chow, V. T., Maidment, D. R., & Mays, L. W. (1988).** *Applied hydrology.*
+McGraw-Hill.
+
+> Conversión del número de curva entre condiciones de humedad previa I, II y III.
+
+**Williams, J. R. (1995).** The EPIC model. En V. P. Singh (Ed.), *Computer
+models of watershed hydrology* (pp. 909–1000). Water Resources Publications.
+
+> Corrección del número de curva por pendiente (la que usa SWAT).
+
+**Nash, J. E. (1957).** The form of the instantaneous unit hydrograph.
+*International Association of Scientific Hydrology Publication, 45*(3),
+114–121.
+
+> Embalse lineal: cómo la red de drenaje evacúa el agua retenida.
+
+**Cao, X., Onishi, A., Chen, J., & Imura, H. (2010).** Quantifying the cool
+island intensity of urban parks using ASTER and IKONOS data. *Landscape and
+Urban Planning, 96*(4), 224–231.
+
+> La isla fresca de un parque crece con el logaritmo de su área.
+
+**Bowler, D. E., Buyung-Ali, L., Knight, T. M., & Pullin, A. S. (2010).**
+Urban greening to cool towns and cities: A systematic review of the empirical
+evidence. *Landscape and Urban Planning, 97*(3), 147–155.
+
+> Los parques son más frescos que su entorno, y más con árboles.
+
+**Aram, F., Higueras García, E., Solgi, E., & Mansournia, S. (2019).** Urban
+green space cooling effect in cities. *Heliyon, 5*(4), e01339.
+
+> Orden de magnitud de la distancia hasta la que se nota el enfriamiento.
+
+---
+
 ## Metodología
 
 **Chapman, P., Clinton, J., Kerber, R., Khabaza, T., Reinartz, T., Shearer, C.,

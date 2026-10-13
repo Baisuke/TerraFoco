@@ -22,6 +22,11 @@
    tenue a brillante. Las del claro son las originales del proyecto, de
    claro a oscuro.
 
+   La interfaz es monocroma (octubre 2026): una escala de grises del negro
+   al blanco, y el color queda para los datos. Por eso los institucionales
+   siguen aquí —áreas verdes, agua, estados— pero ya no tiñen paneles ni
+   botones.
+
    Este archivo es la única fuente de verdad del color: CSS lo replica en
    variables y los módulos de JavaScript lo consumen desde aquí.
    ========================================================================== */
@@ -49,19 +54,19 @@ const TEMAS_PALETA = {
     /* --- Tinta: lo que se lee. Los gráficos usan estos roles, no nombres
        de marca: antes el texto de los ejes iba en azulMarino, que sobre
        fondo oscuro es invisible. Contraste medido en styles.css. --- */
-    tinta:        '#E6EBF0',
-    tinta2:       '#A7B3C0',
-    gris:         '#8593A1',   // ejes y rótulos secundarios; también lo neutro
-    grisFondo:    '#111820',
+    tinta:        '#E8E8EA',
+    tinta2:       '#A8A8AF',
+    gris:         '#8E8E96',   // ejes y rótulos secundarios; también lo neutro
+    grisFondo:    '#161618',
 
     /* --- Interfaz --- */
-    superficie:   '#111820',   // anillo alrededor de marcas que se superponen
-    texto:        '#E6EBF0',
-    borde:        '#1F2A36',
-    borde2:       '#3A4A5E',
-    textoSuave:   '#A7B3C0',
-    rejilla:      '#1C2631',
-    mapaFondo:    '#0C1219',
+    superficie:   '#161618',   // anillo alrededor de marcas que se superponen
+    texto:        '#E8E8EA',
+    borde:        '#26262A',
+    borde2:       '#3F3F46',
+    textoSuave:   '#A8A8AF',
+    rejilla:      '#1F1F22',
+    mapaFondo:    '#0E0E10',
     sinDato:      '#44484C',   // neutro, tenue, sin tono: no se confunde con una clase
 
     /* --- Dos series que se comparan (CIREN frente al cálculo propio). Pasos
@@ -102,18 +107,18 @@ const TEMAS_PALETA = {
     mapa: {
       estilo: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       detalle: 'CARTO Dark Matter',
-      /* Dark Matter es gris neutro: se tiñen el fondo y el agua con los
-         tonos de los paneles, para que mapa e interfaz sean una superficie. */
-      entintar: { fondo: '#0C1219', agua: '#0F1924', cauces: '#1A2A3A' },
-      borde: 'rgba(225, 233, 241, 0.42)', bordeImagen: 'rgba(255, 255, 255, 0.72)',
-      seleccion: '#FFFFFF', casco: 'rgba(0, 0, 0, 0.6)',
-      halo: 'rgba(4, 12, 24, 0.85)', haloImagen: 'rgba(2, 8, 16, 0.92)',
+      /* Dark Matter ya es gris neutro: solo se iguala su fondo con el de
+         los paneles, para que mapa e interfaz sean una superficie. */
+      entintar: { fondo: '#0E0E10', agua: '#17171A', cauces: '#222226' },
+      borde: 'rgba(255, 255, 255, 0.4)', bordeImagen: 'rgba(255, 255, 255, 0.72)',
+      seleccion: '#FFFFFF', casco: 'rgba(0, 0, 0, 0.65)',
+      halo: 'rgba(10, 10, 11, 0.85)', haloImagen: 'rgba(4, 4, 6, 0.92)',
       /* En oscuro la sombra es negra y la luz apenas perceptible: con luz
          blanca las laderas soleadas se leían como otra clase. */
       relieve: { sombra: 'rgba(0, 3, 8, 0.6)', luz: 'rgba(200, 215, 230, 0.08)',
                  acento: 'rgba(0, 3, 8, 0.2)' },
-      cielo: { 'sky-color': '#0A0F15', 'horizon-color': '#243241',
-               'fog-color': '#0E151D', 'sky-horizon-blend': 0.5,
+      cielo: { 'sky-color': '#0B0B0C', 'horizon-color': '#2A2A2E',
+               'fog-color': '#131315', 'sky-horizon-blend': 0.5,
                'horizon-fog-blend': 0.5, 'fog-ground-blend': 0.8 },
     },
   },
@@ -131,18 +136,18 @@ const TEMAS_PALETA = {
     ambar:        '#C77A06',
     rojo:         '#C62828',
 
-    tinta:        '#16232B',
-    tinta2:       '#48585F',
-    gris:         '#5E6D75',
-    grisFondo:    '#F4F6F8',
+    tinta:        '#18181B',
+    tinta2:       '#52525B',
+    gris:         '#67676F',
+    grisFondo:    '#F4F4F5',
 
     superficie:   '#FFFFFF',
-    texto:        '#16232B',
-    borde:        '#E2E7EC',
-    borde2:       '#9FACB8',
-    textoSuave:   '#48585F',
-    rejilla:      '#EDF1F3',
-    mapaFondo:    '#EEF2F5',
+    texto:        '#18181B',
+    borde:        '#E4E4E7',
+    borde2:       '#A1A1AA',
+    textoSuave:   '#52525B',
+    rejilla:      '#EFEFF1',
+    mapaFondo:    '#F2F2F3',
     sinDato:      '#E4E8EA',
 
     /* Azul y verde institucionales: ΔE 22,8 en protanopía, 23,5 normal. */
@@ -176,12 +181,12 @@ const TEMAS_PALETA = {
       detalle: 'CARTO Positron',
       entintar: null,
       borde: 'rgba(255, 255, 255, 0.95)', bordeImagen: 'rgba(255, 255, 255, 0.85)',
-      seleccion: '#16232B', casco: 'rgba(255, 255, 255, 0.9)',
+      seleccion: '#09090B', casco: 'rgba(255, 255, 255, 0.9)',
       halo: 'rgba(255, 255, 255, 0.75)', haloImagen: '#FFFFFF',
-      relieve: { sombra: 'rgba(0, 28, 65, 0.42)', luz: 'rgba(255, 255, 255, 0.28)',
-                 acento: 'rgba(0, 28, 65, 0.12)' },
-      cielo: { 'sky-color': '#BFD7EA', 'horizon-color': '#EEF3F6',
-               'fog-color': '#F5F6F7', 'sky-horizon-blend': 0.55,
+      relieve: { sombra: 'rgba(9, 9, 11, 0.38)', luz: 'rgba(255, 255, 255, 0.28)',
+                 acento: 'rgba(9, 9, 11, 0.1)' },
+      cielo: { 'sky-color': '#DCDCE0', 'horizon-color': '#F4F4F5',
+               'fog-color': '#F7F7F8', 'sky-horizon-blend': 0.55,
                'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.85 },
     },
   },

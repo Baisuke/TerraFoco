@@ -5,6 +5,11 @@ Esta bóveda explica el proyecto completo: qué es, cómo está armado y **qué 
 > [!tip] Cómo abrirla
 > En Obsidian: *Abrir carpeta como bóveda* → elegir `boveda/` dentro del repositorio. Los enlaces `[[...]]` llevan de una nota a otra y la vista de grafo (Ctrl+G) muestra cómo se conectan; para colorear cada área, en el grafo: *Grupos* → `path:"04 Motor"`, etc. La configuración de Obsidian (`boveda/.obsidian/`) no se versiona: cada uno tiene la suya.
 
+> [!important] ¿No sabes cómo funciona el código? Empieza por el curso
+> La carpeta **10 Curso** es un camino de estudio de punta a punta, desde cero: conceptos previos, el código real explicado línea por línea, un recorrido completo de un dato, el guion de la presentación y autoevaluaciones con respuesta. Empieza en [[L00 Cómo usar este curso]]. El resto de la bóveda es la referencia para profundizar.
+>
+> También está como documento de Word en `boveda/TerraFoco - Guía de estudio.docx`, para estudiar sin Obsidian.
+
 ## La idea en tres líneas
 
 TerraFoco cruza **el estado del territorio** (erosión del suelo, susceptibilidad a inundación, calor urbano), medido con datos satelitales y públicos, con **la inversión pública** (el programa SIRSD-S de INDAP), para responder: *¿la plata llega a las comunas donde el problema es más grave?* La región piloto es O'Higgins, con 33 comunas. → [[Qué es TerraFoco]]
@@ -22,6 +27,7 @@ TerraFoco cruza **el estado del territorio** (erosión del suelo, susceptibilida
 | **07 Herramientas y despliegue** | Scripts de apoyo, copia portable, servidor público, raíz del repo | [[Herramientas]] · [[Despliegue y Codespaces]] · [[Archivos de la raíz]] |
 | **08 Documentación** | Resumen de cada documento de `docs/` | [[Documentos del proyecto]] |
 | **09 Estudio** | Ruta de estudio, recorridos por el código, preguntas de defensa, glosario | [[Ruta de estudio]] · [[Preguntas de defensa]] · [[Glosario]] |
+| **10 Curso** | Curso de punta a punta en 22 lecciones: desde cero hasta el guion de la presentación | [[L00 Cómo usar este curso]] · [[L04 Un dato de punta a punta]] · [[L17 Guion de la presentación]] |
 
 ## Conceptos clave (atajos)
 

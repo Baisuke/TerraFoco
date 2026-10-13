@@ -1493,8 +1493,19 @@ const GTInundacion = (function () {
       '</body></html>';
   }
 
+  /* Lo que la simulación de lluvia (simulacion-inundacion.js) toma de la
+     comuna abierta: las mismas grillas que usa esta página, sin copiarlas. */
+  function contexto() {
+    return {
+      comuna: S.nombreComuna, idComuna: S.idComuna, grilla: S.grilla, agr: S.agr, pob: S.pob,
+      anioPoblacion: S.anioPoblacion, equipo: S.equipoComuna, modelo: S.modelo,
+      pronostico: S.pronostico, tipos: TIPOS,
+    };
+  }
+
   return {
     iniciar: iniciar,
     inspeccionar: inspeccionar,
+    contexto: contexto,
   };
 })();

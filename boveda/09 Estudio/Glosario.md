@@ -14,6 +14,7 @@
 | **CRISP-DM** | Metodología estándar de proyectos de datos (comprensión, preparación, modelado, evaluación, despliegue) | [[Documentos del proyecto#05-scrum.md]] |
 | **Cuartiles** | Cortes que dividen los datos en cuatro partes iguales; clases de inundación | [[Susceptibilidad a inundación]] |
 | **Curvatura** | Segunda derivada del terreno; negativa en concavidades (donde se junta el agua) | [[Motor - indicadores#terreno.py]] |
+| **Embalse lineal** | Modelo de drenaje en que sale cada hora una fracción fija de lo retenido (Nash, 1957) | [[Susceptibilidad a inundación#Simulación de lluvia]] |
 | **DEM** | Modelo digital de elevación; aquí NASADEM 30 m | [[Motor - ingesta#srtm.py]] |
 | **DesInventar** | Base de desastres de UNDRR alimentada por ONEMI; fuente de los 63 eventos | [[Motor - ingesta#desinventar.py]] |
 | **Dominio de validez** | Rango donde el modelo propio de erosión es confiable (R ≤ 2.000) | [[Dominio de validez]] |
@@ -24,11 +25,13 @@
 | **Horn (1981)** | Método estándar para calcular pendiente en una grilla (el de GDAL) | [[Motor - indicadores#terreno.py]] |
 | **INDAP** | Instituto de Desarrollo Agropecuario; cliente final y ejecutor del SIRSD-S | [[SIRSD-S e INDAP]] |
 | **Idempotente** | Que se puede correr varias veces con el mismo resultado (migraciones, `inicializar.sh`) | [[Migraciones]] |
+| **Isla fresca** | Cuánto más fresca está un área verde que su entorno; aquí se mide en la propia ciudad | [[Áreas verdes y calor urbano#Simular un área verde]] |
 | **KML** | Formato de Google Earth; las zonas y predios se exportan así | [[Visor - mapas y módulos#zonas.js]] |
 | **MapLibre GL** | Librería de mapas web en GPU (fork libre de Mapbox GL) | [[Visor - mapas y módulos#mapa-real.js]] |
 | **Migración** | Script SQL numerado que cambia el esquema de forma ordenada | [[Migraciones]] |
 | **NDVI** | Índice de vegetación: (NIR − rojo)/(NIR + rojo); de −1 a 1 | [[Motor - ingesta#sentinel.py]] |
 | **Normalización min–max** | Llevar valores a 0–1: (x − mín)/(máx − mín) | [[Índice de pertinencia]] |
+| **Número de curva (CN)** | Método del USDA para estimar cuánta lluvia escurre según cobertura, suelo y humedad (TR-55) | [[Susceptibilidad a inundación#Simulación de lluvia]] |
 | **OSM / Overpass** | OpenStreetMap y su API de consultas; fuente de áreas verdes y equipamiento | [[Motor - ingesta#equipamiento.py]] |
 | **Pertinencia** | Grado en que la inversión llega donde está el problema; `necesidad − inversión` | [[Índice de pertinencia]] |
 | **PMTiles** | Un archivo con toda una pirámide de teselas, leído por rangos HTTP | [[Teselas y PMTiles]] |

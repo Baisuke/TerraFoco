@@ -1,78 +1,84 @@
 /* ==========================================================================
    TerraFoco — Sistema de diseño
 
-   Tema oscuro, sobrio. El criterio: la interfaz calla y el dato habla. El
-   cromo —paneles, bordes, texto— es neutro; el color queda para los mapas
-   y los gráficos, donde significa algo. Un solo acento, el verde
-   institucional de INDAP, y solo en lo que se puede tocar o está elegido.
+   Monocromo (octubre 2026). La interfaz es una escala de grises del negro al
+   blanco y el color queda solo para los DATOS: así el mapa es siempre lo
+   que más se ve. Paneles de vidrio neutro que flotan sobre un fondo casi
+   negro con un degradado suave; el acento es el blanco (en el tema claro,
+   el negro): botón principal relleno, pestaña activa en píldora y lo
+   elegido en el mapa. Sin brillos ni tintes de marca.
 
-   Nada de brillos, degradados decorativos ni fondos con textura: se
-   probaron y hacían ver el sistema como una plantilla. La jerarquía sale
-   del tamaño, el peso y el espacio.
+   Las cifras van en Space Grotesk; el texto corrido, en Inter. Los colores
+   de los datos (rampas) no se tocan: se validaron contra fondo oscuro y
+   siguen significando lo mismo.
 
-   Contraste medido (WCAG): el texto de los tres niveles pasa AA sobre las
-   tres superficies. La definición de referencia del color está en
-   js/paleta.js; las rampas de datos se validaron contra la superficie del
-   mapa (ver el comentario de esa hoja).
+   Contraste medido (WCAG) sobre el panel (#161618): 14,8 · 7,7 · 5,6 a 1
+   para los tres niveles de texto; el botón principal, 18 a 1. La
+   definición de referencia del color está en js/paleta.js.
    ========================================================================== */
 
 :root {
   color-scheme: dark;
 
-  /* --- Superficies: neutras, con un matiz frío del azul institucional --- */
-  --fondo:        #0B1016;
-  --card:         #111820;
-  --card-solido:  #111820;
-  --card-alto:    #16202B;
-  --hundido:      #0E141B;   /* dentro de un panel: fórmula, factores */
-  --tint:         #151E28;   /* hover de filas y opciones */
-  --linea:        #1F2A36;
-  --linea-fuerte: #2B3847;
-  --superficie-mapa: #0C1219;
+  /* --- Superficies: vidrio neutro sobre un fondo casi negro --- */
+  --fondo:        #0B0B0C;
+  --fondo-alto:   #17171A;   /* arriba del degradado del fondo */
+  --card:         rgba(22, 22, 24, .78);
+  --card-solido:  #161618;
+  --card-alto:    rgba(32, 32, 35, .9);
+  --hundido:      rgba(0, 0, 0, .28);    /* dentro de un panel: fórmula, factores */
+  --tint:         rgba(255, 255, 255, .04); /* hover de filas y opciones */
+  --linea:        rgba(255, 255, 255, .08);
+  --linea-fuerte: rgba(255, 255, 255, .14);
+  --superficie-mapa: #0E0E10;
 
   /* --- Roles de la interfaz. Cada color literal de las reglas es un rol
      con nombre: el tema claro solo redefine esta lista, no las reglas. --- */
-  --titulo:        #F0F4F8;   /* títulos y cifras */
-  --texto-3:       #5E6C7A;   /* rótulo decorativo ("Período") */
-  --texto-mapa:    #D5DDE5;   /* rótulos del mapa esquemático */
-  --sidebar:       #0D131A;
-  --topbar:        rgba(11, 16, 22, .92);
-  --overlay:       rgba(17, 24, 32, .94);   /* lo que flota sobre el mapa */
-  --hover-control: #1B2733;
-  --presionado:    #243140;
-  --borde-hover:   #3A4A5E;
-  --pista:         #1A2430;   /* fondo de barras */
-  --marca-neutra:  #2A3644;
-  --icono-migas:   #4A5868;
-  --enlace-hover:  #8BD8B2;
-  --acento-borde:  rgba(63, 174, 124, .35);
+  --titulo:        #FAFAFA;   /* títulos y cifras */
+  --texto-3:       #63636B;   /* rótulo decorativo ("Período") */
+  --texto-mapa:    #D8D8DC;   /* rótulos del mapa esquemático */
+  --sidebar:       rgba(12, 12, 13, .84);
+  --topbar:        rgba(11, 11, 12, .74);
+  --overlay:       rgba(20, 20, 22, .84);   /* lo que flota sobre el mapa */
+  --hover-control: rgba(255, 255, 255, .06);
+  --presionado:    rgba(255, 255, 255, .11);
+  --borde-hover:   rgba(255, 255, 255, .28);
+  --pista:         rgba(255, 255, 255, .07);   /* fondo de barras */
+  --marca-neutra:  #2A2A2E;
+  --icono-migas:   #55555C;
+  --enlace-hover:  #FFFFFF;
+  --acento-borde:  rgba(255, 255, 255, .32);
   --info-tinte:    rgba(79, 140, 201, .14);
   --info-texto:    #8DB8E3;
   --borde-muestra: rgba(255, 255, 255, .16);   /* contorno de las muestras de color */
   --seleccion:     #FFFFFF;   /* celda elegida del mapa esquemático */
-  --velo:          rgba(4, 7, 11, .7);
-  --sombra-color:  rgba(0, 0, 0, .3);
-  --sombra-fuerte: rgba(0, 0, 0, .45);
+  --velo:          rgba(0, 0, 0, .7);
+  --sombra-color:  rgba(0, 0, 0, .35);
+  --sombra-fuerte: rgba(0, 0, 0, .55);
   /* Los íconos de MapLibre son SVG oscuros: en oscuro se invierten. */
   --filtro-iconos: invert(1) opacity(.8);
 
-  /* --- Texto. Sobre panel: 14,9 · 8,4 · 5,7 a 1. Sobre elevado: 13,7 ·
-     7,7 · 5,2. Los tres pasan AA en todas las superficies. --- */
-  --texto:   #E6EBF0;
-  --texto-2: #A7B3C0;
-  --muted:   #8593A1;
+  /* --- Texto. Sobre el panel (#161618): 14,8 · 7,7 · 5,6 a 1. --- */
+  --texto:   #E8E8EA;
+  --texto-2: #A8A8AF;
+  --muted:   #8E8E96;
 
-  /* --- Acento: el verde institucional. Relleno oscuro para que el texto
-     blanco del botón pase AA (5,3:1); versión clara para texto (9,1:1). --- */
-  --acento:        #3FAE7C;
-  --acento-texto:  #6CCB9C;
-  --acento-fondo:  #1F7A52;
-  --acento-fondo-hover: #1A6B48;
-  --acento-tinte:  rgba(63, 174, 124, .12);
+  /* --- Acento: el blanco. Relleno con texto negro (18:1); como texto,
+     blanco puro, un paso sobre el texto corrido. --- */
+  --acento:        #F4F4F5;
+  --acento-texto:  #FFFFFF;
+  --acento-fondo:  #F4F4F5;
+  --acento-fondo-hover: #FFFFFF;
+  --acento-sobre:  #0A0A0B;   /* texto sobre el relleno del acento */
+  --acento-tinte:  rgba(255, 255, 255, .08);
+  --activo:        #F4F4F5;   /* lo activo de un control: pestaña, escenario */
+  --activo-sobre:  #0A0A0B;
   --info:          #4F8CC9;
 
   /* --- Institucionales. Los nombres se conservan porque el HTML y el JS
-     los usan; los valores son los que se leen sobre fondo oscuro. --- */
+     los usan; los valores son los que se leen sobre fondo oscuro. Ya no
+     tiñen la interfaz: quedan para lo que significan (áreas verdes, agua,
+     estados). --- */
   --azul-marino:   #001C41;   /* se usa como fondo: no cambia */
   --azul-marino-2: #0A2C56;
   --verde:         #3FAE7C;
@@ -91,7 +97,7 @@
   --ok:     #5CC08C;   --ok-tinte:     rgba(92, 192, 140, .12);
   --aviso:  #E0B254;   --aviso-tinte:  rgba(224, 178, 84, .12);
   --serio:  #E8956A;   --serio-tinte:  rgba(232, 149, 106, .12);
-  --neutro: #A7B3C0;   --neutro-tinte: rgba(167, 179, 192, .10);
+  --neutro: #A8A8AF;   --neutro-tinte: rgba(168, 168, 175, .10);
 
   /* --- Rampas de datos: réplica de PALETA.rampas (js/paleta.js). En tema
      oscuro van de tenue a brillante: la clase baja se funde con el fondo y
@@ -112,20 +118,22 @@
   --sin-dato: #44484C;
 
   /* --- Medidas --- */
-  --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 10px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
   --sidebar-w: 240px;
-  --topbar-h: 52px;
+  --topbar-h: 56px;
 
-  --sans: 'Roboto', -apple-system, 'Segoe UI', system-ui, sans-serif;
-  --mono: 'Roboto Mono', 'SFMono-Regular', Consolas, monospace;
+  --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --display: 'Space Grotesk', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
 /* ==========================================================================
    Tema claro
 
-   Mismo sistema, otros valores: solo se redefinen tokens. Las rampas de
+   Mismo sistema, otros valores: solo se redefinen tokens. La escala de
+   grises va de blanco a gris y el acento es el negro. Las rampas de
    datos son las originales del proyecto —de claro a oscuro, la clase baja
    se funde con el fondo blanco—, que además son los colores con que el
    motor codifica los PNG. Contraste medido: el texto de los tres niveles
@@ -135,26 +143,29 @@
 :root[data-tema="claro"] {
   color-scheme: light;
 
-  --fondo:        #F4F6F8;
-  --card:         #FFFFFF;
+  --fondo:        #F4F4F5;
+  --fondo-alto:   #FFFFFF;
+  --card:         rgba(255, 255, 255, .86);
   --card-solido:  #FFFFFF;
   --card-alto:    #FFFFFF;
-  --hundido:      #F7F9FA;
-  --tint:         #F1F4F7;
-  --linea:        #E2E7EC;
-  --linea-fuerte: #CDD5DD;
-  --superficie-mapa: #EEF2F5;
+  --hundido:      #F6F6F7;
+  --tint:         #F2F2F3;
+  --linea:        #E4E4E7;
+  --linea-fuerte: #D4D4D8;
+  --superficie-mapa: #F2F2F3;
 
-  /* Sobre blanco 16,0 · 7,4 · 5,4 a 1; sobre el fondo gris 14,8 · 6,8 · 4,9. */
-  --texto:   #16232B;
-  --texto-2: #48585F;
-  --muted:   #5E6D75;
+  /* Sobre blanco 17,7 · 7,7 · 5,6 a 1; sobre el fondo gris 16,1 · 7,0 · 5,1. */
+  --texto:   #18181B;
+  --texto-2: #52525B;
+  --muted:   #67676F;
 
-  --acento:        #2B9C68;
-  --acento-texto:  #1D7A50;   /* 5,3:1 sobre blanco */
-  --acento-fondo:  #1F7A52;
-  --acento-fondo-hover: #1A6B48;
-  --acento-tinte:  rgba(43, 156, 104, .10);
+  --acento:        #18181B;
+  --acento-texto:  #09090B;
+  --acento-fondo:  #18181B;
+  --acento-fondo-hover: #27272A;
+  --acento-tinte:  rgba(9, 9, 11, .06);
+  --activo:        #18181B;
+  --activo-sobre:  #FFFFFF;
   --info:          #0F69C4;
 
   --verde:         #2B9C68;
@@ -172,7 +183,7 @@
   --ok:     #1A7045;   --ok-tinte:     #E6F4EC;
   --aviso:  #8A5406;   --aviso-tinte:  #FDF2DE;
   --serio:  #A8420F;   --serio-tinte:  #FBE7DE;
-  --neutro: #48585F;   --neutro-tinte: #EEF1F3;
+  --neutro: #52525B;   --neutro-tinte: #F0F0F2;
 
   --ero-1: #FBF3E3;  --ero-2: #F5DCAE;  --ero-3: #EBAE63;
   --ero-4: #D75E24;  --ero-5: #98380F;
@@ -187,28 +198,29 @@
   --pert-4: #EFA13A;  --pert-5: #C2451A;
   --sin-dato: #E4E8EA;
 
-  --titulo:        #0F1B24;
-  --texto-3:       #8A98A4;
-  --texto-mapa:    #2A3B44;
-  --sidebar:       #FFFFFF;
-  --topbar:        rgba(255, 255, 255, .94);
-  --overlay:       rgba(255, 255, 255, .96);
-  --hover-control: #EEF2F5;
-  --presionado:    #E3E9EE;
-  --borde-hover:   #9FACB8;
-  --pista:         #E8EDF1;
-  --marca-neutra:  #D5DDE3;
-  --icono-migas:   #A3AFBA;
-  --enlace-hover:  #166B45;
-  --acento-borde:  rgba(43, 156, 104, .45);
+  --titulo:        #09090B;
+  --texto-3:       #9A9AA2;
+  --texto-mapa:    #27272A;
+  --sidebar:       rgba(255, 255, 255, .88);
+  --topbar:        rgba(255, 255, 255, .8);
+  --overlay:       rgba(255, 255, 255, .92);
+  --hover-control: #F0F0F2;
+  --presionado:    #E6E6E9;
+  --borde-hover:   #A1A1AA;
+  --pista:         #ECECEE;
+  --marca-neutra:  #D9D9DD;
+  --icono-migas:   #A1A1AA;
+  --enlace-hover:  #000000;
+  --acento-borde:  rgba(9, 9, 11, .28);
   --info-tinte:    #E9F2FB;
   --info-texto:    #0F5AA8;
-  --borde-muestra: rgba(22, 35, 43, .16);
-  --seleccion:     #16232B;
-  --velo:          rgba(16, 35, 54, .35);
-  --sombra-color:  rgba(16, 35, 54, .10);
-  --sombra-fuerte: rgba(16, 35, 54, .18);
+  --borde-muestra: rgba(9, 9, 11, .16);
+  --seleccion:     #09090B;
+  --velo:          rgba(9, 9, 11, .3);
+  --sombra-color:  rgba(9, 9, 11, .07);
+  --sombra-fuerte: rgba(9, 9, 11, .16);
   --filtro-iconos: none;
+  --acento-sobre:  #FFFFFF;
 }
 
 * { box-sizing: border-box; }
@@ -231,7 +243,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: rgba(79, 140, 201, .35); color: var(--titulo); }
+::selection { background: rgba(140, 140, 150, .35); color: var(--titulo); }
 
 /* Barras de desplazamiento finas y oscuras: las del sistema, claras, se
    veían como un parche blanco al borde de cada tabla. */
@@ -1607,4 +1619,218 @@ details.plegable:not([open]) { gap: 0; }
   content: 'Cargando el mapa…';
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-size: 13px; color: var(--muted);
+}
+
+/* --------------------------------------------------------------------------
+   Simulación de lluvia (inundaciones.html)
+   -------------------------------------------------------------------------- */
+.tabs--ancho { display: flex; width: 100%; }
+.tabs--ancho button { flex: 1; }
+.sim__intro { margin: 0 0 10px; }
+.sim__escenarios { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.chip-boton {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 7px 10px; border: 1px solid var(--linea); border-radius: var(--r-sm);
+  background: var(--hundido); color: var(--texto); font-family: var(--sans); font-size: 12.5px;
+  text-align: left; cursor: pointer; transition: border-color .1s, background .1s;
+}
+.chip-boton span { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip-boton:hover:not(:disabled) { border-color: var(--borde-hover); }
+.chip-boton.is-active { border-color: var(--acento-borde); background: var(--acento-tinte); }
+.chip-boton.is-active span { color: var(--titulo); }
+.chip-boton:disabled { opacity: .5; cursor: default; }
+.sim__parametros { display: flex; flex-direction: column; gap: 10px; }
+.sim__control { display: flex; flex-direction: column; gap: 4px; }
+.sim__fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sim__rotulo { font-size: 13px; color: var(--texto-2); }
+.sim__fila .tabs button { padding: 4px 9px; font-size: 12px; }
+.sim__avanzado, .sim__como { border-top: 1px solid var(--linea); padding-top: 8px; }
+.sim__avanzado summary, .sim__como summary { cursor: pointer; color: var(--texto-2); }
+.sim__avanzado[open] { display: flex; flex-direction: column; gap: 10px; }
+.sim__como { margin-top: 12px; }
+.sim__como ol { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--texto-2); }
+.sim__acciones { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; flex-wrap: wrap; }
+.sim__acciones .btn--primary { min-width: 110px; }
+.sim__reloj { margin: 10px 0 6px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.sim__grafico { margin-bottom: 12px; }
+.sim__grafico svg { display: block; width: 100%; height: 110px; background: var(--hundido); border-radius: var(--r-sm); cursor: ew-resize; touch-action: none; }
+.sim__barras rect { fill: var(--info); opacity: .75; }
+.sim__area { fill: var(--info); opacity: .18; }
+.sim__linea { fill: none; stroke: var(--info-texto); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.sim__cursor { stroke: var(--titulo); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.sim__dia { stroke: var(--linea-fuerte); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+.sim__eje { display: flex; justify-content: space-between; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--muted); }
+.sim__lista { margin-top: 10px; font-size: 12.5px; display: flex; flex-direction: column; gap: 2px; }
+.sim__lista-cab { font-size: 12px; color: var(--texto-2); margin-bottom: 2px; }
+.sim__maximo { margin: 12px 0 10px; padding: 9px 12px; border-radius: var(--r-sm); background: var(--hundido);
+               border: 1px solid var(--linea); border-left: 3px solid var(--info); color: var(--texto-2); }
+
+/* La nube: un marcador del mapa sobre la comuna. Sobria a propósito: gris
+   neutro, gotas finas del azul de la paleta. Con más intensidad, la nube se
+   oscurece y las gotas caen más rápido y más juntas. */
+.nube { --fuerza: .5; --caida: .7s; width: 132px; height: 150px; pointer-events: none; }
+/* La animación va adentro: MapLibre ubica el marcador con su transform. */
+.nube__cuerpo { position: relative; width: 100%; height: 100%;
+                filter: drop-shadow(0 4px 10px var(--sombra-color)); animation: nube-flota 6s ease-in-out infinite; }
+.nube__forma { position: absolute; top: 0; left: 6px; width: 120px; height: 62px; transition: opacity .4s; }
+.nube { --nube: #A9B5C1; --nube-texto: #0B1016; }
+:root[data-tema="claro"] .nube { --nube: #7E8C98; --nube-texto: #FFFFFF; }
+.nube__forma path { fill: var(--nube); filter: brightness(calc(1.08 - .38 * var(--fuerza))); transition: filter .4s; }
+.nube__rotulo { position: absolute; top: 26px; left: 0; right: 0; text-align: center; font-size: 11px; font-weight: 500;
+                color: var(--nube-texto); font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+.nube__lluvia { position: absolute; top: 50px; left: 18px; right: 18px; height: 96px; overflow: hidden;
+                -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.nube__lluvia i { position: absolute; top: -16px; width: 1.6px; height: calc(10px + 8px * var(--fuerza)); border-radius: 1px;
+                  background: linear-gradient(transparent, var(--info-texto)); opacity: calc(.55 + .45 * var(--fuerza));
+                  animation: gota var(--caida) linear infinite; }
+.nube--seca .nube__forma { opacity: .55; }
+@keyframes gota { to { transform: translateY(112px); } }
+@keyframes nube-flota { 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .nube__cuerpo { animation: none; }
+  .nube__lluvia i { animation-duration: 3s; }
+}
+
+/* Inundaciones: el mapa queda a la vista mientras se recorre la columna de la
+   derecha (la simulación es larga y el agua se ve en el mapa). Solo en
+   pantallas anchas, donde las dos columnas van lado a lado. */
+@media (min-width: 1100px) {
+  .card--fija { position: sticky; top: calc(var(--topbar-h) + 14px); align-self: start; }
+}
+
+/* --------------------------------------------------------------------------
+   Simular un área verde (urbano.html)
+   -------------------------------------------------------------------------- */
+.sv__perfil { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.sv__perfil-fila { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: 12px; }
+.sv__perfil-barra { height: 6px; background: var(--pista); border-radius: 3px; overflow: hidden; }
+.sv__perfil-barra i { display: block; height: 100%; background: var(--info); border-radius: 3px; }
+.sv__parque { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+#svParques { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.es-colocando .maplibregl-canvas { cursor: crosshair !important; }
+
+/* Los árboles: marcadores del mapa que brotan desde la base, escalonados. El
+   transform va en el svg: MapLibre ubica el marcador con el suyo. */
+.arbol { width: 22px; height: 30px; pointer-events: none; }
+.arbol svg { display: block; width: 100%; height: 100%; transform-origin: 50% 100%; transform: scale(0);
+             animation: arbol-crece .75s cubic-bezier(.2, .9, .3, 1.25) forwards;
+             filter: drop-shadow(0 2px 2px var(--sombra-color)); }
+.arbol__tronco { fill: #7A5A3A; }
+.arbol__copa { fill: var(--verde); }
+.arbol__brillo { fill: #FFFFFF; opacity: .2; }
+.arbol--pasto .arbol__tronco { display: none; }
+.arbol--pasto .arbol__copa { fill: var(--verde-claro, #6CCB9C); }
+.arbol--arbolado .arbol__copa { fill: #2E8B57; }
+@keyframes arbol-crece { to { transform: scale(var(--alto, 1)); } }
+@media (prefers-reduced-motion: reduce) {
+  .arbol svg { animation: none; transform: scale(var(--alto, 1)); }
+}
+
+/* ==========================================================================
+   Monocromo — la capa visual (octubre 2026)
+
+   Sobre las reglas de arriba, que siguen definiendo el orden de cada pieza:
+   aquí va solo cómo se ven. Vale para los dos temas salvo donde dice: el
+   vidrio (backdrop-filter) y el degradado del fondo cambian de valores con
+   los tokens, no con reglas aparte.
+   ========================================================================== */
+
+/* --- Tipografía: cifras y títulos en Space Grotesk --- */
+.kpi__value, .cifra__valor, .topbar__title, .sidebar__name, h1, h2 {
+  font-family: var(--display);
+}
+.kpi__value { font-size: 32px; font-weight: 500; letter-spacing: -.02em; }
+.cifra__valor { font-size: 22px; font-weight: 500; letter-spacing: -.01em; }
+.card__title { font-family: var(--display); font-weight: 500; font-size: 13.5px; letter-spacing: .005em; }
+.kpi__unit { font-family: var(--sans); }
+
+/* --- Fondo: degradado del gris al negro (en claro, del blanco al gris) --- */
+body {
+  background-color: var(--fondo);
+  background-image:
+    radial-gradient(1200px 700px at 50% -20%, var(--fondo-alto), transparent 70%),
+    linear-gradient(180deg, var(--fondo-alto) 0%, var(--fondo) 46%);
+  background-attachment: fixed;
+}
+
+/* --- Paneles de vidrio: borde fino y una luz apenas arriba --- */
+.card {
+  border-radius: var(--r-md);
+  box-shadow: 0 10px 30px var(--sombra-color), inset 0 1px 0 rgba(255, 255, 255, .04);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+.notice, .sim__maximo, .aviso-origen { border-radius: var(--r-sm); }
+/* El aviso informativo, neutro: el azul queda para el agua. */
+.notice { border-left-color: var(--linea-fuerte); }
+.notice svg { color: var(--texto-2); }
+
+/* --- Barra lateral: vidrio, ítems en píldora --- */
+.sidebar {
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+.sidebar__name { font-weight: 600; letter-spacing: .01em; }
+.nav { gap: 2px; padding: 10px 12px; }
+.nav__item { border-radius: var(--r-sm); border: 1px solid transparent; transition: background .15s, border-color .15s, color .15s; }
+.nav__item--active { background: var(--acento-tinte); border-color: var(--linea); color: var(--titulo); }
+.nav__item--active::before { display: none; }
+.nav__item--active svg { color: var(--titulo); }
+.nav__label { font-family: var(--display); letter-spacing: .08em; }
+
+/* --- Barra superior: vidrio y reloj --- */
+.topbar {
+  backdrop-filter: blur(18px) saturate(120%); -webkit-backdrop-filter: blur(18px) saturate(120%);
+}
+.reloj { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.reloj strong { font-family: var(--display); font-size: 15px; font-weight: 500; color: var(--titulo); margin-left: 6px; }
+@media (max-width: 1100px) { .reloj { display: none; } }
+
+/* --- Controles en píldora --- */
+.btn, .btn-icono, .select, .buscador, .badge, .chip { border-radius: 999px; }
+.btn { padding: 0 16px; }
+.btn--chico { padding: 0 12px; }
+.btn--primary { background: var(--acento-fondo); border-color: var(--acento-fondo); color: var(--acento-sobre); font-weight: 600; }
+.btn--primary:hover { background: var(--acento-fondo-hover); border-color: var(--acento-fondo-hover); color: var(--acento-sobre); }
+.btn:disabled { opacity: .45; cursor: default; }
+
+/* Pestañas: control segmentado en píldora; la activa, rellena. */
+.tabs { border-radius: 999px; padding: 3px; }
+.tabs button { border-radius: 999px; }
+.tabs button.is-active { background: var(--activo); color: var(--activo-sobre); font-weight: 600; }
+.chip-boton.is-active { border-color: var(--acento-borde); background: var(--acento-tinte); }
+.chip-boton.is-active span { color: var(--titulo); }
+
+/* Deslizadores y casillas en el acento */
+.range, input[type="checkbox"], input[type="radio"] { accent-color: var(--acento); }
+
+/* --- Tablas: cabecera con más aire --- */
+.table th { font-family: var(--display); letter-spacing: .05em; }
+
+/* --- El mapa, protagonista: sin marco que compita, solo un borde fino --- */
+.map { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--linea); }
+/* Lo que flota sobre el mapa: vidrio. */
+.map__overlay, .maplibregl-ctrl-group, .basectl { border-radius: var(--r-sm); }
+.map__overlay, .maplibregl-ctrl-group, .basectl {
+  backdrop-filter: blur(14px) saturate(120%); -webkit-backdrop-filter: blur(14px) saturate(120%);
+  border: 1px solid var(--linea);
+  box-shadow: 0 8px 24px var(--sombra-color);
+}
+
+/* Más ancho para el mapa: las columnas de cifras se angostan y, en una
+   pantalla de hasta 1680 px (un portátil a 125 % mide ~1500), el análisis
+   baja para que el mapa ocupe dos tercios. */
+.grid--main { grid-template-columns: minmax(0, 2fr) minmax(330px, 1fr); }
+.grid--mando { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) minmax(280px, 320px); }
+.mando__mapa { padding: 10px; }
+@media (max-width: 1680px) {
+  .grid--mando { grid-template-columns: minmax(220px, 250px) minmax(0, 1fr); }
+  .grid--mando > .mando__col:last-child {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 1080px) {
+  .grid--main, .grid--mando { grid-template-columns: minmax(0, 1fr); }
 }

@@ -59,3 +59,9 @@ npm-debug.log*
 # abre la bóveda (zoom del grafo, paneles abiertos); versionarla deja el
 # repositorio siempre con cambios. Cada uno la tiene local.
 boveda/.obsidian/
+
+# Temporales de la guía en Word (herramientas/guia_docx)
+herramientas/guia_docx/diagramas/
+herramientas/guia_docx/guia.docx
+herramientas/guia_docx/guia.pdf
+herramientas/guia_docx/package-lock.json

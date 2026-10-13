@@ -43,6 +43,25 @@ const MENU = [
    21:00. */
 const ZONA_HORARIA = 'America/Santiago';
 
+/* Reloj de la barra superior, en la hora de Chile: la pantalla se lee como
+   un tablero en vivo, y los datos "en vivo" del badge tienen contra qué
+   compararse. */
+function montarReloj() {
+  const el = document.getElementById('reloj');
+  if (!el) return;
+  const formato = new Intl.DateTimeFormat('es-CL', {
+    timeZone: ZONA_HORARIA, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+  const pintar = function () {
+    const p = {};
+    formato.formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    el.innerHTML = p.day + '.' + p.month + '.' + p.year + '<strong>' + p.hour + ':' + p.minute + '</strong>';
+  };
+  pintar();
+  setInterval(pintar, 15000);
+}
+
 function GT_fecha(iso, conHora) {
   if (!iso) return '—';
   const f = new Date(iso);
@@ -141,11 +160,13 @@ function pintarShell(paginaActiva, titulo, subtitulo, acciones, explicacion) {
         '<datalist id="listaComunas"></datalist>' +
       '</label>' +
       '<span class="badge badge--proto"><span class="dot"></span>Prototipo · datos de ejemplo</span>' +
+      '<span class="reloj" id="reloj" title="Hora de Chile"></span>' +
       botonTema() +
     '</header>';
 
   document.getElementById('sidebar').outerHTML = sidebar;
   document.getElementById('topbar').outerHTML = topbar;
+  montarReloj();
 
   /* Encabezado de la página y fila de filtros, al inicio del contenido. Las
      páginas siguen pasando sus controles en un solo texto; aquí se reparten:

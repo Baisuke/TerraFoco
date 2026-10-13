@@ -2,6 +2,9 @@
 
 Un orden para entender el proyecto de punta a punta. Cada etapa tiene notas para leer, archivos para abrir y una **prueba de salida**: si puedes responderla sin mirar, pasa a la siguiente.
 
+> [!tip] Si partes de cero
+> Esta ruta asume que ya sabes leer código. Si no, sigue primero el curso de [[L00 Cómo usar este curso]], que explica los conceptos previos y el código paso a paso, y vuelve aquí para repasar.
+
 ## Etapa 1 · El problema y la idea (1 h)
 - Leer: [[Qué es TerraFoco]] · [[Documentos del proyecto#01-perfil-del-proyecto.md]] · [[SIRSD-S e INDAP]]
 - Abrir: `docs/01-perfil-del-proyecto.md`, la pantalla `index.html`.

@@ -6,7 +6,7 @@
 <title>Inundaciones · TerraFoco</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="js/tema.js"></script>
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -26,7 +26,7 @@
       </div>
 
       <div class="grid grid--main">
-        <div class="card">
+        <div class="card card--fija">
           <div class="card__head">
             <div class="card__title">Susceptibilidad a inundación</div>
             <label class="buscador">
@@ -42,6 +42,113 @@
         </div>
 
         <div class="stack">
+          <div class="tabs tabs--ancho" role="tablist" id="pestanas" aria-label="Qué mirar en la comuna">
+            <button type="button" role="tab" class="is-active" aria-selected="true" data-pestana="riesgo">Riesgo actual</button>
+            <button type="button" role="tab" aria-selected="false" data-pestana="simulacion">Simulación de lluvia</button>
+          </div>
+
+          <!-- Simulación: con esta lluvia, ¿cuánto se anega y qué queda bajo el agua? -->
+          <div class="stack" data-panel="simulacion" hidden>
+            <div class="card" id="simulacion">
+              <div class="card__head">
+                <div class="card__title">Simulación de lluvia</div>
+                <div class="card__note" id="simNota">elige una comuna en el mapa</div>
+              </div>
+              <p class="small muted sim__intro">Elige cuánto llueve, en cuánto tiempo y cómo estaba el suelo. El mapa
+                muestra hora a hora el agua que no alcanza a infiltrarse ni a escurrir, y dónde se junta.</p>
+
+              <div class="sim__escenarios" id="simEscenarios" aria-label="Escenarios de lluvia"></div>
+
+              <div class="sim__parametros">
+                <div class="sim__control">
+                  <div class="umbral__cab"><label for="simTotal">Lluvia total</label><strong id="simTotalValor">—</strong></div>
+                  <input type="range" class="range" id="simTotal" min="5" max="400" step="5" value="80">
+                </div>
+                <div class="sim__control">
+                  <div class="umbral__cab"><label for="simDuracion">En cuánto tiempo</label><strong id="simDuracionValor">—</strong></div>
+                  <input type="range" class="range" id="simDuracion" min="0" max="15" step="1" value="7">
+                </div>
+                <div class="sim__fila">
+                  <span class="sim__rotulo">Cómo cae</span>
+                  <div class="tabs" id="simPatron">
+                    <button type="button" data-valor="pareja" title="La misma intensidad todo el tiempo">Pareja</button>
+                    <button type="button" data-valor="chubascos" title="Chubascos cada pocas horas">Chubascos</button>
+                    <button type="button" data-valor="concentrada" title="La mitad de la lluvia en un quinto del tiempo">Concentrada</button>
+                  </div>
+                </div>
+                <div class="sim__fila">
+                  <span class="sim__rotulo">Suelo antes de llover</span>
+                  <div class="tabs" id="simHumedad">
+                    <button type="button" data-valor="seco" title="Sin lluvia en los 5 días anteriores">Seco</button>
+                    <button type="button" data-valor="normal">Normal</button>
+                    <button type="button" data-valor="saturado" title="Llovió fuerte los días anteriores">Saturado</button>
+                  </div>
+                </div>
+                <div class="tiny muted" id="simEntrada"></div>
+
+                <details class="sim__avanzado">
+                  <summary class="small">Opciones del modelo</summary>
+                  <div class="sim__fila">
+                    <span class="sim__rotulo" title="Grupo hidrológico del suelo (USDA): A arenoso, drena rápido; D arcilloso, casi no infiltra">Tipo de suelo</span>
+                    <div class="tabs" id="simSuelo">
+                      <button type="button" data-valor="A" title="Arenoso: infiltra mucho">A</button>
+                      <button type="button" data-valor="B" title="Franco: el más común en el valle">B</button>
+                      <button type="button" data-valor="C" title="Franco arcilloso">C</button>
+                      <button type="button" data-valor="D" title="Arcilloso: infiltra poco">D</button>
+                    </div>
+                  </div>
+                  <div class="sim__fila">
+                    <span class="sim__rotulo" title="Qué tan rápido la red de canales y esteros saca el agua de la comuna">Drenaje</span>
+                    <div class="tabs" id="simDrenaje">
+                      <button type="button" data-valor="rapido" title="Se vacía en ~6 h">Rápido</button>
+                      <button type="button" data-valor="normal" title="Se vacía en ~24 h">Normal</button>
+                      <button type="button" data-valor="lento" title="Se vacía en ~3 días">Lento</button>
+                    </div>
+                  </div>
+                  <div class="sim__control">
+                    <div class="umbral__cab"><label for="simLamina">Lámina media de agua</label><strong id="simLaminaValor">—</strong></div>
+                    <input type="range" class="range" id="simLamina" min="0.2" max="1.5" step="0.1" value="0.5">
+                  </div>
+                </details>
+              </div>
+
+              <div class="sim__acciones">
+                <button type="button" class="btn btn--primary" id="simIniciar" disabled>Simular</button>
+                <button type="button" class="btn btn--chico" id="simPausa" disabled>Pausa</button>
+                <button type="button" class="btn btn--chico" id="simVelocidad" title="Velocidad de la animación">×1</button>
+                <button type="button" class="btn btn--chico" id="simLimpiar" title="Quitar el agua del mapa">Quitar</button>
+              </div>
+
+              <div id="simResultado" hidden>
+                <div class="sim__reloj" id="simReloj"></div>
+                <div class="sim__grafico" id="simGrafico"></div>
+                <div id="simCifras"></div>
+                <div class="sim__maximo small" id="simMaximo"></div>
+                <button type="button" class="btn btn--chico" id="simCsv">Descargar la simulación (CSV)</button>
+              </div>
+
+              <details class="sim__como">
+                <summary class="small">Cómo se calcula y qué no dice</summary>
+                <ol class="small">
+                  <li><strong>Cuánta lluvia escurre:</strong> método del Número de Curva (USDA-NRCS, TR-55). Cada celda de
+                    30 m tiene un número según lo que la cubre —cultivo y pradera (WorldCover), zona poblada (Censo),
+                    vegetación (NDVI)— y el tipo de suelo, corregido por la humedad previa y la pendiente. Lo que no
+                    escurre se infiltra.</li>
+                  <li><strong>Cuánta se queda:</strong> lo que escurre entra a la red de drenaje, que lo saca como un
+                    embalse lineal: cada hora sale una parte de lo retenido. Por eso una lluvia corta e intensa deja
+                    más agua acumulada que la misma lluvia repartida en días.</li>
+                  <li><strong>Dónde se junta:</strong> el agua retenida cubre primero las celdas más altas del índice de
+                    susceptibilidad —el que se validó contra los eventos históricos—, con la lámina media elegida.</li>
+                </ol>
+                <p class="tiny muted" style="margin:6px 0 0">Es un escenario para comparar lluvias, no un pronóstico ni un
+                  modelo hidráulico: no simula la crecida de los ríos que vienen de la cordillera, ni velocidades, ni
+                  obras de defensa. Las personas son las que viven en los sectores con agua según el Censo, no
+                  afectados confirmados. Detalle en docs/13-modulo-inundaciones.md.</p>
+              </details>
+            </div>
+          </div>
+
+          <div class="stack" data-panel="riesgo">
           <!-- Qué se marca como riesgo y qué queda encima. -->
           <div class="card" id="analisis">
             <div class="card__head">
@@ -81,6 +188,7 @@
               <div class="card__note" id="exNota">elige una comuna</div>
             </div>
             <div id="exCuerpo"></div>
+          </div>
           </div>
         </div>
       </div>
@@ -179,6 +287,8 @@
 <script src="js/graficos.js"></script>
 <script src="js/inundacion-calculo.js"></script>
 <script src="js/inundacion.js"></script>
+<script src="js/simulacion-lluvia.js"></script>
+<script src="js/simulacion-inundacion.js"></script>
 <script>
 /* El exportar de esta página es un menú: informe, CSV, imagen y enlace. */
 const BOTON_EXPORTAR_INUNDACION =
@@ -210,6 +320,7 @@ GTMapaReal.crearConRespaldo(mapaEl, {
   alClicEnAbierta: function (lngLat) { GTInundacion.inspeccionar(lngLat); },
 }).then(function (api) {
   GTInundacion.iniciar(api, mapaEl);
+  GTSimInundacion.iniciar(api, mapaEl);
 });
 
 /* Con dato real, las cuatro clases comunales con su rango. */
