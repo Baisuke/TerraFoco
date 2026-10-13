@@ -1,0 +1,79 @@
+# =============================================================================
+# TerraFoco — Producción (servidor público)
+#
+# Es un compose aparte, no una capa sobre el de desarrollo: allí la base
+# publica el 5432, la API monta el código y se recarga sola, y el motor lleva
+# las credenciales de NASA y Copernicus. Nada de eso debe llegar a un servidor
+# expuesto, y un override no puede quitar un puerto ya publicado.
+#
+# Qué corre aquí: la base, la API y Caddy. El motor NO: procesa rásteres en el
+# PC de desarrollo, y el resultado se sube con despliegue/publicar.sh.
+#
+#   docker compose -f despliegue/docker-compose.yml --env-file despliegue/.env up -d --build
+#
+# Ver docs/19-despliegue.md.
+# =============================================================================
+
+services:
+
+  bd:
+    image: postgis/postgis:16-3.4
+    container_name: tf-bd
+    environment:
+      POSTGRES_DB: terrafoco
+      POSTGRES_USER: terrafoco
+      POSTGRES_PASSWORD: ${BD_PASSWORD:?falta BD_PASSWORD en despliegue/.env}
+    # Sin "ports": solo la alcanzan la API y quien entre por SSH al servidor.
+    volumes:
+      - bd_prod:/var/lib/postgresql/data
+      - ../bd:/bd:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U terrafoco -d terrafoco"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    # La imagen copia el código (COPY . . en el Dockerfile): sin montaje y sin
+    # --reload, lo que corre es lo que se publicó.
+    build:
+      context: ../api
+    container_name: tf-api
+    depends_on:
+      bd:
+        condition: service_healthy
+    environment:
+      BD_URL: postgresql://terrafoco:${BD_PASSWORD}@bd:5432/terrafoco
+      TERRAFOCO_CLAVE_ADMIN: ${TERRAFOCO_CLAVE_ADMIN:?falta TERRAFOCO_CLAVE_ADMIN en despliegue/.env}
+      TERRAFOCO_ORIGENES: https://${DOMINIO}
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000",
+              "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    restart: unless-stopped
+
+  # Una sola puerta: HTTPS automático (Let's Encrypt), el sitio estático y
+  # /api hacia la API. Con la página y la API en el mismo dominio no hay CORS
+  # que configurar ni ?api= que pasar.
+  web:
+    image: caddy:2
+    container_name: tf-web
+    depends_on: [api]
+    environment:
+      DOMINIO: ${DOMINIO:?falta DOMINIO en despliegue/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../prototipo:/srv:ro
+      - caddy_datos:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  bd_prod:
+    name: terrafoco_bd_prod
+  caddy_datos:
+    name: terrafoco_caddy_datos
+  caddy_config:
+    name: terrafoco_caddy_config
