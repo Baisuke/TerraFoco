@@ -1,0 +1,1610 @@
+/* ==========================================================================
+   TerraFoco — Sistema de diseño
+
+   Tema oscuro, sobrio. El criterio: la interfaz calla y el dato habla. El
+   cromo —paneles, bordes, texto— es neutro; el color queda para los mapas
+   y los gráficos, donde significa algo. Un solo acento, el verde
+   institucional de INDAP, y solo en lo que se puede tocar o está elegido.
+
+   Nada de brillos, degradados decorativos ni fondos con textura: se
+   probaron y hacían ver el sistema como una plantilla. La jerarquía sale
+   del tamaño, el peso y el espacio.
+
+   Contraste medido (WCAG): el texto de los tres niveles pasa AA sobre las
+   tres superficies. La definición de referencia del color está en
+   js/paleta.js; las rampas de datos se validaron contra la superficie del
+   mapa (ver el comentario de esa hoja).
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* --- Superficies: neutras, con un matiz frío del azul institucional --- */
+  --fondo:        #0B1016;
+  --card:         #111820;
+  --card-solido:  #111820;
+  --card-alto:    #16202B;
+  --hundido:      #0E141B;   /* dentro de un panel: fórmula, factores */
+  --tint:         #151E28;   /* hover de filas y opciones */
+  --linea:        #1F2A36;
+  --linea-fuerte: #2B3847;
+  --superficie-mapa: #0C1219;
+
+  /* --- Roles de la interfaz. Cada color literal de las reglas es un rol
+     con nombre: el tema claro solo redefine esta lista, no las reglas. --- */
+  --titulo:        #F0F4F8;   /* títulos y cifras */
+  --texto-3:       #5E6C7A;   /* rótulo decorativo ("Período") */
+  --texto-mapa:    #D5DDE5;   /* rótulos del mapa esquemático */
+  --sidebar:       #0D131A;
+  --topbar:        rgba(11, 16, 22, .92);
+  --overlay:       rgba(17, 24, 32, .94);   /* lo que flota sobre el mapa */
+  --hover-control: #1B2733;
+  --presionado:    #243140;
+  --borde-hover:   #3A4A5E;
+  --pista:         #1A2430;   /* fondo de barras */
+  --marca-neutra:  #2A3644;
+  --icono-migas:   #4A5868;
+  --enlace-hover:  #8BD8B2;
+  --acento-borde:  rgba(63, 174, 124, .35);
+  --info-tinte:    rgba(79, 140, 201, .14);
+  --info-texto:    #8DB8E3;
+  --borde-muestra: rgba(255, 255, 255, .16);   /* contorno de las muestras de color */
+  --seleccion:     #FFFFFF;   /* celda elegida del mapa esquemático */
+  --velo:          rgba(4, 7, 11, .7);
+  --sombra-color:  rgba(0, 0, 0, .3);
+  --sombra-fuerte: rgba(0, 0, 0, .45);
+  /* Los íconos de MapLibre son SVG oscuros: en oscuro se invierten. */
+  --filtro-iconos: invert(1) opacity(.8);
+
+  /* --- Texto. Sobre panel: 14,9 · 8,4 · 5,7 a 1. Sobre elevado: 13,7 ·
+     7,7 · 5,2. Los tres pasan AA en todas las superficies. --- */
+  --texto:   #E6EBF0;
+  --texto-2: #A7B3C0;
+  --muted:   #8593A1;
+
+  /* --- Acento: el verde institucional. Relleno oscuro para que el texto
+     blanco del botón pase AA (5,3:1); versión clara para texto (9,1:1). --- */
+  --acento:        #3FAE7C;
+  --acento-texto:  #6CCB9C;
+  --acento-fondo:  #1F7A52;
+  --acento-fondo-hover: #1A6B48;
+  --acento-tinte:  rgba(63, 174, 124, .12);
+  --info:          #4F8CC9;
+
+  /* --- Institucionales. Los nombres se conservan porque el HTML y el JS
+     los usan; los valores son los que se leen sobre fondo oscuro. --- */
+  --azul-marino:   #001C41;   /* se usa como fondo: no cambia */
+  --azul-marino-2: #0A2C56;
+  --verde:         #3FAE7C;
+  --verde-hover:   #4FBE8C;
+  --verde-claro:   #6CCB9C;
+  --verde-oscuro:  #6CCB9C;   /* era texto verde sobre tinte claro */
+  --verde-tinte:   rgba(63, 174, 124, .12);
+  --azul:          #4F8CC9;
+  --azul-claro:    #5AA9D6;
+  --turquesa:      #3CBFB4;
+  --naranja:       #E8956A;
+  --ambar:         #E0B254;
+  --rojo:          #EC7A80;
+
+  /* --- Estado: siempre con texto o ícono, nunca solo el color --- */
+  --ok:     #5CC08C;   --ok-tinte:     rgba(92, 192, 140, .12);
+  --aviso:  #E0B254;   --aviso-tinte:  rgba(224, 178, 84, .12);
+  --serio:  #E8956A;   --serio-tinte:  rgba(232, 149, 106, .12);
+  --neutro: #A7B3C0;   --neutro-tinte: rgba(167, 179, 192, .10);
+
+  /* --- Rampas de datos: réplica de PALETA.rampas (js/paleta.js). En tema
+     oscuro van de tenue a brillante: la clase baja se funde con el fondo y
+     la alta resalta. --- */
+  --ero-1: #774418;  --ero-2: #A45803;  --ero-3: #CE7005;
+  --ero-4: #F68918;  --ero-5: #FEB57D;
+
+  --agua-1: #1F5781;  --agua-2: #2274AF;  --agua-3: #3093DB;
+  --agua-4: #52B1FB;  --agua-5: #95CEFE;
+
+  --calor-1: #803B2A;  --calor-2: #B14A31;  --calor-3: #E05D3D;
+  --calor-4: #FF7E5E;  --calor-5: #FFB19D;
+
+  /* Divergente: extremos brillantes, centro gris y tenue */
+  --pert-1: #3ADFD7;  --pert-2: #36A15D;  --pert-3: #505963;
+  --pert-4: #A97515;  --pert-5: #FE9372;
+
+  --sin-dato: #44484C;
+
+  /* --- Medidas --- */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --sidebar-w: 240px;
+  --topbar-h: 52px;
+
+  --sans: 'Roboto', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Roboto Mono', 'SFMono-Regular', Consolas, monospace;
+}
+
+/* ==========================================================================
+   Tema claro
+
+   Mismo sistema, otros valores: solo se redefinen tokens. Las rampas de
+   datos son las originales del proyecto —de claro a oscuro, la clase baja
+   se funde con el fondo blanco—, que además son los colores con que el
+   motor codifica los PNG. Contraste medido: el texto de los tres niveles
+   pasa AA sobre blanco y sobre el fondo gris.
+   ========================================================================== */
+
+:root[data-tema="claro"] {
+  color-scheme: light;
+
+  --fondo:        #F4F6F8;
+  --card:         #FFFFFF;
+  --card-solido:  #FFFFFF;
+  --card-alto:    #FFFFFF;
+  --hundido:      #F7F9FA;
+  --tint:         #F1F4F7;
+  --linea:        #E2E7EC;
+  --linea-fuerte: #CDD5DD;
+  --superficie-mapa: #EEF2F5;
+
+  /* Sobre blanco 16,0 · 7,4 · 5,4 a 1; sobre el fondo gris 14,8 · 6,8 · 4,9. */
+  --texto:   #16232B;
+  --texto-2: #48585F;
+  --muted:   #5E6D75;
+
+  --acento:        #2B9C68;
+  --acento-texto:  #1D7A50;   /* 5,3:1 sobre blanco */
+  --acento-fondo:  #1F7A52;
+  --acento-fondo-hover: #1A6B48;
+  --acento-tinte:  rgba(43, 156, 104, .10);
+  --info:          #0F69C4;
+
+  --verde:         #2B9C68;
+  --verde-hover:   #238055;
+  --verde-claro:   #4FC98C;
+  --verde-oscuro:  #166B45;
+  --verde-tinte:   #EAF5EF;
+  --azul:          #0F69C4;
+  --azul-claro:    #0192D0;
+  --turquesa:      #18A299;
+  --naranja:       #B84E1C;   /* 5,1:1: el #D75E24 institucional daba 3,8 como texto */
+  --ambar:         #C77A06;
+  --rojo:          #C62828;
+
+  --ok:     #1A7045;   --ok-tinte:     #E6F4EC;
+  --aviso:  #8A5406;   --aviso-tinte:  #FDF2DE;
+  --serio:  #A8420F;   --serio-tinte:  #FBE7DE;
+  --neutro: #48585F;   --neutro-tinte: #EEF1F3;
+
+  --ero-1: #FBF3E3;  --ero-2: #F5DCAE;  --ero-3: #EBAE63;
+  --ero-4: #D75E24;  --ero-5: #98380F;
+  --agua-1: #E9F2FB;  --agua-2: #BCD8EE;  --agua-3: #7FB6DE;
+  --agua-4: #0F69C4;  --agua-5: #0A3A73;
+  --calor-1: #FDF4E0;  --calor-2: #F8D48A;  --calor-3: #EFA43C;
+  --calor-4: #D75E24;  --calor-5: #9B2F12;
+  /* La divergente original tenía Sobre-cobertura y Cobertura adecuada a
+     ΔE 6,7: casi el mismo color incluso con visión normal. Se separan por
+     luminosidad, como en oscuro (10,6 en protanopía, 15,8 normal). */
+  --pert-1: #0B7A72;  --pert-2: #62BE8E;  --pert-3: #C3CCD4;
+  --pert-4: #EFA13A;  --pert-5: #C2451A;
+  --sin-dato: #E4E8EA;
+
+  --titulo:        #0F1B24;
+  --texto-3:       #8A98A4;
+  --texto-mapa:    #2A3B44;
+  --sidebar:       #FFFFFF;
+  --topbar:        rgba(255, 255, 255, .94);
+  --overlay:       rgba(255, 255, 255, .96);
+  --hover-control: #EEF2F5;
+  --presionado:    #E3E9EE;
+  --borde-hover:   #9FACB8;
+  --pista:         #E8EDF1;
+  --marca-neutra:  #D5DDE3;
+  --icono-migas:   #A3AFBA;
+  --enlace-hover:  #166B45;
+  --acento-borde:  rgba(43, 156, 104, .45);
+  --info-tinte:    #E9F2FB;
+  --info-texto:    #0F5AA8;
+  --borde-muestra: rgba(22, 35, 43, .16);
+  --seleccion:     #16232B;
+  --velo:          rgba(16, 35, 54, .35);
+  --sombra-color:  rgba(16, 35, 54, .10);
+  --sombra-fuerte: rgba(16, 35, 54, .18);
+  --filtro-iconos: none;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; min-height: 100%; }
+
+/* El atributo hidden gana siempre. Cualquier `display` de una clase le
+   ganaba: pasó con .notice, .btn y .map__ficha, cada uno con su parche, y
+   la etiqueta de período vacía se veía como un recuadro sin texto en la
+   barra cuando la API no respondía. Una regla en vez de un parche por clase. */
+[hidden] { display: none !important; }
+
+body {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fondo);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: rgba(79, 140, 201, .35); color: var(--titulo); }
+
+/* Barras de desplazamiento finas y oscuras: las del sistema, claras, se
+   veían como un parche blanco al borde de cada tabla. */
+* { scrollbar-width: thin; scrollbar-color: var(--linea-fuerte) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--linea-fuerte);
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--borde-hover); }
+
+/* Foco de teclado visible en todo: en un tema oscuro el foco por defecto
+   se pierde, y quien navega con Tab no sabe dónde está. */
+:focus-visible { outline: 2px solid var(--acento-texto); outline-offset: 2px; }
+
+a { color: var(--acento-texto); text-decoration: none; }
+a:hover { color: var(--enlace-hover); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ==========================================================================
+   Estructura
+   ========================================================================== */
+
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 20;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: var(--topbar-h);
+  padding: 0 20px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.sidebar__mark {
+  width: 22px; height: 22px; flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+}
+.sidebar__mark span { background: var(--marca-neutra); border-radius: 1px; }
+.sidebar__mark span:nth-child(1),
+.sidebar__mark span:nth-child(5),
+.sidebar__mark span:nth-child(9) { background: var(--acento); }
+
+.sidebar__name {
+  color: var(--titulo);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.15;
+}
+.sidebar__tag { color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+
+.nav { display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; overflow-y: auto; }
+
+.nav__label {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 16px 10px 6px;
+}
+
+.nav__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  color: var(--texto-2);
+  font-size: 13.5px;
+  transition: background .12s, color .12s;
+}
+.nav__item:hover { background: var(--tint); color: var(--texto); text-decoration: none; }
+.nav__item--active { background: var(--card-alto); color: var(--titulo); font-weight: 500; }
+/* La marca del ítem activo: se ve de reojo, sin leer el menú. */
+.nav__item--active::before {
+  content: '';
+  position: absolute;
+  left: -10px; top: 7px; bottom: 7px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--acento);
+}
+.nav__item--active svg { color: var(--acento-texto); }
+.nav__item svg { flex-shrink: 0; color: var(--muted); }
+.nav__item:hover svg { color: var(--texto-2); }
+
+.sidebar__foot {
+  margin-top: auto;
+  padding: 14px 20px 16px;
+  border-top: 1px solid var(--linea);
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* Barra superior: dónde estoy y qué dato estoy mirando. Una sola línea,
+   siempre: los filtros bajaron a su propia fila bajo el encabezado, porque
+   con siete controles la barra se partía en tres. */
+.topbar {
+  height: var(--topbar-h);
+  flex-shrink: 0;
+  background: var(--topbar);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--linea);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar__spacer { flex-grow: 1; }
+
+.migas { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); min-width: 0; }
+.migas svg { flex-shrink: 0; color: var(--icono-migas); }
+.migas [aria-current] {
+  color: var(--texto); font-weight: 500; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+/* Angosto: la ruta chocaba con el estado del dato. Queda solo la página. */
+@media (max-width: 900px) {
+  .migas > span:first-child, .migas > svg { display: none; }
+  .topbar { padding: 0 16px; gap: 10px; }
+}
+
+/* Encabezado de la página: título, qué responde la pantalla y la acción
+   principal. La explicación en lenguaje simple va aquí, bajo el título, y
+   no como un párrafo suelto sobre el contenido. */
+.encabezado {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.encabezado__texto { flex: 1 1 520px; min-width: 0; }
+.encabezado__eyebrow { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+.encabezado__titulo {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  line-height: 1.25;
+  color: var(--titulo);
+}
+.encabezado__desc {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--texto-2);
+  line-height: 1.55;
+  max-width: 92ch;
+}
+.encabezado__acciones { display: flex; gap: 8px; align-items: center; padding-top: 2px; }
+
+/* Umbral de riesgo (inundaciones): deslizador con las clases marcadas. */
+.umbral { display: flex; flex-direction: column; gap: 6px; }
+.umbral__cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--texto-2); }
+.umbral__cab strong { color: var(--titulo); font-weight: 500; font-size: 13px; }
+.umbral__marcas { position: relative; height: 16px; margin: -2px 8px 0; }
+.umbral__marcas span {
+  position: absolute; transform: translateX(-50%);
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+}
+.umbral__marcas span::before {
+  content: ''; position: absolute; left: 50%; top: -5px;
+  width: 1px; height: 4px; background: var(--linea-fuerte);
+}
+
+/* Ranking de localidades: filas que se pueden tocar para ir a cada una. */
+.localidades__cab { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--texto-2); margin-bottom: 8px; }
+.localidad {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 6px; margin: 0 -6px; width: calc(100% + 12px);
+  border: 0; border-radius: var(--r-sm); background: none;
+  font: inherit; font-size: 13px; color: var(--texto); text-align: left; cursor: pointer;
+}
+.localidad:hover { background: var(--tint); }
+.localidad__nombre { width: 150px; flex-shrink: 0; line-height: 1.3; }
+.localidad__valor { width: 44px; text-align: right; font-size: 12.5px; }
+
+/* Botón de solo ícono (cambio de tema, en la barra superior). */
+.btn-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--texto-2);
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.btn-icono:hover { background: var(--hover-control); color: var(--titulo); border-color: var(--borde-hover); }
+
+/* Cabecera de la página: encabezado más fila de filtros. */
+.cabecera { display: flex; flex-direction: column; gap: 14px; }
+
+/* Filtros: en una fila, sobre todo lo que filtran. */
+.filtros {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--linea);
+}
+
+/* Compatibilidad: páginas que aún piden los antiguos rótulos de la barra. */
+.topbar__title { font-size: 15px; font-weight: 500; color: var(--texto); }
+.topbar__sub { font-size: 12.5px; color: var(--muted); }
+
+.content {
+  padding: 24px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1640px;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Paneles
+   ========================================================================== */
+
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.card--flush { padding: 0; overflow: hidden; gap: 0; }
+/* Panel destacado (la pregunta que responde un módulo): el mismo panel con
+   una línea de acento a la izquierda. Sin fondo de color. */
+.card--dark { border-left: 3px solid var(--acento); }
+.card--dark .card__title { color: var(--texto-2); }
+
+.card__head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.card__title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--texto);
+  line-height: 1.4;
+}
+.card__note { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+/* Explicación en lenguaje simple bajo un título */
+.explica {
+  font-size: 13.5px;
+  color: var(--texto-2);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 92ch;
+}
+
+.grid { display: grid; gap: 16px; }
+.grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid--main { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+/* Visor: panel de capas y mapa. La leyenda y la ficha van sobre el mapa. */
+.grid--visor { grid-template-columns: 264px minmax(0, 1fr); align-items: start; }
+
+/* Panel general: resumen a la izquierda, el territorio al centro, el
+   análisis a la derecha. El mapa es lo que más espacio ocupa porque es lo
+   único que responde "dónde". */
+.grid--mando {
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(290px, 350px);
+  align-items: start;
+}
+.mando__col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+/* En una columna flex, align-self actúa en horizontal: el `start` que
+   .card:has(> .map--alto) pone para no estirar el mapa en una grilla aquí
+   encogía la tarjeta al ancho de su contenido —457 de 960 px a 1280 de
+   ventana—. Con tres clases: con dos empataba con aquella regla, que va más
+   abajo en la hoja, y perdía. */
+.grid--mando .mando__col > .card { align-self: stretch; }
+.mando__mapa { padding: 14px; gap: 12px; }
+.mando__mapa > .card__head { padding: 2px 4px 0; }
+/* Medido: con barra, encabezado, filtros y rótulo, el mapa empieza a
+   ~303 px; más el relleno de abajo, 350 deja la leyenda dentro de la vista. */
+.mando__mapa .map--alto { --mapa-margen: 350px; }
+.mando__col .bar-row__name { width: 116px; }
+
+/* Resumen regional: las cifras en un solo panel, separadas por líneas. Eran
+   cuatro tarjetas, y cuatro cajas para cuatro números es ruido. */
+.resumen { padding: 4px 20px; gap: 0; }
+.stat { padding: 16px 0; border-bottom: 1px solid var(--linea); }
+.stat:last-child { border-bottom: 0; }
+.stat .card__title { font-size: 12.5px; color: var(--texto-2); font-weight: 400; margin-bottom: 6px; }
+
+/* Mapas que son el centro de la pantalla: alto ligado a la ventana. Antes
+   medían 460 px fijos dentro de una tarjeta que la columna vecina estiraba
+   a casi 800, y quedaba un bloque blanco debajo. Estirarlo a la tarjeta
+   tampoco servía: pasaba del borde de la ventana y el panel del detalle, que
+   va abajo, quedaba fuera de la vista. `--mapa-margen` es lo que ocupa la
+   página sobre el mapa, y cambia de una pantalla a otra. */
+.map--alto { height: max(460px, calc(100vh - var(--mapa-margen, 270px))); }
+.card:has(> .map--alto) { align-self: start; }
+
+/* ==========================================================================
+   Indicadores
+   ========================================================================== */
+
+.kpi__value {
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.015em;
+  color: var(--titulo);
+  font-variant-numeric: tabular-nums;
+}
+.kpi__unit { font-size: 14px; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.kpi__foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.kpi__foot strong { color: var(--texto-2); font-weight: 500; }
+
+/* ==========================================================================
+   Etiquetas y controles
+   ========================================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.badge--proto { background: var(--neutro-tinte); color: var(--texto-2); }
+.badge--ok    { background: var(--ok-tinte);     color: var(--ok); }
+.badge--warn  { background: var(--aviso-tinte);  color: var(--aviso); }
+.badge--pend  { background: var(--neutro-tinte); color: var(--texto-2); }
+.badge--crit  { background: var(--serio-tinte);  color: var(--serio); }
+.badge--info  { background: var(--info-tinte); color: var(--info-texto); }
+
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* Origen de los datos en la barra superior. El estado lo pone estadoBadge()
+   (shell.js); sin estado, son datos de ejemplo y se ven neutros. */
+.badge--proto.es-vivo  { background: var(--ok-tinte);    color: var(--ok); }
+.badge--proto.es-aviso { background: var(--aviso-tinte); color: var(--aviso); }
+.badge--proto.es-copia { background: var(--info-tinte); color: var(--info-texto); }
+/* El texto del estado puede ser largo; en la barra se recorta y el título
+   lo muestra entero. */
+.topbar .badge--proto { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--linea-fuerte);
+  background: var(--card-alto);
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover { background: var(--hover-control); border-color: var(--borde-hover); }
+.btn--primary {
+  background: var(--acento-fondo);
+  border-color: var(--acento-fondo);
+  color: #fff;
+  font-weight: 500;
+}
+.btn--primary:hover { background: var(--acento-fondo-hover); border-color: var(--acento-fondo-hover); }
+.btn--chico { height: 28px; padding: 0 10px; font-size: 12px; }
+
+/* Pertinencia: brecha en UF y evolución. La evolución lleva el gráfico
+   ancho, así que se le da más espacio. */
+.grid--brecha { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); }
+@media (max-width: 1080px) { .grid--brecha { grid-template-columns: minmax(0, 1fr); } }
+
+/* Diálogo modal (clave de administración en fuentes.html). */
+.dialogo {
+  border: 1px solid var(--linea-fuerte); border-radius: var(--r-md);
+  padding: 20px; width: min(400px, calc(100vw - 32px));
+  background: var(--card-alto); color: var(--texto);
+  box-shadow: 0 20px 50px var(--sombra-fuerte);
+}
+.dialogo::backdrop { background: var(--velo); }
+.dialogo form { display: flex; flex-direction: column; gap: 12px; margin: 0; }
+.dialogo input {
+  font: inherit; font-family: var(--mono); padding: 8px 10px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--r-sm);
+  background: var(--fondo); color: var(--texto);
+}
+.dialogo input:focus { outline: 2px solid var(--acento-texto); outline-offset: 1px; }
+
+.select {
+  height: 34px;
+  padding: 0 32px 0 11px;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--r-sm);
+  background: var(--card-alto) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238593A1' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--texto);
+  appearance: none;
+  cursor: pointer;
+}
+.select:hover { border-color: var(--borde-hover); }
+/* La lista desplegable la dibuja el sistema: sin esto sale blanca. */
+.select option { background: var(--card-alto); color: var(--texto); }
+
+/* El nombre oficial de una region puede ser largo —"Region del Libertador
+   General Bernardo O'Higgins"—. Se recorta al mostrarlo, no en el dato. */
+#selRegion { max-width: 280px; text-overflow: ellipsis; }
+
+/* Periodo de los datos en pantalla. Reemplaza al selector de anio del
+   prototipo, que ofrecia anios sin dato y no filtraba: esto no pretende ser
+   un control, solo dice que se esta mirando. Por eso va como texto y no
+   con forma de botón. */
+.periodo {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.periodo::before { content: 'Período'; color: var(--texto-3); margin-right: 8px; }
+
+input[type="checkbox"], input[type="radio"] { accent-color: var(--acento); }
+
+/* ==========================================================================
+   Tablas — sin bordes verticales, solo finas líneas horizontales
+   ========================================================================== */
+
+.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--linea-fuerte);
+  white-space: nowrap;
+  background: var(--card);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.table td { padding: 11px 14px; border-bottom: 1px solid var(--linea); color: var(--texto-2); }
+.table td strong { color: var(--texto); font-weight: 500; }
+.table tbody tr { cursor: pointer; transition: background .1s; }
+.table tbody tr:hover { background: var(--tint); }
+.table tbody tr.is-active { background: var(--acento-tinte); box-shadow: inset 2px 0 0 var(--acento); }
+.table tbody tr:last-child td { border-bottom: none; }
+.table .num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.table__wrap { overflow: auto; }
+.table select {
+  background: var(--card-alto);
+  color: var(--texto);
+  border: 1px solid var(--linea-fuerte);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12.5px;
+}
+
+/* ==========================================================================
+   Barras
+   ========================================================================== */
+
+.bar-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.bar-row__name { width: 148px; flex-shrink: 0; color: var(--texto-2); line-height: 1.35; }
+.bar-row__track {
+  display: block; flex-grow: 1; height: 6px;
+  background: var(--pista); border-radius: 3px; overflow: hidden;
+}
+.bar-row__fill { display: block; height: 100%; border-radius: 3px; background: var(--acento); }
+.bar-row__val {
+  width: 52px; text-align: right;
+  font-family: var(--mono); font-size: 12.5px;
+  font-variant-numeric: tabular-nums; color: var(--texto);
+}
+
+/* ==========================================================================
+   Mapa
+   ========================================================================== */
+
+.map {
+  position: relative;
+  background: var(--superficie-mapa);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.map svg { display: block; width: 100%; height: auto; }
+.map__cell { cursor: pointer; transition: opacity .12s; }
+.map__cell:hover { opacity: .8; }
+.map__cell.is-active { stroke: var(--seleccion); stroke-width: 2.5; }
+.map__label {
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 400;
+  fill: var(--texto-mapa);
+  pointer-events: none;
+}
+
+/* Lo que flota sobre el mapa: paneles casi opacos. Legibles sobre cualquier
+   fondo —mapa, imagen satelital, relieve— sin depender del desenfoque. */
+.map__overlay {
+  position: absolute;
+  z-index: 2;
+  background: var(--overlay);
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--texto);
+  box-shadow: 0 4px 14px var(--sombra-color);
+}
+.map__overlay--tl { top: 12px; left: 12px; font-weight: 500; }
+/* El visor rotula la capa activa en la misma esquina donde mapa-real.js pone
+   el chip de origen y la barra de controles, y el chip la tapaba: el mapa no
+   decía qué se estaba viendo. Se apilan en ese orden. */
+#capaActiva { padding: 7px 11px; font-size: 13px; font-weight: 500; }
+#capaActiva ~ .map__origen { top: 52px; }
+#capaActiva ~ .mapbar { top: 86px; }
+.map__overlay--bl { bottom: 12px; left: 12px; }
+.map__overlay--br { bottom: 12px; right: 12px; font-family: var(--mono); color: var(--muted); font-size: 11px; }
+/* El chip de origen es información secundaria: más chico y sin peso. */
+.map__origen { font-size: 11.5px; font-weight: 400; color: var(--texto-2); padding: 6px 10px; }
+
+/* Barra de controles del mapa. Va bajo el chip de origen: arriba a la derecha
+   esta el zoom, abajo a la derecha la escala y la atribucion, y abajo a la
+   izquierda el panel de detalle. */
+.mapbar {
+  position: absolute;
+  top: 48px; left: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  transition: left .18s;
+}
+
+/* Conmutador de mapa base: control segmentado. Va sobre el mapa y no en el
+   panel lateral porque solo el visor tiene panel: asi la misma pieza sirve
+   en las cuatro pantallas. */
+.basectl {
+  display: flex;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--sombra-color);
+}
+.basectl button {
+  border: 0;
+  background: var(--overlay);
+  color: var(--texto-2);
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.basectl button + button { border-left: 1px solid var(--linea-fuerte); }
+.basectl button:hover { background: var(--hover-control); color: var(--texto); }
+.basectl button[aria-pressed="true"] { background: var(--presionado); color: var(--titulo); font-weight: 500; }
+
+/* ==========================================================================
+   Controles de MapLibre
+
+   La hoja de MapLibre los dibuja blancos. Sobre el mapa oscuro eran tres
+   parches claros —zoom, escala, atribución— que se llevaban la mirada.
+   ========================================================================== */
+
+.maplibregl-ctrl-group {
+  background: var(--overlay) !important;
+  border: 1px solid var(--linea-fuerte);
+  box-shadow: 0 2px 8px var(--sombra-color) !important;
+}
+.maplibregl-ctrl-group button + button { border-top: 1px solid var(--linea-fuerte) !important; }
+.maplibregl-ctrl-group button:hover { background-color: var(--hover-control) !important; }
+/* Los íconos son SVG oscuros incrustados: se invierten en vez de redibujarlos. */
+.maplibregl-ctrl-group .maplibregl-ctrl-icon { filter: var(--filtro-iconos); }
+.maplibregl-ctrl-scale {
+  background: var(--overlay) !important;
+  color: var(--texto-2) !important;
+  border-color: var(--texto-2) !important;
+}
+.maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib.maplibregl-compact {
+  background: var(--overlay) !important;
+  color: var(--muted) !important;
+}
+.maplibregl-ctrl-attrib a { color: var(--texto-2) !important; }
+.maplibregl-ctrl-attrib-button { filter: var(--filtro-iconos); }
+
+.maplibregl-popup-content {
+  background: var(--card-alto) !important;
+  color: var(--texto) !important;
+  border: 1px solid var(--linea-fuerte);
+  border-radius: var(--r-sm) !important;
+  box-shadow: 0 8px 24px var(--sombra-fuerte) !important;
+  font-family: var(--sans);
+}
+.maplibregl-popup-close-button { color: var(--texto-2); }
+.maplibregl-popup-close-button:hover { background: var(--tint); color: var(--titulo); }
+.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.maplibregl-popup-anchor-top-right .maplibregl-popup-tip { border-bottom-color: var(--card-alto) !important; }
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip { border-top-color: var(--card-alto) !important; }
+.maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--card-alto) !important; }
+.maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--card-alto) !important; }
+
+/* ==========================================================================
+   Pantalla completa
+
+   El requisito no es solo agrandar el mapa: los filtros tienen que seguir a
+   mano. Por eso el panel de controles de la pagina se MUEVE dentro del mapa
+   mientras dura la pantalla completa y vuelve a su sitio al salir. El lienzo
+   se corre a la derecha en vez de quedar debajo del panel, para que el
+   encuadre use el area que de verdad se ve.
+   ========================================================================== */
+
+.map--completa { border-radius: 0; }
+.map--completa .map__canvas { left: var(--panel-ancho, 0px); }
+
+/* Respaldo cuando el navegador niega la API de pantalla completa —dentro de
+   un iframe sin permiso, en algunos navegadores moviles, o si el clic no
+   cuenta como gesto—. Ocupa la ventana en vez de dejar el boton muerto. */
+.map--maximizada {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  height: auto !important;
+  max-height: none !important;
+}
+body.sin-desplazamiento { overflow: hidden; }
+
+.map__panel {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: var(--panel-ancho, 300px);
+  z-index: 5;
+  overflow-y: auto;
+  background: var(--card);
+  border: 0;
+  border-right: 1px solid var(--linea-fuerte);
+  border-radius: 0;
+  padding: 18px;
+  margin: 0;
+  /* Un panel que en la pagina era una fila —el card__head de Ciudades— tiene
+     que apilarse al pasar a una columna de 300 px. */
+  display: block;
+}
+.map__panel .tabs { margin-left: 0 !important; margin-top: 12px; }
+
+/* Lo que flota sobre el mapa se corre para no quedar tapado por el panel. */
+.map--completa .mapbar,
+.map--completa .map__origen,
+.map--completa .map__overlay--tl { left: calc(var(--panel-ancho, 0px) + 12px); }
+.map--completa .map__overlay--bl,
+.map--completa .detalle-erosion { left: calc(var(--panel-ancho, 0px) + 12px); }
+.map--completa .detalle-pista { left: calc(var(--panel-ancho, 0px) + 12px); }
+
+/* ==========================================================================
+   Detalle a 30 m sobre el mapa
+   ========================================================================== */
+
+.detalle-erosion {
+  max-width: 290px;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* La leyenda regional comparte esquina con este panel; con una comuna
+   abierta la reemplaza. */
+.map--detalle > .map__overlay--bl:not(.detalle-erosion) { display: none; }
+
+.detalle__titulo { font-weight: 500; margin-bottom: 2px; color: var(--titulo); }
+.detalle__barra {
+  display: flex;
+  height: 6px;
+  margin: 9px 0 7px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--pista);
+}
+.detalle__barra i { display: block; min-width: 2px; }
+.detalle__clases {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px 10px;
+}
+.detalle__clase {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -5px;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.detalle__clase:hover { background: var(--tint); }
+.detalle__clase:focus-visible { outline: 2px solid var(--acento-texto); outline-offset: 0; }
+span.detalle__clase { cursor: default; }
+span.detalle__clase:hover { background: none; }
+.detalle__clase i {
+  flex: none;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  /* La clase más baja es la más tenue: sin borde se pierde en el panel. */
+  box-shadow: inset 0 0 0 1px var(--borde-muestra);
+}
+.detalle__clase[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
+.detalle__clase[aria-pressed="false"] i { opacity: .3; }
+.detalle__pct { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.detalle__pie { margin-top: 7px; font-size: 11px; line-height: 1.45; }
+
+.detalle-pista {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 3;
+  /* Angosta a propósito: en una línea chocaba con la atribución del mapa. */
+  max-width: 220px;
+  padding: 7px 11px;
+  border-radius: var(--r-sm);
+  line-height: 1.4;
+  background: var(--overlay);
+  border: 1px solid var(--linea-fuerte);
+  color: var(--texto);
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 4px 14px var(--sombra-color);
+  transition: left .18s;
+}
+
+/* Línea de la celda bajo el cursor, dentro de la ventana emergente. */
+.emergente__celda {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid var(--linea);
+}
+.emergente__celda i {
+  flex: none;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--borde-muestra);
+}
+
+/* Leyenda regional y ficha de la comuna, sobre el mapa del visor. */
+.map__leyenda { min-width: 190px; z-index: 2; }
+
+.map__ficha {
+  /* Bajo el control de zoom de MapLibre, que ocupa la esquina superior. */
+  top: 80px; right: 12px;
+  width: 300px;
+  /* Deja libre la franja de abajo: escala y atribución del mapa base, que
+     las licencias de OSM y de la imagen satelital exigen a la vista. */
+  max-height: calc(100% - 80px - 48px);
+  overflow-y: auto;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 14px 16px 16px;
+  font-size: 13px;
+  box-shadow: 0 8px 24px var(--sombra-fuerte);
+}
+.map__ficha-cab { display: flex; align-items: center; justify-content: space-between; }
+.map__ficha-cerrar {
+  margin: -4px -8px -4px 0;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.map__ficha-cerrar:hover { background: var(--tint); color: var(--texto); }
+
+@media (max-width: 720px) {
+  /* En un mapa angosto la ficha al costado lo taparía entero: va abajo, y
+     mientras está abierta el panel del detalle cede su lugar. */
+  .map__ficha { top: auto; left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 55%; }
+  .map--ficha .detalle-erosion { display: none; }
+}
+
+/* Leyenda */
+.legend { display: flex; flex-direction: column; gap: 6px; }
+.legend__row { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--texto-2); }
+.legend__swatch {
+  width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px var(--borde-muestra);
+}
+.legend__ramp {
+  display: flex; height: 8px; min-width: 196px; border-radius: 2px; overflow: hidden;
+}
+.legend__ramp span { flex: 1; }
+.legend__scale {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+}
+
+/* Panel de capas */
+.layer { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13.5px; }
+.layer input { width: 15px; height: 15px; accent-color: var(--acento); cursor: pointer; flex-shrink: 0; }
+.layer label { cursor: pointer; flex-grow: 1; color: var(--texto-2); line-height: 1.35; }
+.layer input:checked + label { color: var(--texto); }
+.layer__meta { font-size: 11.5px; color: var(--muted); }
+
+.range { width: 100%; accent-color: var(--acento); }
+
+/* ==========================================================================
+   Factores RUSLE
+   ========================================================================== */
+
+.factor {
+  border: 1px solid var(--linea);
+  border-radius: var(--r-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--hundido);
+}
+/* Los factores que dependen de la gestión (C y P): marcados con el acento,
+   sin fondo de color. */
+.factor--human { border-color: var(--acento-borde); }
+.factor__sym {
+  font-family: var(--mono); font-size: 20px; font-weight: 500;
+  line-height: 1; color: var(--texto-2);
+}
+.factor--human .factor__sym { color: var(--acento-texto); }
+.factor__name { font-size: 13px; font-weight: 500; color: var(--texto); }
+.factor__val {
+  font-family: var(--mono); font-size: 16px;
+  font-variant-numeric: tabular-nums; color: var(--titulo);
+}
+.factor__src { font-size: 11px; color: var(--muted); margin-top: auto; }
+/* Fuera del dominio: el borde avisa en la tarjeta del factor que lo causa. */
+.factor--alerta { border-color: var(--ambar); box-shadow: inset 0 0 0 1px var(--ambar); }
+
+/* Cinco columnas en escritorio, y hacia abajo se reparten. */
+.factores { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .factores { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px)  { .factores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Cuántas veces la mediana regional: barra que diverge desde el centro. */
+.factor__rel { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+.factor__barra {
+  position: relative; height: 4px; border-radius: 2px;
+  background: var(--linea);
+}
+.factor__barra::after {
+  content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px;
+  width: 1px; background: var(--muted);
+}
+.factor__barra span { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+.factores__lectura { font-size: 13.5px; line-height: 1.6; color: var(--texto-2); max-width: 95ch; }
+/* Con dos clases: .notice va más abajo en la hoja y le ganaba el fondo. */
+.notice.notice--alerta { border-left-color: var(--ambar); }
+.notice.notice--alerta svg { color: var(--ambar); }
+
+.formula {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: .01em;
+  text-align: center;
+  padding: 16px;
+  background: var(--hundido);
+  border: 1px solid var(--linea);
+  color: var(--titulo);
+  border-radius: var(--r-md);
+  overflow-x: auto;
+}
+.formula em { color: var(--acento-texto); font-style: normal; font-weight: 500; }
+
+/* ==========================================================================
+   Pipeline
+   ========================================================================== */
+
+.pipeline { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+.pipeline__step {
+  flex: 1;
+  min-width: 168px;
+  padding: 14px 16px;
+  border: 1px solid var(--linea);
+  border-radius: var(--r-sm);
+  background: var(--hundido);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pipeline__n { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.pipeline__t { font-size: 13.5px; font-weight: 500; color: var(--texto); }
+.pipeline__d { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ==========================================================================
+   Utilidades
+   ========================================================================== */
+
+.stack { display: flex; flex-direction: column; gap: 14px; }
+.row { display: flex; align-items: center; gap: 12px; }
+.sep { height: 1px; background: var(--linea); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.small { font-size: 13px; }
+.tiny { font-size: 11.5px; }
+
+.notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 11px 14px;
+  background: var(--hundido);
+  border: 1px solid var(--linea);
+  border-left: 3px solid var(--info);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  color: var(--texto-2);
+  line-height: 1.6;
+}
+.notice svg { flex-shrink: 0; margin-top: 2px; color: var(--info); }
+.notice strong { color: var(--texto); font-weight: 500; }
+
+/* Aviso de origen de los datos (fuentes.html): el color lo decide la clase,
+   no un estilo escrito desde el JS. */
+.aviso-origen { margin: 0; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--linea); border-left-width: 3px; background: var(--hundido); color: var(--texto-2); }
+.aviso-origen--ok     { border-left-color: var(--ok); }
+.aviso-origen--alerta { border-left-color: var(--aviso); }
+
+/* Pestañas: control segmentado. */
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--hundido);
+  border: 1px solid var(--linea);
+  border-radius: var(--r-sm);
+}
+.tabs button {
+  border: 0;
+  background: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .1s, color .1s;
+}
+.tabs button:hover { color: var(--texto); }
+.tabs button.is-active { background: var(--presionado); color: var(--titulo); font-weight: 500; }
+
+@media (max-width: 1280px) {
+  .grid--visor { grid-template-columns: 240px minmax(0, 1fr); }
+  /* En un portátil el resumen sigue a la vista junto al mapa; el análisis
+     baja, en dos columnas. Con el mapa arriba a todo el ancho, las cifras
+     quedaban bajo el pliegue y había que desplazarse para ver una. */
+  .grid--mando { grid-template-columns: minmax(230px, 260px) minmax(0, 1fr); }
+  .grid--mando > .mando__col:last-child {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 1080px) {
+  .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid--main, .grid--visor, .grid--mando { grid-template-columns: minmax(0, 1fr); }
+  /* Una columna: el resumen en dos por dos, no cuatro filas a lo largo. */
+  .resumen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
+  .resumen .stat:nth-last-child(-n+2) { border-bottom: 0; }
+}
+@media (max-width: 640px) {
+  .grid--mando > .mando__col { display: flex !important; }
+}
+
+/* Movimiento reducido: las transiciones se apagan. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   Inundaciones: análisis dentro de la comuna (js/inundacion.js)
+   ========================================================================== */
+
+/* Buscador en la cabecera del mapa. */
+.buscador {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 10px; min-width: 220px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--r-sm);
+  background: var(--hundido); color: var(--muted);
+}
+.buscador:focus-within { border-color: var(--acento-borde); color: var(--texto); }
+.buscador input {
+  border: 0; outline: 0; background: none; font: inherit; font-size: 13px;
+  color: var(--texto); width: 100%;
+}
+
+/* Histograma del índice bajo el deslizador. */
+.histograma svg { display: block; width: 100%; height: 56px; margin-top: 2px; }
+.histograma__eje {
+  display: flex; justify-content: space-between; gap: 8px;
+  font-size: 10.5px; color: var(--muted); margin-top: 2px;
+}
+
+/* Cifras de la comuna. */
+.cifras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.cifras--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cifra { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.cifra__valor { font-size: 20px; font-weight: 500; color: var(--titulo); font-variant-numeric: tabular-nums; }
+.cifra__rotulo { font-size: 12px; color: var(--texto-2); }
+@media (max-width: 720px) { .cifras--3 { grid-template-columns: minmax(0, 1fr); } }
+
+.localidad__sub { display: block; font-size: 11px; color: var(--muted); }
+.contexto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; font-size: 12.5px; }
+.contexto > div { display: flex; flex-direction: column; gap: 1px; }
+.contexto strong { font-size: 16px; font-weight: 500; color: var(--titulo); }
+
+/* Equipamiento. */
+.equipo__cats { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12.5px; }
+.equipo__cat { display: inline-flex; align-items: baseline; gap: 6px; color: var(--texto-2); }
+.equipo__cat i, .equipo i { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; align-self: center; }
+.equipo__cat strong { font-size: 15px; font-weight: 500; color: var(--titulo); }
+.equipo {
+  display: flex; align-items: center; gap: 10px; width: calc(100% + 12px); margin: 0 -6px;
+  padding: 5px 6px; border: 0; border-radius: var(--r-sm); background: none;
+  font: inherit; font-size: 13px; color: var(--texto); text-align: left; cursor: pointer;
+}
+.equipo:hover { background: var(--tint); }
+.equipo__nombre { flex: 1; min-width: 0; line-height: 1.3; }
+.equipo__nombre .tiny { display: block; }
+.equipo__valor { display: flex; flex-direction: column; align-items: flex-end; font-size: 12.5px; }
+
+/* Marcador de la celda inspeccionada. */
+.marcador-celda {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, .55);
+  pointer-events: none;
+}
+
+/* Por qué esta celda. */
+.celda__cab { display: flex; align-items: center; gap: 12px; }
+.celda__cab .badge { margin-left: auto; }
+.celda__valor {
+  font-size: 22px; font-weight: 500; color: var(--titulo); font-variant-numeric: tabular-nums;
+  padding-left: 10px; border-left: 4px solid;
+}
+.var {
+  display: grid; grid-template-columns: minmax(0, 1fr) 70px 54px 44px;
+  align-items: center; gap: 8px; font-size: 12.5px; padding: 3px 0;
+}
+.var--cab { padding-bottom: 2px; }
+.var--cab span:not(:first-child), .var__peso, .var__aporte { text-align: right; }
+.var--sinpeso { opacity: .55; }
+.var--total { border-top: 1px solid var(--linea); margin-top: 4px; padding-top: 6px; font-weight: 500; }
+.var--total .mono { text-align: right; color: var(--titulo); }
+.var__nombre { line-height: 1.3; min-width: 0; }
+.var__nombre .tiny { display: block; }
+.var__barra { height: 6px; background: var(--pista); border-radius: 3px; overflow: hidden; }
+.var__barra i { display: block; height: 100%; background: var(--azul-claro); }
+
+/* Explorador de pesos. */
+.pesos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; }
+@media (max-width: 1080px) { .pesos { grid-template-columns: minmax(0, 1fr); } }
+.pesos__juegos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.chip {
+  border: 1px solid var(--linea-fuerte); background: none; border-radius: 999px;
+  padding: 4px 11px; font: inherit; font-size: 12px; color: var(--texto-2); cursor: pointer;
+}
+.chip:hover { background: var(--hover-control); color: var(--texto); }
+.chip.is-active { background: var(--presionado); color: var(--titulo); border-color: var(--borde-hover); }
+.pesos__vars { display: flex; flex-direction: column; gap: 8px; }
+.peso { display: grid; grid-template-columns: 190px minmax(0, 1fr) 44px; align-items: center; gap: 12px; font-size: 13px; }
+.peso__nombre { line-height: 1.3; }
+.peso__nombre .tiny { display: block; }
+.peso__valor { text-align: right; font-size: 12.5px; }
+.pesos__mapa { display: flex; align-items: center; gap: 6px; margin-top: 14px; cursor: pointer; }
+.pesos__barra {
+  position: relative; height: 26px; margin: 14px 0 0;
+  background: linear-gradient(var(--pista), var(--pista)) 0 6px / 100% 4px no-repeat;
+}
+.pesos__barra em { position: absolute; top: 14px; font-size: 10.5px; font-style: normal; color: var(--muted); }
+.pesos__barra em:nth-of-type(1) { left: 0; }
+.pesos__barra em:nth-of-type(2) { left: 50%; transform: translateX(-50%); }
+.pesos__barra em:nth-of-type(3) { right: 0; }
+.pesos__marca {
+  position: absolute; top: 1px; width: 3px; height: 14px; margin-left: -1.5px;
+  background: var(--titulo); border-radius: 2px;
+}
+.pesos__marca--base { background: var(--muted); height: 10px; top: 3px; }
+.pesos__cambios { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; }
+.cambio { display: inline-flex; align-items: center; gap: 4px; color: var(--texto-2); }
+.cambio strong { color: var(--texto); font-weight: 500; margin-right: 2px; }
+.cambio i, .punto { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+/* Lluvia. */
+.table--lluvia td, .table--lluvia th { vertical-align: middle; }
+.table--lluvia .num { text-align: right; }
+.table--lluvia tr.is-activa td { background: var(--tint); }
+.lluvia__dias { display: flex; gap: 3px; align-items: flex-end; height: 26px; }
+th.lluvia__dias { height: auto; align-items: center; }
+.lluvia__dias span {
+  width: 16px; display: flex; justify-content: center; align-items: flex-end; height: 100%;
+  font-size: 10px; color: var(--muted); font-weight: 400;
+}
+.lluvia__dias i { display: block; width: 10px; border-radius: 2px 2px 0 0; background: var(--azul-claro); }
+.enlace {
+  border: 0; background: none; padding: 0; font: inherit; color: var(--texto);
+  cursor: pointer; text-align: left;
+}
+.enlace:hover { color: var(--acento-texto); text-decoration: underline; }
+
+/* Cómo se calcula: cinco pasos en fila. */
+.pasos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1080px) { .pasos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.paso { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--texto-2); line-height: 1.45; }
+.paso strong { color: var(--titulo); font-weight: 500; font-size: 13px; }
+.paso__n { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+/* Ayuda y glosario. */
+.ayuda__lista { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px;
+                font-size: 13.5px; color: var(--texto-2); line-height: 1.5; }
+.ayuda__pantallas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1080px) { .ayuda__pantallas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.glosario { display: grid; grid-template-columns: minmax(180px, 260px) minmax(0, 1fr); gap: 10px 24px; margin: 0; }
+.glosario dt { font-weight: 500; color: var(--titulo); font-size: 13.5px; }
+.glosario dd { margin: 0; font-size: 13.5px; color: var(--texto-2); line-height: 1.55; max-width: 90ch; }
+.glosario [hidden] { display: none; }
+@media (max-width: 720px) { .glosario { grid-template-columns: minmax(0, 1fr); gap: 2px; } .glosario dd { margin-bottom: 10px; } }
+
+/* Mapa: pista del 3D y cursor al orbitar con la rueda. */
+.map__pista3d {
+  position: absolute; left: 50%; top: 56px; transform: translateX(-50%); z-index: 6;
+  padding: 7px 14px; border-radius: var(--r-md); font-size: 12.5px;
+  background: var(--overlay); color: var(--texto); border: 1px solid var(--linea-fuerte);
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.map__pista3d.es-visible { opacity: 1; }
+.maplibregl-canvas-container.orbitando, .maplibregl-canvas-container.orbitando canvas { cursor: move; }
+
+/* Modelo 3D de la comuna (js/modelo3d.js): ocupa el mapa entero. */
+.modelo3d { position: absolute; inset: 0; z-index: 30; background: var(--superficie-mapa); }
+.modelo3d__lienzo { position: absolute; inset: 0; }
+.modelo3d__lienzo canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.modelo3d__lienzo canvas:active { cursor: grabbing; }
+.modelo3d__cab {
+  position: absolute; left: 14px; right: 14px; top: 12px; display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px; pointer-events: none;
+}
+.modelo3d__cab > * { pointer-events: auto; }
+.modelo3d__titulo { font-size: 18px; font-weight: 500; color: var(--titulo); }
+.modelo3d__acciones { display: flex; gap: 6px; }
+.modelo3d__acciones [aria-pressed="true"] { background: var(--presionado); border-color: var(--borde-hover); }
+.modelo3d__panel {
+  position: absolute; left: 14px; bottom: 14px; width: 290px; max-width: calc(100% - 28px);
+  display: flex; flex-direction: column; gap: 9px; padding: 12px 14px;
+  background: var(--overlay); border: 1px solid var(--linea-fuerte); border-radius: var(--r-md);
+  font-size: 12.5px; backdrop-filter: blur(6px);
+}
+.modelo3d__fila { display: flex; justify-content: space-between; gap: 10px; }
+.modelo3d__botones { display: flex; flex-wrap: wrap; gap: 6px; }
+.modelo3d__botones [aria-pressed="true"] { background: var(--presionado); border-color: var(--borde-hover); }
+.modelo3d__leyenda { display: flex; flex-direction: column; gap: 3px; }
+.modelo3d__clase { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.modelo3d__clase i { width: 10px; height: 10px; border-radius: 2px; }
+.modelo3d__rampa { height: 10px; border-radius: 3px; }
+.modelo3d__brujula {
+  position: absolute; right: 18px; bottom: 54px; width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--linea-fuerte); background: var(--overlay);
+  display: flex; align-items: flex-start; justify-content: center; font-size: 10px; font-weight: 600;
+  color: var(--titulo); padding-top: 2px; pointer-events: none;
+}
+.modelo3d__brujula i {
+  position: absolute; left: 50%; top: 14px; width: 0; height: 0; margin-left: -4px;
+  border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 9px solid #e5484d;
+}
+.modelo3d__ayuda {
+  position: absolute; right: 14px; bottom: 14px; color: var(--muted); text-align: right;
+  max-width: 50%; pointer-events: none;
+}
+.modelo3d__estado {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; padding: 24px; text-align: center;
+}
+@media (max-width: 720px) {
+  .modelo3d__panel { width: auto; right: 14px; }
+  .modelo3d__ayuda { display: none; }
+  .modelo3d__brujula { top: 64px; bottom: auto; }
+}
+
+/* Mis predios: zona de carga. */
+.carga {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  padding: 18px 14px; border: 1.5px dashed var(--linea-fuerte); border-radius: var(--r-md);
+  font-size: 13px; color: var(--texto-2); cursor: pointer; background: var(--hundido);
+}
+.carga:hover, .carga.es-encima { border-color: var(--acento-borde); color: var(--texto); }
+.carga input { display: none; }
+.pegado {
+  width: 100%; margin: 8px 0; font: inherit; font-family: var(--mono); font-size: 12px;
+  padding: 8px; border: 1px solid var(--linea-fuerte); border-radius: var(--r-sm);
+  background: var(--fondo); color: var(--texto); resize: vertical;
+}
+.cifras--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 900px) { .cifras--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Recomendación (pertinencia y ficha de comuna). */
+.recomendacion {
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+  border-left: 3px solid var(--acento); background: var(--tint);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 13px; line-height: 1.5;
+}
+.recomendacion strong { color: var(--titulo); font-weight: 500; }
+.recomendaciones { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 10px;
+                   font-size: 13.5px; line-height: 1.55; color: var(--texto-2); max-width: 110ch; }
+.recomendaciones strong { color: var(--titulo); font-weight: 500; }
+.nav__etiqueta { font-style: normal; font-size: 10.5px; color: var(--muted); margin-left: 4px; }
+
+/* Bloque técnico plegado (explorador de pesos). */
+details.plegable > summary { list-style: none; cursor: pointer; }
+details.plegable > summary::-webkit-details-marker { display: none; }
+details.plegable > summary .card__title::before {
+  content: '▸'; display: inline-block; width: 14px; color: var(--muted); transition: transform .15s;
+}
+details.plegable[open] > summary .card__title::before { transform: rotate(90deg); }
+details.plegable:not([open]) { gap: 0; }
+
+/* Inundaciones: lectura para INDAP. */
+.lectura-indap {
+  margin-top: 10px; padding: 9px 12px; border-left: 3px solid var(--acento);
+  background: var(--tint); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  font-size: 12.5px; line-height: 1.5; color: var(--texto-2);
+}
+.lectura-indap strong { color: var(--titulo); font-weight: 500; }
+
+/* Panel del detalle: descargar zonas. */
+.detalle__exportar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.detalle__exportar button {
+  border: 1px solid var(--linea-fuerte); background: none; border-radius: var(--r-sm);
+  padding: 2px 8px; font: inherit; font-size: 11.5px; color: var(--texto); cursor: pointer;
+}
+.detalle__exportar button:hover { background: var(--hover-control); }
+
+/* Ficha de comuna: los otros módulos. */
+.otro { display: flex; flex-direction: column; gap: 4px; padding: 2px 0; }
+.otro__titulo { font-size: 12.5px; color: var(--texto-2); }
+.otro__cifra { font-size: 20px; font-weight: 500; color: var(--titulo); display: flex; align-items: center; }
+.otro a { margin-top: 4px; }
+
+/* Menú de exportar y aviso flotante. */
+.menu { position: relative; }
+.menu__lista {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 280px;
+  display: flex; flex-direction: column; padding: 4px;
+  background: var(--card-alto); border: 1px solid var(--linea-fuerte); border-radius: var(--r-md);
+  box-shadow: 0 14px 36px var(--sombra-fuerte);
+}
+.menu__lista button {
+  display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px;
+  border: 0; border-radius: var(--r-sm); background: none; font: inherit; font-size: 13px;
+  color: var(--texto); text-align: left; cursor: pointer;
+}
+.menu__lista button:hover:not(:disabled) { background: var(--hover-control); }
+.menu__lista button:disabled { opacity: .45; cursor: default; }
+.aviso-flotante {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); z-index: 50;
+  padding: 9px 16px; border-radius: var(--r-md); font-size: 13px;
+  background: var(--card-alto); color: var(--texto); border: 1px solid var(--linea-fuerte);
+  box-shadow: 0 10px 30px var(--sombra-fuerte); opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+.aviso-flotante.es-visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* ==========================================================================
+   Pantallas angostas: menú plegable, buscador global y región fija
+   ========================================================================== */
+
+/* El botón de menú solo existe donde la barra lateral se esconde. */
+.topbar__menu { display: none; }
+.buscador--global { margin-left: 0; min-width: 0; width: 200px; height: 30px; }
+.region-fija {
+  display: inline-flex; align-items: center; height: 34px; padding: 0 12px;
+  border: 1px solid var(--linea); border-radius: var(--r-sm);
+  font-size: 13px; color: var(--texto); background: var(--hundido);
+}
+.app__velo { display: none; }
+
+@media (max-width: 1023px) {
+  .topbar__menu { display: inline-flex; margin-left: -6px; }
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; height: 100%;
+    transform: translateX(-100%); transition: transform .2s ease;
+    box-shadow: 0 0 40px var(--sombra-fuerte); z-index: 40;
+  }
+  .app.menu-abierto .sidebar { transform: none; }
+  .app.menu-abierto .app__velo {
+    display: block; position: fixed; inset: 0; z-index: 35; background: var(--velo);
+  }
+  .main { width: 100%; }
+}
+
+@media (max-width: 720px) {
+  .content { padding: 16px 14px 40px; gap: 14px; }
+  .grid--2, .grid--3 { grid-template-columns: minmax(0, 1fr); }
+  .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .encabezado__titulo { font-size: 19px; }
+  .filtros { flex-wrap: wrap; row-gap: 8px; }
+  .buscador--global { width: 150px; }
+  .topbar .badge { max-width: 120px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .card { padding: 14px; }
+  .map--alto { height: 70vh; }
+  .peso { grid-template-columns: minmax(0, 1fr) 44px; }
+  .peso input { grid-column: 1 / -1; grid-row: 2; }
+  .var { grid-template-columns: minmax(0, 1fr) 56px 44px; }
+  .var__barra { display: none; }
+  .var--cab span:nth-child(2) { display: none; }
+  .pasos { grid-template-columns: minmax(0, 1fr); }
+  .table { font-size: 12.5px; }
+}
+@media (max-width: 480px) {
+  .buscador--global { display: none; }
+}
+
+/* Mientras el mapa carga, un aviso en vez de un rectángulo vacío: con una
+   conexión lenta parecía roto. Desaparece en cuanto existe el lienzo. */
+.map:not(:has(.maplibregl-canvas)):not(:has(svg))::before {
+  content: 'Cargando el mapa…';
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: var(--muted);
+}
