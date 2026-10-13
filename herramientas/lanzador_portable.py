@@ -13,8 +13,10 @@ fuentes funciona igual.
 Los mapas necesitan internet: MapLibre y el mapa base se cargan de sus
 servidores. Todo lo demas corre local.
 
-Se compila a TerraFoco.exe con herramientas/empaquetar_portable.py. Corriendo
-desde el repositorio hace exactamente lo mismo, contra dist/TerraFoco-portable:
+En la copia portable lo abre TerraFoco.cmd con el Python que va adentro
+(python/), desde lanzador/. No se compila a .exe: Windows bloquea los .exe
+sin firma (ver empaquetar_portable.py). Corriendo desde el repositorio hace
+exactamente lo mismo, contra dist/TerraFoco-portable:
 
     python herramientas/lanzador_portable.py
 """
@@ -42,12 +44,16 @@ BASE_DATOS = "terrafoco"
 def raiz():
     """La carpeta portable.
 
-    Congelado, es la del .exe. Desde el repositorio, dist/TerraFoco-portable,
-    para poder probar el lanzador sin recompilar en cada cambio.
+    Dentro de la copia, el lanzador vive en lanzador/ y la carpeta es la de
+    arriba. Desde el repositorio, dist/TerraFoco-portable, para poder probarlo
+    sin rearmar la copia en cada cambio.
     """
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
-    return Path(__file__).resolve().parent.parent / "dist" / "TerraFoco-portable"
+    aqui = Path(__file__).resolve().parent
+    if aqui.name == "lanzador" and (aqui.parent / "pgsql").exists():
+        return aqui.parent
+    return aqui.parent / "dist" / "TerraFoco-portable"
 
 
 RAIZ = raiz()
@@ -88,8 +94,8 @@ def comprobar():
     if faltan:
         raise SystemExit(
             "Faltan carpetas de la copia portable: %s\n"
-            "El .exe tiene que quedar DENTRO de la carpeta TerraFoco, junto a\n"
-            "pgsql, datos, api y prototipo. Copiar el .exe solo no funciona."
+            "TerraFoco.cmd tiene que quedar DENTRO de la carpeta TerraFoco, junto a\n"
+            "pgsql, datos, api y prototipo. Copiarlo solo no funciona."
             % ", ".join(faltan))
 
     # PostgreSQL se niega a arrancar con privilegios de administrador, a
@@ -97,7 +103,7 @@ def comprobar():
     if es_administrador():
         raise SystemExit(
             "Esto no puede correr como administrador: PostgreSQL lo rechaza.\n"
-            "Cerrar y abrir TerraFoco.exe con doble clic normal.")
+            "Cerrar y abrir TerraFoco.cmd con doble clic normal.")
 
     # El cluster necesita escribir. En un pendrive esta bien; en Archivos de
     # programa o en un disco bloqueado, no.
@@ -249,6 +255,12 @@ def arrancar_api(puerto, bd_url):
     al reves apuntaria al PostgreSQL de desarrollo que aqui no existe.
     """
     os.environ["BD_URL"] = bd_url
+    # psycopg va en su version Python pura y carga la libpq de PostgreSQL que
+    # trae la copia (pgsql/bin), con sus DLL al lado.
+    bin_pg = str(PGSQL / "bin")
+    os.environ["PATH"] = bin_pg + os.pathsep + os.environ.get("PATH", "")
+    if hasattr(os, "add_dll_directory"):
+        os.add_dll_directory(bin_pg)
     # La escritura exige clave de administracion (api/seguridad.py) y sin
     # ella responde 503: el panel de fuentes quedaria de solo lectura, que es
     # justo lo que la demo tiene que mostrar funcionando. Se genera una por

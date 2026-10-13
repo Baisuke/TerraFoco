@@ -45,7 +45,7 @@ Puntos de estudio:
 ```mermaid
 flowchart TD
   DEM[/dem_utm.tif/] -->|ingesta.hidrologia| H[/inundacion/: pendiente, curvatura,<br/>acumulacion, twi .tif/]
-  IDEH[IDE Chile red hídrica] -->|ingesta.cauces| C[/distancia_cauces.tif/ + territorio.cauce]
+  IDEH[IDE Chile red hídrica] -->|ingesta.cauces| C[/distancia_cauces.tif + territorio.cauce/]
   NDVI[/ndvi/ Sentinel-2/] --> IDX
   H & C --> IDX[indicadores.inundacion<br/>suma ponderada por píxel]
   IDX --> ST[/susceptibilidad.tif + .json cortes/]

@@ -107,7 +107,47 @@ sobreestima. Por eso la pantalla muestra la fecha de la descarga. Para revisar
 una comuna en particular, sus áreas se pueden ver en el mapa y cada una lleva
 su enlace a OSM.
 
-## 6. Orden de ejecución
+## 6. Simular un área verde
+
+En **Ciudades → Simular un parque** se elige tamaño (0,1 a 20 ha) y tipo
+(pasto, mixto, arbolado), y se hace clic en el mapa: brotan los árboles y el
+un halo azul de enfriamiento se abre sobre el mapa de temperatura. Responde:
+si se pone un área verde aquí, ¿cuánto baja la temperatura, hasta dónde se
+nota y a quién le llega?
+
+1. **Mide lo que ya pasa en esa ciudad**, como se mide en la literatura (Cao
+   et al., 2010): cada parque de 1 ha o más que no es solo pasto, contra su
+   propio entorno urbano de 100 a 500 m sin otras áreas verdes, con la
+   temperatura de ECOSTRESS a 70 m. El promedio ponderado por celdas es la
+   isla fresca local. **En Rancagua: 0,44 °C** (22 parques; El Edén 1,2 °C,
+   Catalunya 0,7 °C). Con menos de 4 parques medibles se usa 0,5 °C y se
+   dice.
+
+   Se probó primero comparar las áreas verdes con los barrios a más de 500 m
+   de cualquiera, y no sirve: esos barrios quedan en el borde de la ciudad,
+   junto a campos regados más frescos, y la mayoría de las áreas de OSM son
+   bandejones de pasto; así medidos, los parques de Rancagua salían 0,3 °C
+   *más cálidos*. Las cifras son de décimas porque la temperatura promedia
+   escenas de día y de noche: a pleno sol la diferencia es mayor.
+2. **La aplica al parque nuevo**, escalada por el tamaño (crece con el
+   logaritmo del área; Cao et al., 2010), el tipo (pasto 0,7, mixto 1,
+   arbolado 1,3; Bowler et al., 2010) y la distancia (afuera decae como
+   `exp(−3d/L)`, con `L` el ancho del parque entre 60 y 400 m; Aram et al.,
+   2019). Varios parques no se suman: cada celda toma el más fuerte.
+3. **A quién le llega:** personas del Censo 2024 que viven donde baja al
+   menos 0,25 °C, personas que quedan con una plaza a 400 m sin tenerla hoy, y
+   el área verde por habitante de la zona censal frente al estándar de 10 m².
+
+Con solo PNG por comuna (sin teselas de calor), la temperatura de cada celda
+sale de su clase: el punto medio de cada tramo, corrido para que la media de
+la comuna sea la que midió el motor.
+
+Lo que no dice: es temperatura de la **superficie**, no del aire (la del aire
+baja bastante menos), y el resultado real depende del riego, las especies y
+el diseño. Hay temperatura por celda para Rancagua y sus seis comunas
+vecinas.
+
+## 7. Orden de ejecución
 
 ```bash
 docker exec -i terrafoco-motor python -m ingesta.censo            # descarga el GeoPackage si falta

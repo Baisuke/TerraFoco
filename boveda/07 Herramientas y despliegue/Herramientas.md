@@ -50,20 +50,24 @@
 - Evidencia **reproducible** del ciclo escritura → lectura: escribe por la API (catálogo de fuentes, con la clave del `.env`, sin imprimirla) y por el motor (`python -m calcular`: recalcula la erosión desde los factores guardados), cuenta filas antes y después, lee por la API y muestra la bitácora. Muestra que **las dos vías de escritura son distintas a propósito**. → [[Documentos del proyecto#12-demo-en-codespaces.md]]
 
 ## empaquetar_portable.py
-- **Uso:** `python herramientas/empaquetar_portable.py` (todo) · `--solo-datos` (recargar la base) · `--solo-exe` (recompilar el .exe).
+- **Uso:** `python herramientas/empaquetar_portable.py` (todo) · `--solo-datos` (recargar la base) · `--solo-lanzador` (API, visor, Python y lanzador, sin tocar la base). Se corre con el Python de python.org, porque es el que se copia.
 - **Qué arma** en `dist/TerraFoco-portable/` (o en `TERRAFOCO_DIST`, útil si el repo está en OneDrive):
-  - `TerraFoco.exe` — el lanzador compilado con **PyInstaller** (`--onefile`, ~20 MB);
+  - `TerraFoco.cmd` — el lanzador: doble clic. Corre `python\python.exe -E -s lanzador\lanzador_portable.py`;
+  - `python/` — el **Python oficial** del PC que arma la copia (firmado por la Python Software Foundation), sin tkinter ni pruebas, con fastapi, uvicorn, pydantic, psycopg (versión pura) y python-dotenv en `Lib/site-packages` (~47 MB);
+  - `lanzador/` — `lanzador_portable.py`, `base_portable.py` y `rangos.py`;
   - `pgsql/` — PostgreSQL 16 + PostGIS 3.4 para Windows (binarios oficiales);
   - `datos/` — el **volcado** de la base (`terrafoco.sql.gz`, ~47 MB) y `version.txt`. Viaja siempre;
   - `base/` — el **cluster ya cargado** (~215 MB), si este equipo pudo armarlo: el primer arranque son segundos;
   - `api/` — la API en `.py` (se puede corregir sin recompilar);
   - `prototipo/` — el visor, con la copia local y las teselas.
-- **Pasos:** descarga binarios → `revisar_datos` (que la base de desarrollo tenga el índice completo) → `volcar_desde_docker` (gzip) → si PostgreSQL corre aquí, arma el cluster en `base.nuevo` y **recién al final** reemplaza `base/` → copia la aplicación → venv de compilación → `compilar_exe`.
-- **Si Windows no deja ejecutar PostgreSQL** (Control inteligente de aplicaciones), la copia sale solo con el volcado y avisa: el `.exe` crea la base en su primer arranque. Antes, un `initdb` fallido borraba la base anterior y dejaba la copia sin datos.
-- **Requiere Docker arriba** (los datos salen de la base de desarrollo). La carpeta pesa ~860 MB; el `.zip` para compartir, menos de la mitad.
+- **Pasos:** descarga binarios → `revisar_datos` (que la base de desarrollo tenga el índice completo) → `volcar_desde_docker` (gzip) → si PostgreSQL corre aquí, arma el cluster en `base.nuevo` y **recién al final** reemplaza `base/` → copia la aplicación → `preparar_python` (copia el Python y `pip install --target` de `dependencias()`) → `instalar_lanzador`.
+- **Si Windows no deja ejecutar PostgreSQL** (Control inteligente de aplicaciones), la copia sale solo con el volcado y avisa: el lanzador crea la base en su primer arranque. Antes, un `initdb` fallido borraba la base anterior y dejaba la copia sin datos.
+- **Por qué un `.cmd` y no un `.exe`:** hasta octubre el lanzador se compilaba con PyInstaller a `TerraFoco.exe`. Un `.exe` recién compilado no tiene firma ni historial, y Windows con el **Control inteligente de aplicaciones** (Smart App Control) lo bloquea sin ofrecer "ejecutar de todas formas": en el PC de desarrollo bloqueó casi todas las compilaciones, también descomprimidas en el escritorio. Con el Python oficial no queda ningún ejecutable nuestro que firmar. Probado en ese PC con la protección activa, también con todos los archivos marcados como bajados de internet: cero bloqueos.
+- **psycopg puro:** la variante `binary` trae su propia libpq y OpenSSL sin firma; la pura usa la `libpq.dll` de `pgsql/bin` (el lanzador la pone en el `PATH`). Por lo mismo, `uvicorn` va sin `[standard]` (httptools, watchfiles y websockets son nativos y la API no los usa).
+- **Requiere Docker arriba** (los datos salen de la base de desarrollo). La carpeta pesa ~890 MB; el zip para compartir (`dist/TerraFoco.zip`), ~490 MB.
 
 ## lanzador_portable.py
-- **Qué es:** el código de `TerraFoco.exe`. Levanta **PostgreSQL** (puerto 55432 o el siguiente libre, para no chocar con uno instalado), la **API** (uvicorn, 8000 o libre) y el **visor** (8081 o libre, con rangos), y abre el navegador con `?api=` apuntado. Al cerrar, apaga PostgreSQL limpio.
+- **Qué es:** el programa que abre `TerraFoco.cmd`, con el Python de la copia, desde `lanzador/` (`raiz()` reconoce esa carpeta; desde el repositorio apunta a `dist/TerraFoco-portable`). Levanta **PostgreSQL** (puerto 55432 o el siguiente libre, para no chocar con uno instalado), la **API** (uvicorn, 8000 o libre) y el **visor** (8081 o libre, con rangos), y abre el navegador con `?api=` apuntado. Al cerrar, apaga PostgreSQL limpio.
 - **Detalles:** `puerto_libre` comprueba que nadie escuche (en Windows, enlazar `127.0.0.1:8000` funciona aunque Docker escuche en `0.0.0.0:8000`); si no hay clave, **genera una por sesión** (`secrets.token_urlsafe`) y la muestra en su ventana para pegarla en el panel de Fuentes (vale mientras la ventana esté abierta; la base solo escucha en 127.0.0.1); sin consola visible para los procesos hijos.
 - **Antes de arrancar:** `comprobar` (carpetas, no administrador, permiso de escritura y que Windows deje ejecutar PostgreSQL, con un mensaje claro si no) y `preparar_base`: si `base/` falta o es de otro volcado, la crea desde `datos/terrafoco.sql.gz` (≈20 s a 2 min, una sola vez). → [[#base_portable.py]]
 - Es el **respaldo de la demo** cuando no hay GitHub/Codespaces: corre en cualquier Windows sin instalar nada. Los mapas base siguen necesitando internet.
@@ -93,5 +97,10 @@ python herramientas/dividir_entrega.py verificar --destino ../TerraFoco
 - **Tres sesiones:** `--sesion 1|2|3|todas`; exige las anteriores y salta lo que ya está aplicado, así que se puede repetir.
 - **Control de identidad:** se niega si el `user.name`/`user.email` del clon no es el de la persona: nadie sube la parte de otro. También exige el clon limpio y al día con GitHub. **No hace push.**
 - Fuera de la entrega: la herramienta, su plan, su instructivo y `.claude/launch.json`. Instructivo para el equipo: `herramientas/MIGRACION_ENTREGA.md`.
+
+## guia_docx/
+- **Para qué:** arma `boveda/TerraFoco - Guía de estudio.docx`, la bóveda completa (el curso de [[L00 Cómo usar este curso]] y todas las notas de referencia) en un Word para estudiar sin Obsidian.
+- **Cómo:** `render_mermaid.js` convierte los diagramas en PNG con el Edge del equipo (puppeteer-core); `construir_docx.js` traduce el Markdown a Word con la biblioteca `docx` (recuadros con color, enlaces internos entre notas, preguntas numeradas con las respuestas al final de cada lección); `word_actualizar.ps1` abre el resultado con Word, rellena el índice y exporta un PDF de control. Pasos en `herramientas/guia_docx/LEEME.md`.
+- Una nota nueva en la bóveda se agrega a `REFERENCIA` en `construir_docx.js` para que entre al documento.
 
 Ver también: [[Despliegue y Codespaces]] · [[Archivos de la raíz]]

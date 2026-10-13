@@ -31,6 +31,7 @@ Todo lo versionado (≈300 archivos), carpeta por carpeta, con la nota donde se 
 | `*.html` (9 páginas) | Pantallas | [[Visor - páginas]] |
 | `js/` api-base, tema, paleta, data, datos-api, shell, graficos, mapa | Scripts base | [[Visor - scripts base]] |
 | `js/` mapa-real, detalle-comuna, inundacion(-calculo), zonas, modelo3d, predios | Mapas y módulos | [[Visor - mapas y módulos]] |
+| `js/` simulacion-lluvia, simulacion-inundacion, simulacion-calor, simulacion-verde | Simulaciones de lluvia y de áreas verdes | [[Visor - mapas y módulos#simulacion-lluvia.js]] |
 | `css/styles.css` | Hoja de estilos | [[Visor - estilos, datos y librerías#css/styles.css]] |
 | `datos/` | Comunas, copia local, PNG por comuna, variables, teselas | [[Visor - estilos, datos y librerías#datos/ (datos estáticos del visor)]] |
 | `vendor/` | MapLibre, PMTiles, three.js | [[Visor - estilos, datos y librerías#vendor/]] |

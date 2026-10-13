@@ -5,8 +5,8 @@ Lo que no es lógica en `prototipo/`: la hoja de estilos, los datos estáticos q
 ---
 
 ## css/styles.css
-- **Ubicación:** `prototipo/css/styles.css` (~1.600 líneas, una sola hoja).
-- **Criterio de diseño:** tema oscuro y sobrio; *"la interfaz calla y el dato habla"*. El cromo (paneles, bordes, texto) es neutro; el color se reserva para mapas y gráficos. **Un solo acento:** el verde institucional de INDAP, solo en lo que se puede tocar o está elegido. Sin brillos, degradados decorativos ni texturas (se probaron y hacían ver el sistema como plantilla). La jerarquía sale de tamaño, peso y espacio.
+- **Ubicación:** `prototipo/css/styles.css` (~1.850 líneas, una sola hoja).
+- **Criterio de diseño:** monocromo (octubre 2026); *"la interfaz calla y el dato habla"* y **el mapa es siempre el protagonista**. Toda la interfaz es una escala de grises del negro al blanco, con paneles de vidrio neutro sobre un fondo con un degradado suave; el color se reserva para mapas y gráficos. **Acento:** el blanco en el tema oscuro y el negro en el claro (botón principal relleno, pestaña activa en píldora, lo elegido en el mapa). Cifras y títulos en Space Grotesk, texto en Inter. Sin brillos ni tintes de marca: se probó un verde neón y se veía de mala calidad. El mapa del panel general ocupa dos tercios del ancho hasta 1680 px, y en las páginas de módulo el reparto es 2:1.
 - **Accesibilidad:** contraste medido con WCAG: el texto de los tres niveles pasa AA sobre las tres superficies.
 - **Organización:** variables de color por tema (`[data-tema]`, replican [[Visor - scripts base#paleta.js]]), layout (`.app`, `.sidebar`, `.main`, `.content`, `.grid--main`, `.stack`), componentes (`.card`, `.kpi`, `.table`, `.btn`, `.notice`, `.badge`, `.chip`), mapas (`.map`, `.map__overlay`, leyendas, `.basectl`), y bloques por módulo: detalle intracomunal (`.detalle__…`), umbral e histograma, pesos, lluvia, cifras de exposición, modelo 3D, recomendación, carga de predios, menú en pantallas chicas.
 - **Responsive:** columnas que se apilan y menú lateral plegable en pantallas angostas.

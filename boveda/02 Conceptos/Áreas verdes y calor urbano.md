@@ -39,6 +39,16 @@ Estándares del **SIEDU** (INE / Consejo Nacional de Desarrollo Urbano):
 
 En Rancagua y sus 6 vecinas: 6 de 7 comunas bajo el estándar; 84 de 125 zonas censales bajo el estándar (308 mil personas); faltan 83,9 ha.
 
+## Simular un área verde
+
+Pestaña **Simular un parque** de `urbano.html`: tamaño (0,1 a 20 ha), tipo (pasto, mixto, arbolado) y un clic en el mapa. Brotan los árboles y un halo azul de enfriamiento se abre sobre el mapa de temperatura; un círculo punteado marca hasta dónde se nota.
+
+1. **Mide la isla fresca de esa misma ciudad**, por parque (Cao et al., 2010): cada parque de 1 ha o más (sin los de solo pasto) contra su propio entorno urbano de 100 a 500 m. **Rancagua: 0,44 °C** en 22 parques (El Edén 1,2; Catalunya 0,7). Con menos de 4 parques medibles usa 0,5 °C y lo dice. Comparar con barrios lejanos no sirve: quedan junto a campos regados y daba los parques *más* cálidos.
+2. **La aplica al parque nuevo:** crece con el logaritmo del tamaño (Cao et al., 2010), pasto 0,7 · mixto 1 · arbolado 1,3 (Bowler et al., 2010), y afuera decae como exp(−3d/L), con L el ancho del parque entre 60 y 400 m (Aram et al., 2019). Varios parques no se suman.
+3. **A quién le llega:** personas (Censo 2024) donde baja ≥ 0,25 °C, personas que ganan una plaza a 400 m y el m²/hab de la zona censal frente al estándar de 10.
+
+Es temperatura de la **superficie**, no del aire, y promedia día y noche: por eso son décimas de grado (a pleno sol es más). Solo hay temperatura por celda para Rancagua y sus seis vecinas. → [[Visor - mapas y módulos#simulacion-calor.js]]
+
 ## API y tablas
 
 - `GET /urbano` (temperatura por comuna; el NDVI urbano viene `null` y se dice: "no medido" ≠ "cero").

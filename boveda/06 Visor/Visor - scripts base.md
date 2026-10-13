@@ -18,7 +18,8 @@ Orden: [[#tema.js]] → [[#api-base.js]] → [[#paleta.js]] → [[#data.js]] →
 
 ## paleta.js
 - **Qué es:** **la única fuente de verdad del color.** El CSS replica estos valores en variables; los módulos JS los leen de `PALETA`.
-- **Familia INDAP:** verde institucional `#2B9C68` (botones, enlaces, lo elegido), azul marino `#001C41`, turquesa, azules, naranja, ámbar, rojo.
+- **Interfaz monocroma** (octubre 2026): grises del negro al blanco; el acento es el blanco en oscuro y el negro en claro. El color queda para los datos.
+- **Familia INDAP:** verde institucional `#2B9C68`, azul marino `#001C41`, turquesa, azules, naranja, ámbar, rojo. Ya no tiñen la interfaz: se usan donde significan algo (áreas verdes, agua, estados).
 - **Dos temas** (`TEMAS_PALETA`) con los mismos nombres de rol (tinta, gris, rejilla, serie1…). El oscuro **no es el claro invertido**: sus rampas se generaron en OKLCH con tono fijo y se validaron contra el fondo del mapa (`#0B1626`): luminosidad monótona, saltos ≥ 0,06, clase más tenue a más de 2:1 del fondo.
 - **Rampas de datos** (`PALETA.rampas`): `erosion`, `pertinencia`, `agua` (inundación), `calor`, `ndvi`, `pendiente`… Los colores de erosión son **exactamente** los que usa `mapa_erosion.py` (el visor lee la clase desde el color del PNG).
 

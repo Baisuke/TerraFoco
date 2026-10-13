@@ -45,6 +45,17 @@ Resultado vigente → [[Validación y Spearman]].
 - **Pronóstico de lluvia** a 7 días por comuna (Open-Meteo, vía la API con caché de 30 min). → [[API - rutas#inundacion.py]]
 - **Exportar:** informe imprimible, CSV, imagen, KML y GeoJSON de las zonas marcadas. → [[Visor - mapas y módulos#zonas.js]]
 
+## Simulación de lluvia
+
+Pestaña **Simulación de lluvia** de `inundaciones.html`: se elige cuánto llueve (mm), en cuánto tiempo (1 h a 7 días), cómo cae (pareja, chubascos, concentrada), cómo estaba el suelo (seco, normal, saturado) y, en opciones, el tipo de suelo, el drenaje y la lámina. Hay escenarios armados (moderada, temporal, sistema frontal, tormenta, extremo) y el **pronóstico de esta semana** de la comuna. Una nube llueve sobre la comuna y el agua avanza y retrocede en el mapa hora a hora; las cifras siguen a la animación y se exportan a CSV.
+
+Es un **modelo de escenario**, no hidráulico:
+1. **Cuánta escurre** — Número de Curva (USDA-NRCS, 1986, TR-55) por celda según cultivo, pradera, ciudad y vegetación, corregido por humedad previa (Chow et al., 1988) y pendiente (Williams, 1995).
+2. **Cuánta se queda** — la red de drenaje la evacúa como un **embalse lineal** (Nash, 1957) con constante k de 6, 24 o 72 h. Así entra la intensidad: concentrada anega más que repartida.
+3. **Dónde se junta** — el volumen retenido cubre las celdas de **mayor a menor índice calibrado**, con una lámina media (0,5 m).
+
+No simula la crecida de los ríos que vienen de la cordillera, ni velocidades ni obras. → [[Visor - mapas y módulos#simulacion-lluvia.js]] · [[Documentos del proyecto#13-modulo-inundaciones.md]]
+
 ## Límites que se declaran
 
 - Susceptibilidad estática, no amenaza ni probabilidad.

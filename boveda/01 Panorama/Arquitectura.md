@@ -56,6 +56,6 @@ flowchart LR
 | PC de desarrollo (Windows + Docker Desktop) | Todo: bd, motor, programador, api; visor con `servir_prototipo.py` | [[Cómo correrlo]] |
 | GitHub Codespaces | Lo mismo, para la demo sin el PC de nadie | [[Despliegue y Codespaces#.devcontainer]] |
 | Servidor público (VM Ubuntu) | bd + api + Caddy (HTTPS). **El motor no**: procesa en el PC y se publica el resultado | [[Despliegue y Codespaces#despliegue/]] |
-| Copia portable (pendrive) | PostgreSQL embebido + API + visor, lanzados por `TerraFoco.exe` | [[Herramientas#empaquetar_portable.py]] |
+| Copia portable (pendrive) | PostgreSQL embebido + API + visor, lanzados por `TerraFoco.cmd` con el Python oficial que va en la copia | [[Herramientas#empaquetar_portable.py]] |
 
 Ver también: [[Flujo de datos]] · [[Mapa del repositorio]]

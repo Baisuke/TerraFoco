@@ -11,6 +11,10 @@
 | [[#zonas.js]] | `GTZonas` | visor, inundaciones, predios |
 | [[#modelo3d.js]] | `GTModelo3D` | visor |
 | [[#predios.js]] | `GTPredios` | predios |
+| [[#simulacion-lluvia.js]] | `GTSimLluvia` | inundaciones |
+| [[#simulacion-inundacion.js]] | `GTSimInundacion` | inundaciones |
+| [[#simulacion-calor.js]] | `GTSimCalor` | urbano |
+| [[#simulacion-verde.js]] | `GTSimVerde` | urbano |
 
 ---
 
@@ -64,5 +68,23 @@
 - **Todo en el navegador** (Ley 19.628): el archivo no se sube ni se guarda. → [[Privacidad y datos personales]]
 - **Funciones:** `leerCsv` (detecta separador `;`/`,`/tab y coma decimal), `utmAGrados` (UTM WGS84 huso 19 S por omisión, 18 S si se indica), `valorEn` / `rgbEn` / `tesela` / `pixel` (lee el valor de la celda en las teselas), `erosionEn`, `comunaDe`, `evaluar`, `observacion`, `pintarTabla`, `pintarMapa`, `csvResultados`, `kmlResultados`, `plantilla` (CSV de ejemplo). Públicas: `iniciar`, `montar`, `leerCsv`, `utmAGrados`.
 - Un predio es **un punto**: se evalúa la celda donde cae la coordenada, no toda su superficie (se dice en pantalla).
+
+## simulacion-lluvia.js
+- **Qué es:** las cuentas de la simulación de lluvia, sin interfaz (probadas en Node). → [[Susceptibilidad a inundación#Simulación de lluvia]]
+- **Contenido:** `CN` (tabla TR-55 por cobertura y grupo de suelo), `cnHumedad` (condiciones I/II/III), `cnPendiente` (Williams), `escorrentia` (número de curva), `original` (valor real de una variable desde su canal normalizado), `numerosDeCurva` (CN de cada celda con cultivo, pradera, ciudad, NDVI y pendiente; avisa qué faltó), `hietograma` (lluvia por hora: pareja, chubascos, concentrada o diaria del pronóstico), `ordenarCeldas` (de mayor a menor índice, por conteo: lineal aunque haya millones de celdas), `Acumulador` (suma lo expuesto en las primeras k celdas moviéndose de a poco), `simular` (hora a hora: lluvia, escorrentía, embalse lineal, celdas anegadas; corre hasta que el agua baja del 2 % del máximo), `profundidad`.
+- Se agrupa por número de curva (medio punto) para sumar la escorrentía: la lluvia es la misma en toda la comuna.
+
+## simulacion-inundacion.js
+- **Qué es:** la pestaña **Simulación de lluvia** de `inundaciones.html` (`GTSimInundacion.iniciar`).
+- **Piezas:** `montarPestanas` (Riesgo | Simulación), `montarControles` y `elegirEscenario` (escenarios y pronóstico), `preparar` (CN, orden y capas expuestas de la comuna, desde `GTInundacion.contexto()`), `simular` (precalcula todo y reproduce), `reproducir` / `pausar` / `irA` (animación interpolada entre horas), `asegurarCapa` / `pintarAgua` (un **lienzo** del tamaño de la grilla puesto sobre el mapa por sus esquinas, con los tonos de la rampa del agua por profundidad), `asegurarNube` / `pintarNube` (marcador con nube y gotas; más intensidad, más gotas y más rápidas), `pintarCifras`, `dibujarGrafico` (lluvia arriba, área anegada abajo; clic para ir a una hora), `descargarCsv`.
+- Mientras corre, la capa del índice se atenúa al 18 % para que se lea el agua.
+
+## simulacion-calor.js
+- **Qué es:** las cuentas de **Simular un área verde**, sin interfaz (probadas en Node). → [[Áreas verdes y calor urbano#Simular un área verde]]
+- **Contenido:** `grilla` (lng/lat ↔ celdas, tamaño real), `temperaturas` (°C desde la clase del PNG, corrido a la media medida de la comuna), `rasterizar` y `dentroDe` (polígonos a celdas), `distancia` (chaflán de dos pasadas en metros), `perfilPorParque` (isla fresca medida: cada parque de 1 ha o más contra su entorno de 100–500 m), `intensidad` (tamaño y tipo), `alcance` (60–400 m), `efecto` (enfriamiento por celda; varios parques toman el más fuerte), `resumir` (antes/después, a 100 y 200 m, hectáreas y personas más frescas, quién gana una plaza a 400 m, zona censal).
+
+## simulacion-verde.js
+- **Qué es:** la pestaña **Simular un parque** de `urbano.html` (`GTSimVerde.iniciar`, `activar`, `alClic`).
+- **Piezas:** `preparar` (temperatura, zonas censales, áreas verdes, población rasterizada con `GTCalculo.rasterizarManzanas`), `pintarLocal` (lo que ya pasa en la ciudad), `colocar` / `alClic` (modo de ubicación; el clic llega por `alClicEnAbierta` de mapa-real), `plantar` (árboles como marcadores que brotan escalonados, en espiral de ángulo áureo), `pintarLienzo` + `animar` (un halo azul de enfriamiento que se abre desde el parque en 2,6 s, sobre el mapa de temperatura; recolorear las clases de 3 °C no mostraba cambios de décimas), `pintarFiguras` (círculo del parque y alcance punteado), `pintarResultados`, `quitarParque` / `quitarTodo`.
 
 Ver también: [[Visor - páginas]] · [[Recorridos por el código]]

@@ -56,6 +56,12 @@ Con los pesos calibrados las medias comunales caen entre 0,34 y 0,38; cortes fij
 **¿Qué hace el visor con eso?**
 Umbral elegido por la persona, población urbana y rural, hectáreas de cultivo y pradera y servicios críticos sobre el umbral, explicación de cada celda, explorador de pesos exacto y exportación a Google Earth/QGIS. → [[Exposición]]
 
+**¿La simulación de lluvia predice inundaciones?**
+No: es un escenario para comparar lluvias. Calcula cuánta lluvia escurre (Número de Curva del USDA), cuánta alcanza a retener la comuna mientras el drenaje la evacúa (embalse lineal) y la reparte en las celdas que el índice calibrado marca como más susceptibles. No simula la crecida de los ríos que vienen de la cordillera ni velocidades. Sirve para decir "con 150 mm en dos días sobre suelo saturado, esto es lo que quedaría bajo el agua en Coinco". → [[Susceptibilidad a inundación#Simulación de lluvia]]
+
+**¿Y la simulación de un parque, de dónde saca cuánto enfría?**
+De la misma ciudad: mide cuánto más fresco está cada parque de 1 ha o más que su propio entorno de 100 a 500 m (ECOSTRESS y OSM): en Rancagua, 0,44 °C en promedio. Lo escala por tamaño, tipo y distancia con relaciones publicadas. Son décimas porque el dato promedia día y noche, y es temperatura de la superficie, no del aire. Al probarlo se descartó comparar con barrios lejanos: quedan junto a campos regados y los parques salían más cálidos. → [[Áreas verdes y calor urbano#Simular un área verde]]
+
 ## Arquitectura e ingeniería
 
 **¿Por qué separar motor y API?**

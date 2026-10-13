@@ -236,6 +236,44 @@ alta, al menos 10 puntos sobre el azar y ρ positivo. Si no cumple, el índice
 queda como no calibrado y la pantalla lo dice. Luego regenera las variables
 para el visor (`variables_inundacion`) y los PNG.
 
+### Simulación de lluvia
+
+La pestaña **Simulación de lluvia** responde, para la comuna abierta: con
+*esta* lluvia —cuánta, en cuánto tiempo, cómo cae, sobre un suelo seco o
+saturado—, ¿cuánto terreno se anega hora a hora y qué queda bajo el agua?
+Una nube llueve sobre la comuna mientras dura la lluvia y el agua avanza y
+retrocede en el mapa; las cifras (hectáreas, cultivo, pradera, personas,
+viviendas, servicios, ciudades y pueblos) siguen a la animación. Se puede
+exportar la serie hora a hora en CSV.
+
+Es un **modelo de escenario**, no hidráulico: no calcula caudales ni
+velocidades, ni la crecida de un río que viene de la cordillera. Junta tres
+piezas citables:
+
+| Pieza | Método | Qué entra |
+|---|---|---|
+| Cuánta lluvia escurre | Número de Curva (USDA-NRCS, 1986): `S = 25400/CN − 254`, `Q = (P − 0,2·S)² / (P + 0,8·S)` | Por celda: cultivo y pradera (WorldCover), zona poblada (≥ 3 viviendas por celda, Censo), vegetación por NDVI (≥ 0,45 arbolado, ≥ 0,2 matorral, < 0,2 desnudo), grupo hidrológico del suelo (A–D, por omisión B) |
+| Humedad previa | Condiciones I, II y III (Chow, Maidment y Mays, 1988): `CN_I = 4,2·CN/(10 − 0,058·CN)`, `CN_III = 23·CN/(10 + 0,13·CN)` | Seco, normal o saturado |
+| Pendiente | Corrección de Williams (1995), la de SWAT | Pendiente de la celda |
+| Cuánta se queda | Embalse lineal (Nash, 1957): cada hora sale `1 − e^(−1/k)` de lo retenido | `k` = 6, 24 o 72 h (drenaje rápido, normal, lento) |
+| Dónde se junta | Las celdas de mayor a menor índice de susceptibilidad calibrado, con una lámina media `d` (0,5 m por omisión) | El índice de la comuna |
+
+La intensidad entra por el embalse: la misma lluvia concentrada en pocas horas
+deja más agua retenida a la vez que repartida en días. Los patrones son
+*pareja*, *chubascos* (pulsos cada 6 h) y *concentrada* (la mitad de la lluvia
+en un quinto del tiempo); el escenario *Pronóstico de esta semana* usa la
+lluvia diaria de Open-Meteo para la comuna.
+
+Comprobado en `simulacion-lluvia.js`: la escorrentía reproduce los valores de
+manual (P = 100 mm, CN = 80 → Q = 50,5 mm), el balance de masa cierra en cada
+hora (retenida + evacuada = escurrida), y la lluvia concentrada, el suelo
+saturado y el drenaje lento anegan más.
+
+Lo que no dice: el número de curva depende del suelo, que se elige (no hay un
+mapa de grupos hidrológicos de la región); la lámina y el drenaje son
+supuestos declarados; y las personas son las que viven en los sectores con
+agua según el Censo, no afectados confirmados.
+
 ---
 
 ## 7. Reproducir
