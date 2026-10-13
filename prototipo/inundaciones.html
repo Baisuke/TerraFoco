@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inundaciones · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <div class="notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        <span><strong>Alcance declarado del módulo:</strong> produce un análisis de <strong>susceptibilidad estática</strong> — qué territorios presentan
+        condiciones favorables a la inundación. No es un modelo hidrodinámico de propagación de crecidas, el cual requiere insumos
+        altimétricos de mayor resolución que los disponibles públicamente.</span>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Susceptibilidad a inundación</div>
+            <label class="buscador">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input type="search" id="buscar" list="buscables" placeholder="Buscar comuna o localidad"
+                     aria-label="Buscar comuna o localidad" autocomplete="off">
+              <datalist id="buscables"></datalist>
+            </label>
+          </div>
+          <div class="map map--alto" id="mapa" style="--mapa-margen:440px">
+            <div class="map__overlay map__overlay--bl" id="leyenda"></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <!-- Qué se marca como riesgo y qué queda encima. -->
+          <div class="card" id="analisis">
+            <div class="card__head">
+              <div class="card__title">Riesgo dentro de la comuna</div>
+              <div class="card__note" id="anNota">elige una comuna en el mapa</div>
+            </div>
+            <div class="umbral" id="umbralCaja" hidden>
+              <div class="umbral__cab">
+                <label for="umbral">Umbral de riesgo</label>
+                <strong id="umbralValor" style="font-variant-numeric:tabular-nums">—</strong>
+              </div>
+              <input type="range" class="range" id="umbral">
+              <div class="umbral__marcas" id="umbralMarcas" aria-hidden="true"></div>
+              <div class="histograma" id="histograma" hidden></div>
+              <div class="tiny muted" id="umbralAyuda"></div>
+            </div>
+            <div class="small" id="anResumen">
+              <span class="muted">Al elegir una comuna se muestra qué parte de ella supera el umbral,
+              cuánta gente vive ahí y en qué ciudades y pueblos está ese riesgo.</span>
+            </div>
+            <div id="anLocalidades"></div>
+            <div id="anContexto"></div>
+          </div>
+
+          <!-- Al hacer clic dentro de la comuna abierta. -->
+          <div class="card" id="celda" hidden>
+            <div class="card__head">
+              <div class="card__title">Por qué esta celda</div>
+              <div class="card__note mono" id="celdaNota"></div>
+            </div>
+            <div id="celdaCuerpo"></div>
+          </div>
+
+          <div class="card" id="exposicion">
+            <div class="card__head">
+              <div class="card__title">Escuelas, salud y emergencias sobre el umbral</div>
+              <div class="card__note" id="exNota">elige una comuna</div>
+            </div>
+            <div id="exCuerpo"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plegado por defecto: es el análisis técnico del modelo, no lo que se
+           usa para decidir. -->
+      <details class="card plegable" id="pesos">
+        <summary class="card__head">
+          <div class="card__title">Análisis técnico · explorar los pesos del índice</div>
+          <div class="card__note">el índice y su validación contra los eventos, recalculados en vivo</div>
+        </summary>
+        <p class="explica">El índice suma variables del terreno con un peso cada una. Los pesos vigentes se eligieron
+          porque son los que mejor coinciden con dónde ocurrieron inundaciones de verdad. Aquí puede probar otros y ver
+          cuánto empeora o mejora esa coincidencia, y cómo cambiaría el mapa. Es para entender el modelo, no para
+          cambiarlo: el mapa oficial usa siempre los pesos vigentes.</p>
+        <div id="pesosCuerpo"><p class="small muted" style="margin:0">Cargando las variables…</p></div>
+      </details>
+
+      <div class="grid grid--2">
+        <div class="card card--flush">
+          <div class="card__head" style="padding:16px 16px 0">
+            <div class="card__title">Lluvia pronosticada · 7 días</div>
+            <div class="card__note" id="lluviaNota">Open-Meteo</div>
+          </div>
+          <label class="small muted" style="display:flex;gap:6px;align-items:center;padding:8px 16px">
+            <input type="checkbox" id="lluviaSoloAltas"> solo comunas Alta y Muy alta
+          </label>
+          <div id="lluviaTabla"><p class="small muted" style="padding:0 16px;margin:0">Consultando el pronóstico…</p></div>
+          <div class="tiny muted" style="padding:10px 16px 14px">Lluvia en un punto representativo de cada comuna, ordenada por las
+            próximas 72 horas. No es un pronóstico de inundación: el índice dice dónde el terreno es susceptible; la lluvia, cuándo mirar.</div>
+        </div>
+
+        <div class="stack">
+          <div class="grid grid--2">
+            <div class="card">
+              <div class="card__title" id="kAciertoTitulo">Eventos validados</div>
+              <div class="kpi__value" id="kAcierto">—</div>
+              <div class="kpi__foot" id="kAciertoPie">de 8 registros históricos</div>
+            </div>
+            <div class="card">
+              <div class="card__title">Comunas en Alta o Muy alta</div>
+              <div class="kpi__value" id="kAltas">—</div>
+              <div class="kpi__foot" id="kAltasPie">clases alta y muy alta</div>
+            </div>
+          </div>
+          <div class="card card--flush">
+            <div class="card__head" style="padding:16px 16px 0">
+              <div class="card__title">Eventos históricos</div>
+              <div class="card__note" id="eventosNota"></div>
+            </div>
+            <div class="table__wrap">
+              <table class="table">
+                <thead><tr><th>Fecha</th><th>Comuna</th><th>Clase asignada</th><th>Resultado</th></tr></thead>
+                <tbody id="eventos"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">Cómo se calcula</div>
+          <div class="card__note">detalle en docs/13-modulo-inundaciones.md</div>
+        </div>
+        <div class="pasos">
+          <div class="paso"><span class="paso__n">01</span><strong>Terreno y agua</strong>
+            <span>De NASADEM (30 m): pendiente, curvatura, acumulación de flujo (D8) e índice topográfico de humedad. De IDE Chile, la distancia a ríos y esteros; de Sentinel-2, la cobertura vegetal.</span></div>
+          <div class="paso"><span class="paso__n">02</span><strong>Normalización</strong>
+            <span>Cada variable se lleva a 0–1 entre sus percentiles 2 y 98 de la región, y se voltea si más valor es menos susceptibilidad.</span></div>
+          <div class="paso"><span class="paso__n">03</span><strong>Suma ponderada</strong>
+            <span>Índice por celda = Σ peso × variable. Vigente: acumulación 50 % y curvatura 50 %, las únicas que ordenaron las comunas como los eventos.</span></div>
+          <div class="paso"><span class="paso__n">04</span><strong>Clases relativas</strong>
+            <span>Cuartiles: cada clase es un cuarto del territorio de la región. Por comuna, la media del índice y cuartiles entre comunas.</span></div>
+          <div class="paso"><span class="paso__n">05</span><strong>Validación</strong>
+            <span id="pasoValidacion">Contra los eventos de DesInventar (1970–2014): cuántos caen en comunas Alta o Muy alta frente al azar, y la correlación de rangos.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="datos/comunas.js"></script>
+<script src="js/mapa-real.js"></script>
+<script src="datos/inundacion/indice.js"></script>
+<script src="js/zonas.js"></script>
+<script src="js/detalle-comuna.js"></script>
+<script src="js/graficos.js"></script>
+<script src="js/inundacion-calculo.js"></script>
+<script src="js/inundacion.js"></script>
+<script>
+/* El exportar de esta página es un menú: informe, CSV, imagen y enlace. */
+const BOTON_EXPORTAR_INUNDACION =
+  '<div class="menu">' +
+    '<button class="btn" id="btnExportarInundacion" aria-haspopup="true" aria-expanded="false">' +
+      svgIcono('bajar', 15) + 'Exportar</button>' +
+    '<div class="menu__lista" id="menuExportar" role="menu" hidden></div>' +
+  '</div>';
+
+pintarShell('inundaciones', 'Susceptibilidad a inundaciones',
+            'Módulo 2 · alcance delimitado a susceptibilidad estática',
+            CONTROLES_REGION + BOTON_EXPORTAR_INUNDACION,
+            "Identifica qué territorios reúnen condiciones favorables para inundarse, según la forma del terreno. No predice cuándo va a ocurrir.");
+
+/* Espera a la API antes de pintar. Si no responde, sigue con los datos de
+   ejemplo y el badge de la barra lo declara, igual que en pertinencia. */
+GT.hidratarInundacion().then(function () {
+
+/* La copia local (datos/indicadores.js) son los últimos valores reales: se
+   trata como dato real y el badge dice que es una copia. */
+const conApi = GT.origenInundacion === 'api' || GT.origenInundacion === 'copia';
+const mapaEl = document.getElementById('mapa');
+
+/* Clic en una comuna: zoom y el índice a 30 m encima. Clic dentro de la
+   comuna ya abierta: el desglose de esa celda. */
+GTMapaReal.crearConRespaldo(mapaEl, {
+  capa: 'inundacion',
+  detalle: 'inundacion',
+  alClicEnAbierta: function (lngLat) { GTInundacion.inspeccionar(lngLat); },
+}).then(function (api) {
+  GTInundacion.iniciar(api, mapaEl);
+});
+
+/* Con dato real, las cuatro clases comunales con su rango. */
+document.getElementById('leyenda').innerHTML = conApi
+  ? GTMapa.leyendaInundacion()
+  : GTMapa.leyendaRampa('agua', 'baja', 'muy alta', 'susceptibilidad');
+
+/* El badge de la barra superior: qué se está viendo. */
+(function rotular() {
+  var badge = document.querySelector('.badge--proto');
+  if (!badge) return;
+  if (conApi) {
+    var cal = GT.inundacionCalibrada;
+    const copia = GT.origenInundacion === 'copia';
+    badge.innerHTML = '<span class="dot"></span>' + (copia ? 'Copia local' : 'Datos reales') +
+                      ' · índice ' + (cal ? 'calibrado' : 'no calibrado');
+    estadoBadge(badge, copia ? 'copia' : (cal ? 'vivo' : 'aviso'));
+    badge.title = cal ? 'Validado contra eventos históricos'
+                      : 'Los eventos históricos aún no respaldan los pesos del índice';
+  } else {
+    badge.innerHTML = '<span class="dot"></span>Prototipo · datos de ejemplo';
+  }
+})();
+
+/* ---- KPI: eventos en comunas Alta o Muy alta, contra el azar ----
+   Sin API no hay eventos reales: los de data.js eran ocho inventados para el
+   prototipo ("Jun 2023 San Vicente") y se mostraban como validación. */
+const eventos = conApi ? GT.eventosInundacion : [];
+const aciertos = eventos.filter(function (e) { return e.acierto; }).length;
+document.getElementById('kAcierto').innerHTML = conApi
+  ? aciertos + ' <span class="kpi__unit">/ ' + eventos.length + '</span>' : '—';
+if (!conApi) document.getElementById('kAciertoPie').textContent = 'sin conexión con la API';
+
+if (conApi) {
+  const altas = GT.comunas.filter(function (c) {
+    return c.claseInundacion === 'Alta' || c.claseInundacion === 'Muy alta';
+  }).length;
+  const azar = Math.round(100 * altas / GT.comunas.length);
+  const real = Math.round(100 * aciertos / eventos.length);
+  document.getElementById('kAciertoTitulo').textContent = 'Eventos en comunas Alta o Muy alta';
+  document.getElementById('kAciertoPie').textContent =
+    real + '% · el azar daría ' + azar + '% con ' + altas + ' de ' + GT.comunas.length + ' comunas en Alta';
+  document.getElementById('kAltas').innerHTML =
+    altas + ' <span class="kpi__unit">/ ' + GT.comunas.length + '</span>';
+  document.getElementById('kAltasPie').textContent = 'las dos clases más altas, por cuartiles del índice';
+  document.getElementById('pasoValidacion').textContent =
+    real + ' % de los ' + eventos.length + ' eventos de DesInventar (1970–2014) cae en comunas Alta o Muy alta; ' +
+    'el azar daría ' + azar + ' %. El detalle y el Spearman, en el explorador de pesos.';
+} else {
+  document.getElementById('kAltas').textContent = '—';
+  document.getElementById('kAltasPie').textContent = 'sin conexión con la API';
+}
+
+});   // fin de hidratarInundacion
+</script>
+</body>
+</html>

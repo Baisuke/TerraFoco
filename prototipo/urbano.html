@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ciudades · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <!-- Para INDAP el foco son el suelo y la inundación rural; este módulo
+           es parte del proyecto, pero no de su uso principal. -->
+      <div class="notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        <span><strong>Módulo complementario.</strong> Analiza calor y áreas verdes en la conurbación de Rancagua, un tema
+        urbano. Para la gestión de INDAP los módulos principales son <a href="pertinencia.html">suelos (SIRSD-S)</a> e
+        <a href="inundaciones.html">inundaciones</a>.</span>
+      </div>
+
+      <div class="grid grid--4">
+        <div class="card">
+          <div class="card__title">Temperatura superficial media</div>
+          <div class="kpi__value" id="kTemp">—</div>
+          <div class="kpi__foot" id="kTempPie">verano 2026 · Landsat 9</div>
+        </div>
+        <div class="card">
+          <div class="card__title" id="kDeltaTitulo">Diferencia térmica interna</div>
+          <div class="kpi__value" id="kDelta">—</div>
+          <div class="kpi__foot" id="kDeltaPie">entre la UV más fría y la más cálida</div>
+        </div>
+        <div class="card">
+          <div class="card__title">Área verde por habitante</div>
+          <div class="kpi__value" id="kVerde">—</div>
+          <div class="kpi__foot" id="kVerdePie">estándar de referencia: 10 m²/hab</div>
+        </div>
+        <div class="card">
+          <div class="card__title" id="kDeficitTitulo">UV bajo el estándar</div>
+          <div class="kpi__value" id="kDeficit">—</div>
+          <div class="kpi__foot" id="kDeficitPie">de 12 unidades vecinales</div>
+        </div>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card">
+          <!-- Acompaña al mapa en pantalla completa: es el único filtro
+               de esta pantalla. -->
+          <div class="card__head" id="panel-filtros">
+            <div class="card__title">Rancagua y comunas vecinas</div>
+            <div class="tabs" style="margin-left:auto;border:none">
+              <button class="is-active" data-metrica="temp">Temperatura</button>
+              <button data-metrica="verde">Áreas verdes</button>
+            </div>
+          </div>
+          <div class="map" id="mapa">
+            <div class="map__overlay map__overlay--bl" id="leyenda"></div>
+          </div>
+          <div class="notice" id="avisoFuentes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <span id="avisoTexto"><strong>Las comunas son geometría real</strong>, servida desde PostGIS. El módulo está diseñado para trabajar por <strong>unidad vecinal</strong>, pero ese catastro lo publica cada municipio y aún no se consigue: mientras tanto la cartografía usa el nivel comunal y la tabla de abajo mantiene el detalle por unidad vecinal como dato de ejemplo.</span>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Déficit de área verde</div>
+              <div class="card__note" id="rankingNota">m² por habitante</div>
+            </div>
+            <div class="stack" id="ranking" style="gap:9px"></div>
+          </div>
+
+          <div class="card" id="detalle">
+            <div class="card__title">Unidad vecinal</div>
+            <p class="small muted" style="margin:0">Selecciona una unidad vecinal en la tabla de abajo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--flush">
+        <div style="padding:16px 16px 0">
+          <div class="card__head">
+            <div class="card__title" id="tablaTitulo">Detalle por unidad vecinal</div>
+            <select class="select" id="selZonas" hidden aria-label="Comuna del detalle por zona censal"></select>
+            <div class="card__note" id="tablaNota">ordenado por temperatura superficial</div>
+          </div>
+        </div>
+        <div class="table__wrap" style="max-height:460px">
+          <table class="table">
+            <thead id="tablaCabeza">
+              <tr>
+                <th>Unidad vecinal</th>
+                <th class="num">Habitantes</th>
+                <th class="num">Temp. superficial °C</th>
+                <th class="num">Área verde m²/hab</th>
+                <th class="num">Brecha al estándar</th>
+                <th>Situación</th>
+              </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="datos/comunas.js"></script>
+<script src="js/mapa-real.js"></script>
+<script src="datos/calor/indice.js"></script>
+<script src="js/detalle-comuna.js"></script>
+<script src="js/graficos.js"></script>
+<script>
+/* Se exporta la tabla de zonas censales tal como está en pantalla. */
+/* La zona censal se numera dentro de su distrito: Rancagua tenía diez
+   "Zona 1". El identificador del INE es comuna + distrito (2) + zona (3), y
+   de ahí sale un nombre que no se repite. */
+function nombreZona(z) {
+  const distrito = z.id_zona ? Math.floor(z.id_zona / 1000) % 100 : null;
+  return (distrito ? 'Distrito ' + distrito + ' · zona ' : 'Zona ') + z.cod_zona;
+}
+
+window.GT_exportar = function () {
+  GT_exportarTabla(document.getElementById('tabla').closest('table'), 'terrafoco_areas_verdes',
+    ['TerraFoco — áreas verdes por zona censal · exportado el ' + GT_hoy(),
+     'Población: Censo 2024 (INE), solo urbana. Áreas verdes públicas: © colaboradores de OpenStreetMap (ODbL).',
+     'Acceso a plaza (400 m) y parque (3 km) medido en línea recta: sobreestima frente a la red vial.']);
+};
+
+pintarShell('urbano', 'Análisis térmico y de cobertura urbana',
+            'Módulo 3 · ciudad de Rancagua',
+            /* El selector de ciudad era decorativo —Rancagua fija y dos
+               opciones deshabilitadas— y el subtítulo ya dice de qué ciudad
+               se trata. Se reemplaza por los controles reales: región y el
+               período del dato en pantalla. */
+            CONTROLES_REGION + BOTON_EXPORTAR,
+            "Muestra qué sectores de la ciudad concentran más calor y cuáles tienen menos áreas verdes por habitante.");
+
+/* Espera a la API antes de pintar: la temperatura (ECOSTRESS) y las áreas
+   verdes (Censo 2024 y OpenStreetMap) por separado, porque una puede estar
+   y la otra no. Lo que falte sigue con los datos de ejemplo y se rotula. */
+Promise.all([GT.hidratarUrbano(), GT.hidratarAreasVerdes()]).then(function () {
+
+/* La copia local (datos/indicadores.js) son los últimos valores reales: cuenta
+   como dato real, y el badge dice que es una copia. Las unidades vecinales
+   de ejemplo quedan solo para cuando no hay ni API ni copia. */
+const conApi = GT.origenUrbano === 'api' || GT.origenUrbano === 'copia';
+const conVerde = GT.origenAreasVerdes === 'api' || GT.origenAreasVerdes === 'copia';
+const esCopia = GT.origenUrbano === 'copia' || GT.origenAreasVerdes === 'copia';
+const uvs = GT.unidadesVecinales;
+const ESTANDAR = conVerde ? GT.areasVerdes.estandar.m2_hab : GT.ESTANDAR_VERDE;
+/* Plazas y bandejones sobre el mapa. En claro, verde oscuro; en oscuro, casi
+   blanco con un dejo verde: el verde brillante ya es la clase "cumple" de la
+   escala y las plazas se confundían con las zonas que cumplen. */
+const TINTA_PLAZA = PALETA.tema === 'oscuro' ? '#EAFBF1' : '#14532D';
+const TINTA_PASTO = PALETA.tema === 'oscuro' ? '#8FA89A' : '#6DBF8F';
+const pct = function (v) { return typeof v === 'number' ? GT.fmt(v * 100, 0) + ' %' : '—'; };
+const cuenta = function (n, uno, varios) { return GT.fmt(n) + ' ' + (n === 1 ? uno : varios); };
+
+/* ---- Badge de la barra: qué se está viendo ---- */
+(function rotular() {
+  var badge = document.querySelector('.badge--proto');
+  if (!badge) return;
+  if (conApi || conVerde) {
+    badge.innerHTML = '<span class="dot"></span>' + (esCopia ? 'Copia local · ' : 'Datos reales · ') +
+      [conApi ? 'ECOSTRESS ' + GT.urbanoAnio : null,
+       conVerde ? 'Censo ' + GT.areasVerdes.anio_poblacion + ' y OSM' : null]
+        .filter(Boolean).join(' · ');
+    estadoBadge(badge, esCopia ? 'copia' : 'vivo');
+    badge.title = (conApi ? GT.urbanoFuente + '. ' : 'Temperatura de ejemplo. ') +
+                  (conVerde ? 'Áreas verdes de OpenStreetMap al ' + GT.areasVerdes.fecha_osm + '.'
+                            : 'Área verde de ejemplo.');
+  } else {
+    badge.innerHTML = '<span class="dot"></span>Prototipo · datos de ejemplo';
+  }
+})();
+
+/* ---- Temperatura ----
+   Real si la API respondió, a escala comunal. */
+const reales = GT.conurbacion.filter(function (c) { return c.tempReal; });
+let tempMedia, tMax, tMin;
+if (conApi && reales.length) {
+  tempMedia = reales.reduce(function (a, c) { return a + c.temp; }, 0) / reales.length;
+  const masCalida = reales.reduce(function (a, c) { return c.temp > a.temp ? c : a; });
+  const masFria = reales.reduce(function (a, c) { return c.temp < a.temp ? c : a; });
+  tMax = masCalida.temp; tMin = masFria.temp;
+  document.getElementById('kTempPie').textContent =
+    'verano ' + GT.urbanoAnio + ' · ECOSTRESS, ' + reales[0].escenas + ' pasadas de día y de noche · ' + reales.length + ' comunas';
+  document.getElementById('kDeltaTitulo').textContent = 'Diferencia térmica entre comunas';
+  document.getElementById('kDeltaPie').textContent =
+    masCalida.nombre + ' (' + GT.fmt(tMax, 1) + ' °C) frente a ' + masFria.nombre + ' (' + GT.fmt(tMin, 1) + ' °C)';
+} else {
+  tempMedia = uvs.reduce(function (a, u) { return a + u.temp; }, 0) / uvs.length;
+  tMax = Math.max.apply(null, uvs.map(function (u) { return u.temp; }));
+  tMin = Math.min.apply(null, uvs.map(function (u) { return u.temp; }));
+}
+document.getElementById('kTemp').innerHTML = GT.fmt(tempMedia, 1) + ' <span class="kpi__unit">°C</span>';
+document.getElementById('kDelta').innerHTML = GT.fmt(tMax - tMin, 1) + ' <span class="kpi__unit">°C</span>';
+
+/* ---- Mapa ---- */
+const CONURBACION = GT.conurbacion.map(function (c) { return c.nombre; });
+let mapa = null;
+let metrica = 'temp';
+
+GTMapaReal.crearConRespaldo(document.getElementById('mapa'), {
+  capa: 'urbano-temp',
+  soloComunas: CONURBACION,
+  /* Al hacer clic en una comuna, la temperatura por celda de ECOSTRESS. A
+     escala comunal cada comuna era un solo color y la isla de calor, que
+     está DENTRO de la ciudad, no se veía. En áreas verdes, el clic abre sus
+     zonas censales. */
+  detalle: 'calor',
+  panel: '#panel-filtros',
+  alSeleccionar: function (c) {
+    if (metrica === 'verde' && conVerde) mostrarComunaVerde(c.nombre, true);
+  }
+}).then(function (api) { mapa = api; });
+
+function conMapa(accion) { if (mapa) accion(mapa); }
+
+function pintarLeyenda() {
+  const r = GT.urbanoRango;
+  const fmt = function (x) { return GT.fmt(x, 1); };
+  document.getElementById('leyenda').innerHTML = metrica === 'temp'
+    ? GTMapa.leyendaRampa('calor', r ? fmt(r[0]) : '29', r ? fmt(r[1]) : '37', '°C superficial')
+    : conVerde
+      ? GTMapa.leyendaCortes('verde') +
+        '<div class="legend" style="margin-top:8px"><div class="legend__row"><span class="legend__swatch" style="background:' + TINTA_PLAZA + '"></span>' +
+        '<span>Plaza o parque</span></div><div class="legend__row"><span class="legend__swatch" style="background:' + TINTA_PASTO + '"></span>' +
+        '<span>Pasto (bandejón)</span></div></div>'
+      : GTMapa.leyendaRampa('vegetacion', '0,5', '11,5', 'm² / habitante');
+}
+pintarLeyenda();
+
+document.querySelectorAll('.tabs button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.tabs button').forEach(function (o) { o.classList.remove('is-active'); });
+    b.classList.add('is-active');
+    metrica = b.dataset.metrica;
+    conMapa(function (m) {
+      m.cambiarCapa(metrica === 'temp' ? 'urbano-temp' : 'urbano-verde');
+      // El área verde tiene su propio detalle: las zonas censales.
+      if (m.activarDetalle) m.activarDetalle(metrica === 'temp');
+      capasVerde(metrica === 'verde');
+    });
+    if (metrica === 'verde' && conVerde) mostrarComunaVerde(comunaVerde || 'Rancagua', true);
+    pintarLeyenda();
+  });
+});
+
+/* =========================================================================
+   Áreas verdes reales: Censo 2024 (INE) y OpenStreetMap, estándar SIEDU
+   ========================================================================= */
+let comunaVerde = null;
+let zonaActiva = null;
+
+function pintarVerdeReal() {
+  const d = GT.areasVerdes;
+  const nombres = CONURBACION;
+  const comunas = d.comunas.filter(function (c) { return nombres.indexOf(c.nombre) >= 0; });
+  const personas = comunas.reduce(function (a, c) { return a + c.personas; }, 0);
+  const area = comunas.reduce(function (a, c) { return a + c.area_verde_m2; }, 0);
+  const ids = comunas.map(function (c) { return c.id_comuna; });
+  const zonas = d.zonas.filter(function (z) { return ids.indexOf(z.id_comuna) >= 0 && z.personas > 0; });
+  const bajo = zonas.filter(function (z) { return z.m2_hab < ESTANDAR; });
+  const personasBajo = bajo.reduce(function (a, z) { return a + z.personas; }, 0);
+
+  document.getElementById('kVerde').innerHTML = GT.fmt(area / personas, 1) + ' <span class="kpi__unit">m²</span>';
+  document.getElementById('kVerdePie').textContent =
+    'estándar SIEDU: ' + ESTANDAR + ' m²/hab · ' + GT.fmt(personas) + ' habitantes urbanos';
+  document.getElementById('kDeficitTitulo').textContent = 'Zonas bajo el estándar';
+  document.getElementById('kDeficit').innerHTML = bajo.length +
+    ' <span class="kpi__unit">de ' + zonas.length + '</span>';
+  document.getElementById('kDeficitPie').textContent =
+    'zonas censales urbanas · ' + GT.fmt(personasBajo) + ' personas viven en ellas';
+
+  /* Ranking: las comunas, de menos a más área verde por habitante. */
+  document.getElementById('rankingNota').textContent = 'm² por habitante urbano · estándar ' + ESTANDAR;
+  const orden = comunas.slice().sort(function (a, b) { return a.m2_hab - b.m2_hab; });
+  document.getElementById('ranking').innerHTML = GTGrafico.barras(orden.map(function (c) {
+    return { nombre: c.nombre, valor: c.m2_hab, color: colorVerde(c.m2_hab) };
+  }), { max: Math.max(ESTANDAR, Math.ceil(orden[orden.length - 1].m2_hab)), decimales: 1 }) +
+    '<div class="tiny muted" style="line-height:1.5">' + orden.filter(function (c) { return c.m2_hab < ESTANDAR; }).length +
+    ' de ' + orden.length + ' comunas bajo el estándar. Faltan ' +
+    GT.fmt(orden.reduce(function (a, c) { return a + c.deficit_m2; }, 0) / 10000, 1) +
+    ' ha de área verde para que todas lo cumplan.</div>';
+
+  document.getElementById('avisoTexto').innerHTML =
+    '<strong>Población del Censo 2024</strong> (INE), por manzana, y <strong>áreas verdes públicas de ' +
+    'OpenStreetMap</strong> al ' + fechaLarga(d.fecha_osm) + '. Con esas fuentes Rancagua da ' +
+    GT.fmt((d.comunas.find(function (c) { return c.nombre === 'Rancagua'; }) || {}).m2_hab || 0, 1) +
+    ' m²/hab, dentro del rango que publica el SIEDU con el catastro municipal (8 a 9). ' +
+    'Las unidades vecinales no tienen catastro público: el detalle usa la <strong>zona censal</strong>, ' +
+    'la unidad oficial más fina con población. El acceso a plazas se mide en línea recta y queda sobreestimado.';
+
+  /* Selector de la tabla: las comunas de la vista con zonas censales. */
+  const sel = document.getElementById('selZonas');
+  const conZonas = comunas.filter(function (c) { return d.zonas.some(function (z) { return z.id_comuna === c.id_comuna; }); })
+    .sort(function (a, b) { return b.personas - a.personas; });
+  sel.innerHTML = conZonas.map(function (c) {
+    return '<option value="' + c.nombre + '">' + c.nombre + '</option>';
+  }).join('');
+  sel.hidden = false;
+  sel.addEventListener('change', function () { mostrarComunaVerde(sel.value, metrica === 'verde'); });
+
+  document.getElementById('tablaCabeza').innerHTML = '<tr>' +
+    '<th>Zona censal</th><th class="num">Personas</th><th class="num">Área verde<br>m²</th>' +
+    '<th class="num">m² por<br>habitante</th><th class="num">Faltan para<br>el estándar m²</th>' +
+    '<th class="num">Plaza a<br>400 m</th><th class="num">Parque a<br>3 km</th><th>Situación</th></tr>';
+
+  mostrarComunaVerde(conZonas.length ? conZonas[0].nombre : null, false);
+}
+
+function colorVerde(v) {
+  const c = GTMapa.clases.verde;
+  let i = 0;
+  while (i < c.cortes.length && v >= c.cortes[i]) i++;
+  return PALETA.rampas.areaVerde[i];
+}
+
+function fechaLarga(iso) {
+  if (!iso) return 'la última descarga';
+  const p = iso.split('-');
+  return p[2] + '-' + p[1] + '-' + p[0];
+}
+
+/* La tabla, el detalle y —si el mapa está en áreas verdes— las zonas de una
+   comuna. `enMapa` evita mover la cámara cuando se cambia desde la tabla con
+   el mapa en temperatura. */
+function mostrarComunaVerde(nombre, enMapa) {
+  if (!nombre) return;
+  const d = GT.areasVerdes;
+  const c = d.comunas.find(function (x) { return x.nombre === nombre; });
+  if (!c) return;
+  comunaVerde = nombre;
+  document.getElementById('selZonas').value = nombre;
+  const zonas = d.zonas.filter(function (z) { return z.id_comuna === c.id_comuna; })
+    .sort(function (a, b) {
+      if (!a.personas !== !b.personas) return a.personas ? -1 : 1;
+      return (a.m2_hab || 0) - (b.m2_hab || 0);
+    });
+
+  document.getElementById('tablaTitulo').textContent = 'Detalle por zona censal · ' + nombre;
+  document.getElementById('tablaNota').textContent =
+    zonas.length + ' zonas urbanas, de menos a más área verde por habitante';
+  document.getElementById('tabla').innerHTML = zonas.map(function (z) {
+    const cumple = z.m2_hab >= ESTANDAR;
+    return '<tr data-zona="' + z.id_zona + '"' + (z.personas ? '' : ' class="muted"') + '>' +
+      '<td><strong>' + nombreZona(z) + '</strong></td>' +
+      '<td class="num">' + GT.fmt(z.personas) + '</td>' +
+      '<td class="num">' + GT.fmt(z.area_verde_m2) + '</td>' +
+      '<td class="num"><strong>' + (z.personas ? GT.fmt(z.m2_hab, 1) : '—') + '</strong></td>' +
+      '<td class="num">' + (z.deficit_m2 ? GT.fmt(z.deficit_m2) : '<span class="muted">—</span>') + '</td>' +
+      '<td class="num">' + pct(z.pct_plaza_400) + '</td>' +
+      '<td class="num">' + pct(z.pct_parque_3km) + '</td>' +
+      '<td>' + (!z.personas ? '<span class="tiny muted">sin habitantes</span>'
+        : cumple ? '<span class="badge badge--ok"><span class="dot"></span>Cumple</span>'
+                 : '<span class="badge badge--crit"><span class="dot"></span>Bajo el estándar</span>') + '</td>' +
+    '</tr>';
+  }).join('');
+  document.querySelectorAll('#tabla tr').forEach(function (tr) {
+    tr.addEventListener('click', function () { seleccionarZona(+tr.dataset.zona, true); });
+  });
+
+  detalleComuna(c);
+  if (enMapa) dibujarZonas(c);
+}
+
+function fila(k, v) {
+  return '<div class="row" style="justify-content:space-between;gap:12px"><span class="small muted">' + k +
+         '</span><span class="small mono" style="text-align:right">' + v + '</span></div>';
+}
+
+function detalleComuna(c) {
+  document.getElementById('detalle').innerHTML =
+    '<div class="card__title">Área urbana de la comuna</div>' +
+    '<div style="font-size:17px;font-weight:600">' + c.nombre + '</div>' +
+    '<div class="tiny muted">' + GT.fmt(c.personas) + ' habitantes urbanos · ' +
+      cuenta(c.plazas, 'plaza', 'plazas') + ' y ' + cuenta(c.parques, 'parque', 'parques') + '</div>' +
+    '<div class="sep"></div>' +
+    fila('Área verde por habitante', GT.fmt(c.m2_hab, 1) + ' m²') +
+    fila('Con plaza a menos de 400 m', pct(c.pct_plaza_400)) +
+    fila('Con parque a menos de 3 km', pct(c.pct_parque_3km)) +
+    (c.deficit_m2 > 0
+      ? '<div class="notice" style="margin-top:4px">Para llegar a ' + ESTANDAR + ' m²/hab faltan ' +
+        '<strong style="color:var(--naranja)">' + GT.fmt(c.deficit_m2 / 10000, 1) + ' ha</strong> de área verde.</div>'
+      : '<div class="badge badge--ok" style="align-self:flex-start">Cumple el estándar de ' + ESTANDAR + ' m²/hab</div>') +
+    '<div class="tiny muted">Selecciona una zona en el mapa o en la tabla.</div>';
+}
+
+function seleccionarZona(id, encuadrar) {
+  const z = GT.areasVerdes.zonas.find(function (x) { return x.id_zona === id; });
+  if (!z) return;
+  zonaActiva = id;
+  document.querySelectorAll('#tabla tr').forEach(function (tr) {
+    tr.classList.toggle('is-active', +tr.dataset.zona === id);
+  });
+  const faltan = z.deficit_m2 || 0;
+  document.getElementById('detalle').innerHTML =
+    '<div class="card__title">Zona censal · ' + comunaVerde + '</div>' +
+    '<div style="font-size:17px;font-weight:600">' + nombreZona(z) + '</div>' +
+    '<div class="tiny muted">' + GT.fmt(z.personas) + ' personas · ' + cuenta(z.plazas, 'plaza', 'plazas') + ' y ' +
+      cuenta(z.parques, 'parque', 'parques') + ' en la zona</div>' +
+    '<div class="sep"></div>' +
+    fila('Área verde por habitante', z.personas ? GT.fmt(z.m2_hab, 1) + ' m²' : '—') +
+    fila('Con plaza a menos de 400 m', pct(z.pct_plaza_400)) +
+    fila('Con parque a menos de 3 km', pct(z.pct_parque_3km)) +
+    (faltan > 0
+      ? '<div class="notice" style="margin-top:4px">Para alcanzar el estándar se requieren <strong style="color:var(--naranja)">' +
+        GT.fmt(faltan) + ' m²</strong> adicionales de área verde en esta zona.</div>'
+      : z.personas ? '<div class="badge badge--ok" style="align-self:flex-start">Cumple el estándar de referencia</div>' : '') +
+    '<a href="#" class="small" id="volverComuna">← volver a ' + comunaVerde + '</a>';
+  document.getElementById('volverComuna').addEventListener('click', function (e) {
+    e.preventDefault();
+    zonaActiva = null;
+    mostrarComunaVerde(comunaVerde, false);
+    conMapa(function (m) { if (m.instancia.getLayer('av-activa')) m.instancia.setFilter('av-activa', ['==', 'id_zona', -1]); });
+  });
+  conMapa(function (m) {
+    const map = m.instancia;
+    if (!map || !map.getLayer('av-activa')) return;
+    map.setFilter('av-activa', ['==', 'id_zona', id]);
+  });
+  if (encuadrar) {
+    const tr = document.querySelector('#tabla tr[data-zona="' + id + '"]');
+    if (tr) tr.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+/* ---- Zonas y áreas verdes sobre el mapa (MapLibre) ---- */
+const VACIO = { type: 'FeatureCollection', features: [] };
+
+function asegurarCapas(map) {
+  if (map.getSource('av-zonas')) return;
+  // Bajo las etiquetas del mapa base, si las hay, para que los nombres se lean.
+  const simbolo = (map.getStyle().layers || []).find(function (l) { return l.type === 'symbol'; });
+  const antes = simbolo ? simbolo.id : undefined;
+  const r = PALETA.rampas.areaVerde;
+  map.addSource('av-zonas', { type: 'geojson', data: VACIO });
+  map.addSource('av-areas', { type: 'geojson', data: VACIO });
+  map.addLayer({ id: 'av-zonas', type: 'fill', source: 'av-zonas', paint: {
+    'fill-color': ['case', ['==', ['typeof', ['get', 'm2_hab']], 'number'],
+                   ['step', ['get', 'm2_hab'], r[0], 2.5, r[1], 5, r[2], 7.5, r[3], 10, r[4]],
+                   PALETA.sinDato],
+    'fill-opacity': 0.62 } }, antes);
+  map.addLayer({ id: 'av-zonas-borde', type: 'line', source: 'av-zonas',
+                 paint: { 'line-color': PALETA.mapa.borde, 'line-width': 0.9 } }, antes);
+  map.addLayer({ id: 'av-areas', type: 'fill', source: 'av-areas', paint: {
+    'fill-color': ['case', ['get', 'solo_pasto'], TINTA_PASTO, TINTA_PLAZA],
+    'fill-opacity': 0.95 } }, antes);
+  map.addLayer({ id: 'av-activa', type: 'line', source: 'av-zonas', filter: ['==', 'id_zona', -1],
+                 paint: { 'line-color': PALETA.mapa.seleccion, 'line-width': 3 } }, antes);
+
+  map.on('click', 'av-zonas', function (e) {
+    seleccionarZona(e.features[0].properties.id_zona, true);
+  });
+  map.on('mouseenter', 'av-zonas', function () { map.getCanvas().style.cursor = 'pointer'; });
+  map.on('mouseleave', 'av-zonas', function () { map.getCanvas().style.cursor = ''; });
+}
+
+function capasVerde(visible) {
+  conMapa(function (m) {
+    const map = m.instancia;
+    if (!map || !map.getSource('av-zonas')) return;
+    ['av-zonas', 'av-zonas-borde', 'av-areas', 'av-activa'].forEach(function (id) {
+      map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none');
+    });
+  });
+}
+
+function dibujarZonas(c) {
+  conMapa(function (m) {
+    const map = m.instancia;
+    if (!map) return;   // mapa esquemático: sin zonas, queda la tabla
+    GT.areasVerdesGeo(c.id_comuna).then(function (geo) {
+      if (!geo || comunaVerde !== c.nombre) return;
+      asegurarCapas(map);
+      map.getSource('av-zonas').setData(geo.zonas);
+      map.getSource('av-areas').setData(geo.areas);
+      capasVerde(metrica === 'verde');
+      if (m.seleccionar) m.seleccionar(c.nombre);
+      // Encuadre a las zonas de la comuna: es la ciudad, no la comuna rural.
+      let o = 180, s = 90, e = -180, n = -90;
+      geo.zonas.features.forEach(function (f) {
+        (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates)
+          .forEach(function (pol) { pol[0].forEach(function (p) {
+            o = Math.min(o, p[0]); e = Math.max(e, p[0]); s = Math.min(s, p[1]); n = Math.max(n, p[1]);
+          }); });
+      });
+      if (o < e) map.fitBounds([[o, s], [e, n]], { padding: 36, duration: 700 });
+    });
+  });
+}
+
+/* =========================================================================
+   Sin API de áreas verdes: las unidades vecinales de ejemplo, rotuladas
+   ========================================================================= */
+function pintarVerdeEjemplo() {
+  const verdeMedia = uvs.reduce(function (a, u) { return a + u.verde * u.hab; }, 0) /
+                     uvs.reduce(function (a, u) { return a + u.hab; }, 0);
+  const bajoEstandar = uvs.filter(function (u) { return u.verde < ESTANDAR; }).length;
+  document.getElementById('kVerde').innerHTML = GT.fmt(verdeMedia, 1) + ' <span class="kpi__unit">m²</span>';
+  document.getElementById('kDeficit').innerHTML = bajoEstandar + ' <span class="kpi__unit">de 12</span>';
+  if (conApi) {
+    document.getElementById('kVerdePie').textContent = 'dato de ejemplo · sin conexión con el cálculo de áreas verdes';
+    document.getElementById('kDeficitPie').textContent = 'dato de ejemplo · unidades vecinales ilustrativas';
+  }
+
+  const peores = uvs.slice().sort(function (a, b) { return a.verde - b.verde; }).slice(0, 6);
+  document.getElementById('ranking').innerHTML = GTGrafico.barras(
+    peores.map(function (u) {
+      return { nombre: u.nombre.split('—')[1].trim(), valor: u.verde, color: 'var(--calor-4)' };
+    }),
+    { max: ESTANDAR, decimales: 1 }
+  );
+
+  document.getElementById('tabla').innerHTML = uvs.slice()
+    .sort(function (a, b) { return b.temp - a.temp; })
+    .map(function (u) {
+      const brecha = ESTANDAR - u.verde;
+      return '<tr data-id="' + u.id + '">' +
+        '<td><strong>' + u.nombre + '</strong></td>' +
+        '<td class="num">' + GT.fmt(u.hab) + '</td>' +
+        '<td class="num">' + GT.fmt(u.temp, 1) + '</td>' +
+        '<td class="num">' + GT.fmt(u.verde, 1) + '</td>' +
+        '<td class="num">' + (brecha > 0 ? '−' + GT.fmt(brecha, 1) : '+' + GT.fmt(Math.abs(brecha), 1)) + '</td>' +
+        '<td>' + (brecha > 0
+          ? '<span class="badge badge--crit"><span class="dot"></span>Bajo el estándar</span>'
+          : '<span class="badge badge--ok"><span class="dot"></span>Cumple</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+
+  document.querySelectorAll('#tabla tr').forEach(function (tr) {
+    tr.addEventListener('click', function () {
+      mostrarDetalleUV(uvs.find(function (u) { return u.id === tr.dataset.id; }));
+    });
+  });
+}
+
+function mostrarDetalleUV(u) {
+  const brecha = ESTANDAR - u.verde;
+  const faltante = Math.max(0, brecha) * u.hab;
+  document.getElementById('detalle').innerHTML =
+    '<div class="card__title">Unidad vecinal · ejemplo</div>' +
+    '<div style="font-size:17px;font-weight:600">' + u.nombre + '</div>' +
+    '<div class="tiny muted">' + GT.fmt(u.hab) + ' habitantes</div>' +
+    '<div class="sep"></div>' +
+    fila('Temperatura superficial', GT.fmt(u.temp, 1) + ' °C') +
+    fila('Área verde por habitante', GT.fmt(u.verde, 1) + ' m²') +
+    fila('Brecha al estándar', (brecha > 0 ? '−' : '+') + GT.fmt(Math.abs(brecha), 1) + ' m²') +
+    (brecha > 0
+      ? '<div class="notice" style="margin-top:4px">Para alcanzar el estándar se requieren <strong style="color:var(--naranja)">' +
+        GT.fmt(faltante) + ' m²</strong> adicionales de área verde en esta unidad vecinal.</div>'
+      : '<div class="badge badge--ok" style="align-self:flex-start">Cumple el estándar de referencia</div>');
+}
+
+/* Al final, cuando ya existen todas las variables que usa. */
+if (conVerde) pintarVerdeReal(); else pintarVerdeEjemplo();
+
+});   // fin de la hidratación
+</script>
+</body>
+</html>

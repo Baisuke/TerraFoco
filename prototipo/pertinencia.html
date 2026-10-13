@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Índice de pertinencia · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <div class="card card--dark">
+        <div class="card__title">Pregunta que responde este módulo</div>
+        <div style="font-size:19px;font-weight:600;line-height:1.4;max-width:60ch">
+          ¿La inversión del programa SIRSD-S está llegando a las comunas donde la erosión es más severa?
+        </div>
+        <div class="small" style="color:var(--texto-2)">
+          El índice cruza la severidad del problema (erosión estimada) con el incentivo del
+          SIRSD-S 2012–2025, en UF, por cada hectárea con erosión severa o superior.
+        </div>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Necesidad frente a inversión</div>
+            <div class="card__note">cada punto es una comuna</div>
+          </div>
+          <div id="dispersion"></div>
+        </div>
+
+        <div class="stack">
+          <div class="grid grid--2">
+            <div class="card">
+              <div class="card__title">Brecha crítica</div>
+              <div class="kpi__value" id="kpiCrit" style="color:var(--pert-5)">—</div>
+              <div class="kpi__foot" id="kpiCritPie">comunas</div>
+            </div>
+            <div class="card">
+              <div class="card__title">Cobertura adecuada o mayor</div>
+              <div class="kpi__value" id="kpiOk" style="color:var(--pert-2)">—</div>
+              <div class="kpi__foot" id="kpiOkPie">comunas</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__title">Distribución por categoría</div>
+            <div class="stack" id="distribucion" style="gap:9px"></div>
+          </div>
+
+          <div class="card" id="detalle">
+            <div class="card__title">Detalle</div>
+            <p class="small muted" style="margin:0">Selecciona una comuna en el gráfico o en la tabla.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- La brecha en plata y su evolución: el índice dice DÓNDE falta,
+           esto dice CUÁNTO y DESDE CUÁNDO. -->
+      <div class="grid grid--2 grid--brecha">
+        <div class="card" id="cardBrecha">
+          <div class="card__head">
+            <div class="card__title">¿Cuánto costaría cerrar la brecha?</div>
+            <div class="card__note" id="brechaNota"></div>
+          </div>
+          <div id="brechaCifra"></div>
+          <div class="stack" id="brechaBarras" style="gap:9px"></div>
+          <div class="tiny muted" id="brechaPie" style="line-height:1.5"></div>
+        </div>
+
+        <div class="card" id="cardEvolucion">
+          <div class="card__head">
+            <div class="card__title">¿Ha mejorado la focalización?</div>
+            <div class="card__note" id="evolucionNota"></div>
+          </div>
+          <div id="evolucion"><p class="small muted" style="margin:0">Cargando la serie…</p></div>
+          <div class="small" id="evolucionLectura" style="line-height:1.6;color:var(--texto-2)"></div>
+        </div>
+      </div>
+
+      <div class="card card--flush">
+        <div style="padding:16px 16px 0">
+          <div class="card__head">
+            <div class="card__title">Ranking comunal</div>
+            <div class="card__note">ordenado por índice de pertinencia, de mayor a menor brecha</div>
+          </div>
+        </div>
+        <div class="table__wrap" style="max-height:420px">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Comuna</th>
+                <th>Provincia</th>
+                <th class="num">Erosión<br>t/ha/año</th>
+                <th class="num">Superficie<br>km²</th>
+                <th class="num">Ejecutado<br>ha</th>
+                <th class="num">Incentivo<br>MM$</th>
+                <th class="num" id="colInversion">UF por ha<br>erosionada</th>
+                <th class="num" title="UF que faltan para llegar a la mediana regional de UF por ha erosionada">Faltan<br>UF</th>
+                <th class="num">Índice</th>
+                <th>Categoría</th>
+              </tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="js/graficos.js"></script>
+<script>
+/* Espera a la API antes de pintar. Si no responde, la promesa
+   se resuelve igual con los datos de ejemplo. */
+GT.hidratar().then(function () {
+
+pintarShell('pertinencia', 'Índice de pertinencia territorial',
+            'Módulo 1 · Suelos — cruce entre erosión e inversión pública',
+            CONTROLES_REGION + SELECTOR_ORIGEN + CASILLA_DOMINIO + BOTON_EXPORTAR,
+            "Compara la severidad de la erosión con la inversión recibida. Las comunas del cuadrante inferior derecho son las que tienen mucho problema y poca intervención.");
+
+/* Solo las que entran al índice; las demás van al final de la tabla, con
+   su dato del programa y el motivo en vez de una categoría. */
+const enIndice = GT.comunasIndice();
+const ordenadas = enIndice.slice().sort(function (a, b) { return b.indice - a.indice; });
+const sinIndice = GT.comunas.filter(function (c) { return !GT.enIndice(c); })
+  .sort(function (a, b) { return a.nombre.localeCompare(b.nombre, 'es'); });
+
+/* Sin la superficie erosionada no hay índice que mostrar: se dice qué falta
+   y cómo cargarlo, en vez de dejar la pantalla con 33 comunas "fuera". */
+if (GT.faltaDenominador) {
+  const aviso = document.createElement('div');
+  aviso.className = 'notice notice--alerta';
+  aviso.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="1.8" stroke-linecap="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>' +
+    '<span><strong>Falta un dato para calcular el índice.</strong> La base tiene la serie del SIRSD-S, pero no ' +
+    'la superficie con erosión severa (<code>indicadores.superficie_erosionada</code>), que es el denominador de ' +
+    'la inversión. Se carga con <code>bash herramientas/inicializar.sh</code>, que la toma de ' +
+    '<code>bd/semillas</code>.</span>';
+  const primera = document.querySelector('.content .grid--main');
+  primera.parentNode.insertBefore(aviso, primera);
+}
+
+/* ---- Indicadores ---- */
+const criticas = enIndice.filter(function (c) { return c.indice > 0.75; });
+const cubiertas = enIndice.filter(function (c) { return c.indice <= 0.40; });
+document.getElementById('kpiCrit').textContent = criticas.length;
+document.getElementById('kpiOk').textContent = cubiertas.length;
+/* "1 comunas" se leía como un error del sistema. La tarjeta de cobertura
+   suma adecuada y sobre-cobertura (índice hasta 0,40): el título lo dice,
+   porque la distribución de al lado las separa y los números no cuadraban. */
+document.getElementById('kpiCritPie').textContent = criticas.length === 1 ? 'comuna' : 'comunas';
+document.getElementById('kpiOkPie').textContent =
+  (cubiertas.length === 1 ? 'comuna' : 'comunas') + ' · adecuada más sobre-cobertura';
+
+/* ---- Distribución ---- */
+const distribucion = GT.categoriasPertinencia.map(function (cat) {
+  return {
+    nombre: cat.nombre,
+    valor: enIndice.filter(function (c) { return GT.categoriaPertinencia(c.indice).nombre === cat.nombre; }).length,
+    color: cat.hex
+  };
+});
+document.getElementById('distribucion').innerHTML =
+  GTGrafico.barras(distribucion, { max: Math.max.apply(null, distribucion.map(function (d) { return d.valor; }).concat([1])), decimales: 0 }) +
+  (sinIndice.length
+    ? '<div class="tiny muted">' + sinIndice.length + ' comunas fuera del índice: ' +
+      sinIndice.map(function (c) { return c.nombre; }).join(', ') + '.</div>'
+    : '');
+
+/* ---- Dispersión ---- */
+GTGrafico.dispersion(document.getElementById('dispersion'), { alSeleccionar: mostrarDetalle });
+
+/* ---- Tabla ---- */
+/* Sin la serie (modo ejemplo) la columna vuelve a la medida anterior. */
+if (GT.unidadInversion().indexOf('UF') !== 0) {
+  document.getElementById('colInversion').innerHTML = 'ha por<br>1.000 ha';
+}
+const inversionTxt = function (c) {
+  const v = GT.inversionDe(c);
+  if (typeof v !== 'number') return '—';
+  if (c.fueraDeDominio && !GT.incluirFueraDeDominio) return '<span class="muted">—</span>';
+  return GT.fmt(v, v < 1 ? 2 : 1);
+};
+const fila = function (c) {
+  const dentro = GT.enIndice(c);
+  const cat = dentro ? GT.categoriaPertinencia(c.indice) : null;
+  return '<tr data-id="' + c.id + '"' + (dentro ? '' : ' class="muted"') + '>' +
+    '<td><strong>' + c.nombre + '</strong></td>' +
+    '<td class="muted small">' + c.prov + '</td>' +
+    '<td class="num">' + GT.fmt(c.erosion, 1) + '</td>' +
+    '<td class="num">' + GT.fmt(c.sup) + '</td>' +
+    '<td class="num">' + GT.fmt(c.haBonif || 0) + '</td>' +
+    '<td class="num">' + GT.fmt(c.monto || 0) + '</td>' +
+    '<td class="num">' + inversionTxt(c) + '</td>' +
+    '<td class="num">' + (c.brechaUF ? GT.fmt(c.brechaUF) : '<span class="muted">—</span>') + '</td>' +
+    '<td class="num"><strong>' + (dentro ? GT.fmt(c.indice, 2) : '—') + '</strong></td>' +
+    '<td>' + (dentro
+      ? '<span class="badge" style="background:' + cat.hex + '22;color:' + cat.hex + '">' + cat.nombre +
+        (c.fueraDeDominio ? ' · fuera de dominio' : '') + '</span>'
+      : '<span class="tiny muted">' + GT.motivoSinIndice(c) + '</span>') + '</td>' +
+  '</tr>';
+};
+document.getElementById('tabla').innerHTML = ordenadas.map(fila).join('') + sinIndice.map(fila).join('');
+
+document.querySelectorAll('#tabla tr').forEach(function (tr) {
+  tr.addEventListener('click', function () {
+    mostrarDetalle(GT.comuna(tr.dataset.id));
+  });
+});
+
+/* ---- Detalle ---- */
+function mostrarDetalle(c) {
+  const dentro = GT.enIndice(c);
+  const inversion = GT.inversionDe(c);
+  const mediana = GT.medianaInversion();
+  const dec = function (v) { return v < 1 ? 2 : 1; };
+
+  document.querySelectorAll('#tabla tr').forEach(function (tr) {
+    tr.classList.toggle('is-active', tr.dataset.id === c.id);
+  });
+
+  let texto, sello;
+  if (dentro) {
+    const cat = GT.categoriaPertinencia(c.indice);
+    texto = 'Presenta una erosión estimada de <strong>' + GT.fmt(c.erosion, 1) + ' t/ha/año</strong> ' +
+      '(' + GT.claseErosion(c.erosion).nombre.toLowerCase() + ') y recibió ' +
+      '<strong>' + GT.fmt(inversion, dec(inversion)) + ' ' + GT.unidadInversion() + '</strong>, ' +
+      (inversion < mediana ? 'por debajo' : 'por sobre') + ' de la mediana regional (' +
+      GT.fmt(mediana, dec(mediana)) + ').' +
+      (typeof c.planes === 'number' && c.planes
+        ? ' ' + GT.fmt(c.planes) + ' planes ejecutados' +
+          (GT.periodoInversion ? ' entre ' + GT.periodoInversion[0] + ' y ' + GT.periodoInversion[1] : '') + '.'
+        : '');
+    sello = '<div class="badge" style="background:' + cat.hex + '22;color:' + cat.hex + ';align-self:flex-start">' +
+      cat.nombre + ' · índice ' + GT.fmt(c.indice, 2) + '</div>';
+  } else {
+    texto = 'Presenta una erosión estimada de <strong>' + GT.fmt(c.erosion, 1) + ' t/ha/año</strong>. ' +
+      'Queda fuera del índice: su superficie con erosión severa sale del cálculo propio, que en la ' +
+      'precordillera sobreestima. Con <strong>' + GT.fmt(c.planes || 0) + ' planes</strong> y ' +
+      '<strong>' + GT.fmt(c.haBonif || 0) + ' ha</strong> intervenidas, el programa sí llegó.';
+    sello = '<div class="badge badge--pend" style="align-self:flex-start">' +
+      GT.motivoSinIndice(c) + '</div>';
+  }
+
+  document.getElementById('detalle').innerHTML =
+    '<div class="card__title">Detalle</div>' +
+    '<div style="font-size:17px;font-weight:600">' + c.nombre + '</div>' +
+    '<div class="tiny muted">Provincia de ' + c.prov + '</div>' +
+    '<div class="sep"></div>' +
+    '<div class="small" style="line-height:1.6">' + texto + '</div>' +
+    sello +
+    '<div class="recomendacion"><strong>Recomendación</strong>' + GT.recomendacion(c) +
+      '<span class="tiny muted">' + GT.notaInversion + '</span></div>' +
+    '<a href="comuna.html?id=' + c.id + '" class="btn btn--primary" style="justify-content:center;text-decoration:none">Ver ficha completa</a>';
+}
+
+mostrarDetalle(ordenadas[0] || GT.comunas[0]);
+
+/* ---- Cuánto costaría cerrar la brecha ----
+   Para las comunas con brecha alta o crítica: las UF que les faltan para
+   recibir, por hectárea erosionada, lo que recibe la comuna típica de la
+   región. La cuenta es de la API (focalizacion.py); aquí solo se suma. */
+const conBrecha = enIndice.filter(function (c) { return c.indice > 0.60 && c.brechaUF > 0; })
+  .sort(function (a, b) { return b.brechaUF - a.brechaUF; });
+const bajoMediana = enIndice.filter(function (c) { return c.brechaUF > 0 && conBrecha.indexOf(c) < 0; });
+const suma = function (lista) { return lista.reduce(function (a, c) { return a + c.brechaUF; }, 0); };
+const totalBrecha = suma(conBrecha);
+
+if (!conBrecha.length) {
+  document.getElementById('brechaCifra').innerHTML = '<p class="small muted" style="margin:0">' +
+    (GT.unidadInversion().indexOf('UF') === 0
+      ? 'Ninguna comuna del índice tiene brecha alta o crítica con este origen.'
+      : 'La brecha en UF se calcula con la serie del SIRSD-S; sin API ni copia local no hay dato.') + '</p>';
+} else {
+  const med = GT.medianaInversion();
+  document.getElementById('brechaNota').textContent = 'meta: ' + GT.fmt(med, 1) + ' UF por ha, la mediana regional';
+  document.getElementById('brechaCifra').innerHTML =
+    '<div class="kpi__value" style="color:' + GT.categoriasPertinencia[4].hex + '">' + GT.fmt(totalBrecha) +
+      ' <span class="kpi__unit">UF</span></div>' +
+    '<div class="small" id="brechaPesos" style="line-height:1.5;color:var(--texto-2)">' +
+      'Lo que les falta a las <strong>' + conBrecha.length + ' comunas con brecha alta o crítica</strong> para recibir, ' +
+      'por hectárea erosionada, lo que recibe la comuna típica de la región.</div>';
+  /* Sin sufijo en cada barra: "18.972 UF" no cabe en la columna del valor
+     y se partía en dos líneas. La unidad va una vez, en el rótulo. */
+  document.getElementById('brechaBarras').innerHTML =
+    '<div class="tiny muted">UF que faltan, por comuna</div>' +
+    GTGrafico.barras(conBrecha.map(function (c) {
+      return { nombre: c.nombre, valor: c.brechaUF, color: GT.categoriaPertinencia(c.indice).hex };
+    }), { max: conBrecha[0].brechaUF, decimales: 0 });
+  document.getElementById('brechaPie').textContent = bajoMediana.length
+    ? 'Otras ' + bajoMediana.length + ' comunas también están bajo la mediana y suman ' + GT.fmt(suma(bajoMediana)) +
+      ' UF más; el índice las deja en brecha moderada o menor porque su erosión es más baja.'
+    : '';
+}
+
+/* ---- ¿Ha mejorado la focalización? ---- */
+GT.evolucionFocalizacion().then(function (e) {
+  const caja = document.getElementById('evolucion');
+  if (!e || !e.serie || !e.serie.length) {
+    caja.innerHTML = '<p class="small muted" style="margin:0">La serie anual del programa se lee de la API ' +
+      'o de la copia local; con los datos de ejemplo no hay evolución que mostrar.</p>';
+    return;
+  }
+  GTGrafico.focalizacion(caja, e);
+  const s = e.serie, p = e.periodos;
+  const pct = function (v) { return GT.fmt(v * 100, 0) + ' %'; };
+  const promedio = function (desde, hasta) {
+    const tramo = s.filter(function (x) { return x.anio >= desde && x.anio <= hasta; });
+    return tramo.reduce(function (a, x) { return a + (x.incentivo_uf_region || 0); }, 0) / (tramo.length || 1);
+  };
+  document.getElementById('evolucionNota').textContent = s[0].anio + '–' + s[s.length - 1].anio + ' · ' +
+    (e.origen === 'TerraFoco' ? 'cálculo propio' : 'erosión CIREN');
+
+  const mejoro = p.length === 2 && p[1].participacion > p[0].participacion + 0.02;
+  const empeoro = p.length === 2 && p[1].participacion < p[0].participacion - 0.01;
+  const antes = promedio(p[0].desde, p[0].hasta), despues = promedio(p[1].desde, p[1].hasta);
+  document.getElementById('evolucionLectura').innerHTML =
+    'Las <strong>' + e.comunas_mas_erosionadas.length + ' comunas más erosionadas</strong> tienen el ' +
+    '<strong>' + pct(e.referencia) + '</strong> de la superficie con erosión severa, pero recibieron el ' +
+    '<strong>' + pct(p[0].participacion) + '</strong> del incentivo en ' + p[0].desde + '–' + p[0].hasta +
+    ' y el <strong>' + pct(p[1].participacion) + '</strong> en ' + p[1].desde + '–' + p[1].hasta + '. ' +
+    (mejoro ? 'La focalización mejora, pero sigue bajo lo que les correspondería.'
+            : empeoro ? '<strong>La focalización no mejoró: empeoró levemente.</strong>'
+                      : '<strong>La focalización no ha cambiado.</strong>') +
+    ' Además, el programa se achicó: de ' + GT.fmtUF(antes, true) + ' al año en la región a ' +
+    GT.fmtUF(despues, true) + '.' +
+    '<div class="tiny muted" style="margin-top:6px">' + e.comunas_mas_erosionadas.join(', ') +
+    ' (erosión sobre ' + GT.fmt(e.corte_erosion, 1) + ' t/ha/año).</div>';
+
+  /* La brecha en pesos y contra el tamaño del programa, con la UF y los
+     totales que trae esta misma respuesta. */
+  const pesos = document.getElementById('brechaPesos');
+  if (pesos && e.uf_referencia && totalBrecha) {
+    const anual = promedio(s[0].anio, s[s.length - 1].anio);
+    pesos.innerHTML += ' Son <strong>$' + GT.fmt(totalBrecha * e.uf_referencia.valor / 1e6) + ' millones</strong> ' +
+      'a la UF promedio de ' + e.uf_referencia.anio + ', el ' + pct(totalBrecha / anual) +
+      ' de lo que el programa paga en un año promedio en toda la región.';
+  }
+});
+
+});
+</script>
+</body>
+</html>
