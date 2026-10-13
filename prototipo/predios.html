@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis predios · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <div class="notice">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <span><strong>Los predios se evalúan en este computador.</strong> El archivo no se sube a ningún servidor ni se
+        guarda: se lee aquí, se cruza con las capas a 30 m y se olvida al cerrar la pestaña. Puede usar la planilla interna
+        de la agencia sin sacar datos personales.</span>
+      </div>
+
+      <div class="grid grid--main">
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Predios sobre el mapa</div>
+            <div class="card__note">color: susceptibilidad a inundación de la celda del predio</div>
+          </div>
+          <div class="map map--alto" id="mapa" style="--mapa-margen:330px">
+            <div class="map__overlay map__overlay--bl" id="leyenda"></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card__title">Cargar predios</div>
+            <label class="carga" id="prZona">
+              <input type="file" id="prArchivo" accept=".csv,.txt,text/csv">
+              <strong>Arrastre un CSV aquí</strong> o haga clic para elegirlo
+              <span class="tiny muted">columnas: nombre y lat / lon en grados, o este / norte en UTM (huso 19 sur)</span>
+            </label>
+            <details class="small">
+              <summary class="muted" style="cursor:pointer">o pegar los datos</summary>
+              <textarea id="prTexto" rows="5" class="pegado" placeholder="nombre;lat;lon&#10;Predio El Olivo;-34,3612;-71,2950"></textarea>
+              <button type="button" class="btn btn--chico" id="prPegar">Evaluar lo pegado</button>
+            </details>
+            <div class="row" style="gap:8px;flex-wrap:wrap">
+              <button type="button" class="btn btn--chico" id="prEjemplo">Probar con predios de ejemplo</button>
+              <button type="button" class="btn btn--chico" id="prPlantilla">Descargar plantilla</button>
+            </div>
+            <div class="tiny muted">Ejemplos ficticios para descargar y cargar:
+              <a href="datos/predios_ejemplo.csv" download>en grados</a> ·
+              <a href="datos/predios_ejemplo_utm.csv" download>en UTM</a></div>
+            <div class="small muted" id="prEstado"></div>
+            <div id="prAvisos"></div>
+          </div>
+
+          <div class="card">
+            <div class="card__title">Qué se evalúa en cada predio</div>
+            <ul class="ayuda__lista" style="font-size:12.5px">
+              <li><strong>Inundación:</strong> el índice de susceptibilidad de su celda de 30 m y su clase (cuartiles de la región).</li>
+              <li><strong>Erosión:</strong> la clase de su celda (cálculo propio a 30 m) y la media de su comuna según CIREN.</li>
+              <li><strong>Pendiente</strong> de la celda, y su <strong>cobertura</strong>: % de cultivo y de pradera (ESA WorldCover).</li>
+              <li><strong>Pertinencia</strong> de su comuna: cómo llega el SIRSD-S frente a la erosión.</li>
+            </ul>
+            <div class="tiny muted">Un predio es un punto: se evalúa la celda donde cae su coordenada, no toda su superficie.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card--flush" id="prResultados" hidden>
+        <div class="card__head" style="padding:16px 16px 0">
+          <div class="card__title">Resultados</div>
+          <div class="row" style="gap:8px;margin-left:auto">
+            <button type="button" class="btn btn--chico" id="prCsv">Descargar CSV</button>
+            <button type="button" class="btn btn--chico" id="prKml">Google Earth (KML)</button>
+            <button type="button" class="btn btn--chico" id="prLimpiar">Limpiar</button>
+          </div>
+        </div>
+        <div style="padding:12px 16px 4px" id="prResumen"></div>
+        <div class="table__wrap" style="max-height:520px">
+          <table class="table">
+            <thead><tr><th>Predio</th><th>Comuna</th><th>Inundación</th><th>Erosión</th><th>Pendiente</th>
+              <th>Cultivo / pradera</th><th>Pertinencia de la comuna</th><th>Observación</th></tr></thead>
+            <tbody id="prTabla"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="datos/comunas.js"></script>
+<script src="datos/erosion/indice.js"></script>
+<script src="js/mapa-real.js"></script>
+<script src="js/zonas.js"></script>
+<script src="js/inundacion-calculo.js"></script>
+<script src="js/predios.js"></script>
+<script>
+pintarShell('predios', 'Mis predios', 'General · análisis local de predios', '',
+            'Cargue los predios de su agencia y vea en cuáles hay riesgo de inundación, erosión severa o pendiente fuerte.');
+
+/* La pertinencia y la clase de inundación de cada comuna vienen de la API (o
+   de la copia local); el mapa se colorea por inundación. */
+Promise.all([GT.hidratar(), GT.hidratarInundacion()]).then(function () {
+  const conApi = GT.origenInundacion === 'api' || GT.origenInundacion === 'copia';
+  document.getElementById('leyenda').innerHTML = conApi
+    ? GTMapa.leyendaInundacion() : GTMapa.leyendaRampa('agua', 'baja', 'muy alta', 'susceptibilidad');
+  GTMapaReal.crearConRespaldo(document.getElementById('mapa'), { capa: 'inundacion' })
+    .then(function (api) {
+      return GTPredios.iniciar().then(function () { GTPredios.montar(api); });
+    });
+});
+</script>
+</body>
+</html>

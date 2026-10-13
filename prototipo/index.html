@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel general · TerraFoco</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+
+      <!-- Centro de mando: los indicadores a la izquierda, el territorio al
+           centro y el análisis a la derecha. El mapa es lo que más espacio
+           ocupa porque es lo único que responde "dónde". Bajo 1280 px las
+           columnas se apilan con el mapa arriba (ver .grid--mando). -->
+      <div class="grid grid--mando">
+
+        <!-- Las cuatro cifras en un solo panel, separadas por líneas. Eran
+             cuatro tarjetas: cuatro cajas para cuatro números es ruido. -->
+        <div class="mando__col">
+          <div class="card resumen">
+            <div class="stat">
+              <div class="card__title">Superficie analizada</div>
+              <div class="kpi__value" id="kpiSup">—</div>
+              <div class="kpi__foot">33 comunas · resolución 30 m</div>
+            </div>
+            <div class="stat">
+              <div class="card__title">Erosión severa o superior</div>
+              <div class="kpi__value" id="kpiSev">—</div>
+              <div class="kpi__foot" id="kpiSevPct">—</div>
+            </div>
+            <div class="stat">
+              <div class="card__title" id="kpiInvTitulo">Incentivo SIRSD-S acumulado</div>
+              <div class="kpi__value" id="kpiInv">—</div>
+              <div class="kpi__foot" id="kpiHa">—</div>
+            </div>
+            <div class="stat">
+              <div class="card__title">Índice de pertinencia regional</div>
+              <div class="kpi__value" id="kpiIdx">—</div>
+              <div class="kpi__foot"><strong id="kpiCat">—</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mando__col mando__centro">
+          <div class="card mando__mapa">
+            <div class="card__head">
+              <div class="card__title">Erosión estimada por comuna</div>
+              <div class="card__note" id="notaMapa">t/ha/año</div>
+            </div>
+            <!-- Sin escala fija: el mapa real trae la suya, que cambia con el
+                 zoom. La de aquí decía "1 : 500.000" a cualquier acercamiento. -->
+            <div class="map map--alto" id="mapa">
+              <div class="map__overlay map__overlay--bl" id="leyenda"></div>
+            </div>
+            <!-- Solo se muestra si el mapa real no carga y queda el esquema.
+                 Antes estaba siempre, y sobre las geometrías reales decía que
+                 cada celda era una comuna. -->
+            <div class="notice" id="avisoMapa" hidden>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+              <span>Cartografía esquemática: no se pudo cargar el mapa real, así que cada celda representa una comuna y no su geometría.</span>
+            </div>
+          </div>
+
+          <!-- Bajo el mapa y no en una columna lateral: el gráfico mide 620
+               de ancho, y en 340 px su texto quedaba en unos 5 px. -->
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Comunas por clase de erosión</div>
+              <div class="card__note" id="notaComparacion">inventario CIREN frente al cálculo propio</div>
+            </div>
+            <div id="comparacion"></div>
+          </div>
+        </div>
+
+        <div class="mando__col">
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Mayor brecha entre necesidad e inversión</div>
+            </div>
+            <div class="stack" id="ranking" style="gap:9px"></div>
+            <div class="sep"></div>
+            <a href="pertinencia.html" class="small">Ver el análisis completo de pertinencia →</a>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Estado de las fuentes</div>
+              <div class="card__note" id="fuentesResumen"></div>
+            </div>
+            <div class="stack" id="fuentes" style="gap:8px"></div>
+            <div class="sep"></div>
+            <a href="fuentes.html" class="small">Ver el detalle del pipeline →</a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/data.js"></script>
+<script src="datos/indicadores.js"></script>
+<script src="js/datos-api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/mapa.js"></script>
+<script src="datos/comunas.js"></script>
+<script src="js/mapa-real.js"></script>
+<script src="js/graficos.js"></script>
+<script>
+/* Espera a la API antes de pintar. Si no responde, la promesa
+   se resuelve igual con los datos de ejemplo. */
+GT.hidratar().then(function () {
+
+/* El subtítulo decía "período 2015 – 2026", que no salía de ningún dato. Los
+   períodos reales los muestra la barra (erosión e inversión, según lo
+   cargado); aquí va lo que se sabe sin suponer. */
+pintarShell('index', 'Panel general', 'Región de O\'Higgins · ' + GT.comunas.length + ' comunas',
+            CONTROLES_REGION + SELECTOR_ORIGEN + CASILLA_DOMINIO + BOTON_EXPORTAR,
+            "Resumen de la Región de O'Higgins: cuánta erosión hay, cuánto se ha invertido en recuperarla y qué tan bien coinciden ambas cosas.");
+
+/* ---- Indicadores ---- */
+const supTotal   = GT.comunas.reduce(function (a, c) { return a + c.sup; }, 0);
+const severas    = GT.comunas.filter(function (c) { return c.erosion > 18; });
+const montoTotal = GT.comunas.reduce(function (a, c) { return a + (c.monto || 0); }, 0);
+const haTotal    = GT.comunas.reduce(function (a, c) { return a + (c.haBonif || 0); }, 0);
+const planesTotal = GT.comunas.reduce(function (a, c) { return a + (c.planes || 0); }, 0);
+/* El promedio del índice, solo entre las que entran: sumar el null de las
+   fuera de dominio lo contaba como cero y bajaba la brecha regional. */
+const conIndice  = GT.comunasIndice();
+const idxRegion  = conIndice.length
+  ? conIndice.reduce(function (a, c) { return a + c.indice; }, 0) / conIndice.length : null;
+
+document.getElementById('kpiSup').innerHTML = GT.fmt(supTotal) + ' <span class="kpi__unit">km²</span>';
+document.getElementById('kpiSev').innerHTML = severas.length + ' <span class="kpi__unit">de 33</span>';
+document.getElementById('kpiSevPct').textContent = (severas.length / 33 * 100).toFixed(0) + '% de las comunas de la región';
+/* Con la serie 2012-2025 el título lleva el período y el pie los planes:
+   "acumulada" sin decir desde cuándo no se podía comparar con nada. */
+if (GT.periodoInversion) {
+  document.getElementById('kpiInvTitulo').textContent =
+    'Incentivo SIRSD-S ' + GT.periodoInversion[0] + '–' + GT.periodoInversion[1];
+}
+document.getElementById('kpiInv').innerHTML = '$' + GT.fmt(montoTotal) + ' <span class="kpi__unit">MM</span>';
+document.getElementById('kpiHa').textContent = GT.fmt(haTotal) + ' ha intervenidas' +
+  (planesTotal ? ' · ' + GT.fmt(planesTotal) + ' planes' : '');
+document.getElementById('kpiIdx').textContent = idxRegion === null ? '—' : GT.fmt(idxRegion, 2);
+document.getElementById('kpiCat').textContent = idxRegion === null ? 'sin índice'
+  : GT.categoriaPertinencia(idxRegion).nombre +
+    (conIndice.length < GT.comunas.length ? ' · ' + conIndice.length + ' comunas' : '');
+
+/* ---- Mapa ----
+   La erosión del origen elegido en la barra superior, la misma de los
+   indicadores de arriba y del índice. Antes pintaba la capa del cálculo
+   propio con la etiqueta "2026" mientras los indicadores usaban CIREN. */
+GTMapaReal.crearConRespaldo(document.getElementById('mapa'), { capa: 'erosion' })
+  .then(function (api) {
+    // Solo el mapa real expone su instancia de MapLibre; el esquema no.
+    if (!(api && api.instancia)) document.getElementById('avisoMapa').hidden = false;
+  });
+document.getElementById('leyenda').innerHTML = GTMapa.leyendaClases();
+document.getElementById('notaMapa').textContent = 't/ha/año · ' +
+  (GT.origenErosion === 'TerraFoco'
+    ? 'cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')
+    : 'inventario CIREN' + (GT.anioCiren ? ' ' + GT.anioCiren : ''));
+
+/* ---- Ranking de brecha ---- */
+const mayorBrecha = conIndice.slice().sort(function (a, b) { return b.indice - a.indice; }).slice(0, 8);
+/* Sin comunas en el índice el panel quedaba vacío y parecía roto. Se dice
+   por qué, y dónde verlo. */
+if (!mayorBrecha.length) {
+  document.getElementById('ranking').innerHTML =
+    '<p class="small muted" style="margin:0;line-height:1.6">Ninguna comuna entra al índice ' +
+    'con los datos cargados. El índice necesita la superficie con erosión severa de cada ' +
+    'comuna; el estado de cada carga está en Fuentes de datos.</p>';
+} else
+document.getElementById('ranking').innerHTML = GTGrafico.barras(
+  mayorBrecha.map(function (c) {
+    return { nombre: c.nombre, valor: c.indice, color: GT.categoriaPertinencia(c.indice).hex };
+  }),
+  { max: 1, decimales: 2 }
+);
+
+/* ---- Comparación por clase (UC-06) ----
+   Inventario CIREN contra el cálculo propio, ambos medidos. Antes comparaba
+   una "CIREN 2010" inventada —la erosión por un factor ilustrativo— con la
+   erosión del origen elegido, que por omisión también era CIREN. */
+const clases = GT.clasesErosion.map(function (c) { return c.nombre; });
+const conteoCiren = [0, 0, 0, 0, 0];
+const conteoPropio = [0, 0, 0, 0, 0];
+let nCiren = 0, nPropio = 0;
+function claseIdx(v) { return GT.clasesErosion.indexOf(GT.claseErosion(v)); }
+GT.comunas.forEach(function (c, i) {
+  const e = GTMapa.erosionesDe(c, i);
+  if (typeof e.ciren === 'number') { conteoCiren[claseIdx(e.ciren)]++; nCiren++; }
+  // Fuera del dominio el modelo sobreestima: se cuenta solo si se pidió.
+  if (typeof e.propia === 'number' && (e.enDominio || GT.incluirFueraDeDominio)) {
+    conteoPropio[claseIdx(e.propia)]++; nPropio++;
+  }
+});
+GTGrafico.comparacion(document.getElementById('comparacion'), clases, conteoCiren, conteoPropio,
+                      ['CIREN' + (GT.anioCiren ? ' ' + GT.anioCiren : ''),
+                       'Cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')]);
+/* Si los dos lados no cuentan las mismas comunas, se dice: comparar 33
+   contra 27 sin advertirlo haría parecer que el cálculo propio "baja"
+   comunas de clase. */
+document.getElementById('notaComparacion').textContent = 'inventario CIREN frente al cálculo propio' +
+  (nPropio !== nCiren ? ' · ' + nCiren + ' y ' + nPropio + ' comunas (fuera del dominio del modelo se omiten)' : '');
+
+/* ---- Fuentes ----
+   El catálogo real (/fuentes), el mismo de la página de fuentes. Antes eran
+   seis filas escritas a mano en data.js —"SRTM, 48 teselas", fechas de
+   agosto, todo "Actualizada"— que se veían igual con la base caída. */
+const etiquetaEstado = {
+  ok:        '<span class="badge badge--ok"><span class="dot"></span>Actualizada</span>',
+  parcial:   '<span class="badge badge--warn"><span class="dot"></span>Parcial</span>',
+  pendiente: '<span class="badge badge--pend"><span class="dot"></span>Pendiente</span>',
+  error:     '<span class="badge badge--warn"><span class="dot"></span>Error</span>'
+};
+function escapar(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+function fechaCorta(iso) {
+  return iso.slice(8, 10) + '-' + iso.slice(5, 7) + '-' + iso.slice(0, 4);
+}
+
+fetch(GT_api('/fuentes'), { signal: AbortSignal.timeout(4000) })
+  .then(function (r) {
+    if (!r.ok) throw new Error('la API respondió ' + r.status);
+    return r.json();
+  })
+  .then(function (todas) {
+    // La que crea herramientas/demostracion.py para mostrar la escritura no es un dato.
+    const fuentes = todas.filter(function (f) { return f.tipo !== 'prueba'; });
+    const cuantas = function (e) { return fuentes.filter(function (f) { return f.estado === e; }).length; };
+    document.getElementById('fuentesResumen').textContent =
+      cuantas('ok') + ' de ' + fuentes.length + ' al día' +
+      (cuantas('parcial') ? ' · ' + cuantas('parcial') + ' parciales' : '') +
+      (cuantas('pendiente') ? ' · ' + cuantas('pendiente') + ' pendientes' : '') +
+      (cuantas('error') ? ' · ' + cuantas('error') + ' con error' : '');
+
+    // Las seis cargadas más recientemente: lo que se movió en el último tiempo.
+    const recientes = fuentes
+      .filter(function (f) { return f.ultima_ejecucion; })
+      .sort(function (a, b) { return b.ultima_ejecucion.localeCompare(a.ultima_ejecucion); })
+      .slice(0, 6);
+    document.getElementById('fuentes').innerHTML = recientes.map(function (f) {
+      return '<div class="row" style="gap:8px">' +
+               '<div style="min-width:0;flex-grow:1">' +
+                 '<div class="small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapar(f.nombre) + '</div>' +
+                 '<div class="tiny muted">' + escapar(f.organismo) + ' · cargada el ' + fechaCorta(f.ultima_ejecucion) + '</div>' +
+               '</div>' + (etiquetaEstado[f.estado] || escapar(f.estado)) +
+             '</div>';
+    }).join('');
+  })
+  .catch(function () {
+    /* Sin API no hay estado verificable que mostrar. Mejor decirlo que
+       volver a las filas de ejemplo, que parecían reales. */
+    document.getElementById('fuentesResumen').textContent = 'sin conexión con la base';
+    document.getElementById('fuentes').innerHTML =
+      '<p class="small muted" style="margin:0;line-height:1.6">El estado de cada fuente se ' +
+      'consulta en vivo al catálogo. Sin la API no hay un dato verificable que mostrar.</p>';
+  });
+
+});
+</script>
+</body>
+</html>
