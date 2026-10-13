@@ -1,0 +1,17 @@
+# Predios de ejemplo para "Mis predios". Son FICTICIOS: nombres inventados y
+# puntos elegidos sobre suelo agricola (ESA WorldCover) fuera de las ciudades,
+# para mostrar situaciones distintas: vega junto a un rio, valle sin riesgo,
+# ladera de secano y precordillera. Ninguno corresponde a un usuario de INDAP.
+nombre;lat;lon
+Parcela El Estero;-34,28759;-71,00469
+Hijuela Los Sauces;-34,73760;-71,17949
+Parcela El Molino;-34,30156;-71,29537
+Lote La Vega;-34,38142;-71,04780
+Parcela Las Acacias;-34,07924;-70,76447
+Lote El Llano;-34,69359;-71,17687
+Parcela Los Robles;-34,57526;-71,45884
+Parcela La Loma;-34,80787;-71,58097
+Lote La Quebrada;-34,04512;-71,58456
+Parcela El Retiro;-34,79665;-71,83722
+Parcela Los Quillayes;-34,31365;-71,51382
+Hijuela El Alto;-34,32402;-70,46112
