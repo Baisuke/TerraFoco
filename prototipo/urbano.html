@@ -171,6 +171,7 @@
 
 <script src="js/api-base.js"></script>
 <script src="js/paleta.js"></script>
+<script src="js/colores-mapa.js"></script>
 <script src="js/data.js"></script>
 <script src="datos/indicadores.js"></script>
 <script src="js/datos-api.js"></script>
@@ -223,11 +224,11 @@ const conVerde = GT.origenAreasVerdes === 'api' || GT.origenAreasVerdes === 'cop
 const esCopia = GT.origenUrbano === 'copia' || GT.origenAreasVerdes === 'copia';
 const uvs = GT.unidadesVecinales;
 const ESTANDAR = conVerde ? GT.areasVerdes.estandar.m2_hab : GT.ESTANDAR_VERDE;
-/* Plazas y bandejones sobre el mapa. En claro, verde oscuro; en oscuro, casi
-   blanco con un dejo verde: el verde brillante ya es la clase "cumple" de la
-   escala y las plazas se confundían con las zonas que cumplen. */
-const TINTA_PLAZA = PALETA.tema === 'oscuro' ? '#EAFBF1' : '#14532D';
-const TINTA_PASTO = PALETA.tema === 'oscuro' ? '#8FA89A' : '#6DBF8F';
+/* Plazas y bandejones sobre el mapa: los colores salen de PALETA.mapa (ver
+   allí por qué en oscuro van casi blancos), y se pueden cambiar desde
+   "Colores del mapa". */
+const TINTA_PLAZA = PALETA.mapa.plaza;
+const TINTA_PASTO = PALETA.mapa.pasto;
 const pct = function (v) { return typeof v === 'number' ? GT.fmt(v * 100, 0) + ' %' : '—'; };
 const cuenta = function (n, uno, varios) { return GT.fmt(n) + ' ' + (n === 1 ? uno : varios); };
 

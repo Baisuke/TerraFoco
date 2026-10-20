@@ -2,7 +2,7 @@
 
 **Carpeta:** `prototipo/js/`. Los scripts que cargan **todas** (o casi todas) las páginas. Sin framework ni bundler: cada archivo define globales (`GT`, `PALETA`, `GTMapa`, `GTGrafico`, funciones `GT_…`) y se cargan con `<script>` en orden. Así el visor funciona incluso abierto con doble clic (`file://`).
 
-Orden: [[#tema.js]] → [[#api-base.js]] → [[#paleta.js]] → [[#data.js]] → `datos/indicadores.js` → [[#datos-api.js]] → [[#shell.js]] → [[#mapa.js]] → [[#graficos.js]]. Los módulos de mapas vienen después: [[Visor - mapas y módulos]].
+Orden: [[#tema.js]] → [[#api-base.js]] → [[#paleta.js]] → [[#colores-mapa.js]] → [[#data.js]] → `datos/indicadores.js` → [[#datos-api.js]] → [[#shell.js]] → [[#mapa.js]] → [[#graficos.js]]. Los módulos de mapas vienen después: [[Visor - mapas y módulos]].
 
 ---
 
@@ -22,6 +22,13 @@ Orden: [[#tema.js]] → [[#api-base.js]] → [[#paleta.js]] → [[#data.js]] →
 - **Familia INDAP:** verde institucional `#2B9C68`, azul marino `#001C41`, turquesa, azules, naranja, ámbar, rojo. Ya no tiñen la interfaz: se usan donde significan algo (áreas verdes, agua, estados).
 - **Dos temas** (`TEMAS_PALETA`) con los mismos nombres de rol (tinta, gris, rejilla, serie1…). El oscuro **no es el claro invertido**: sus rampas se generaron en OKLCH con tono fijo y se validaron contra el fondo del mapa (`#0B1626`): luminosidad monótona, saltos ≥ 0,06, clase más tenue a más de 2:1 del fondo.
 - **Rampas de datos** (`PALETA.rampas`): `erosion`, `pertinencia`, `agua` (inundación), `calor`, `ndvi`, `pendiente`… Los colores de erosión son **exactamente** los que usa `mapa_erosion.py` (el visor lee la clase desde el color del PNG).
+
+## colores-mapa.js
+- **Qué hace:** deja que quien usa el visor elija **con qué colores se pinta cada capa del mapa** (erosión, pendiente, NDVI, pertinencia, inversión, inundación, calor, área verde por habitante, y las plazas y parques). Botón de la paleta en la barra superior → diálogo con una fila por capa: una **paleta preestablecida** o **cada clase a mano** (`<input type="color">`).
+- **Cómo:** va justo después de `paleta.js` y reemplaza en `PALETA.rampas` (y `PALETA.mapa.plaza`/`pasto`) los colores elegidos **antes de que nadie los lea**; también las variables CSS que replican la rampa (`--ero-*`, `--agua-*`, `--calor-*`, `--pert-*`). Mapa, leyendas, detalle a 30 m y KML salen solos con los colores nuevos. **Aplicar recarga la página**, igual que el tema.
+- **No toca `PALETA.codificacion`:** el visor sigue leyendo la clase de cada píxel del PNG con los colores del motor. Cambia cómo se pinta, no cómo se lee.
+- **Paletas:** secuenciales (naranjas, rojos, azules, verdes, turquesas, púrpuras, grises, viridis, fuego, cividis) y "de lo bueno a lo malo" (turquesa-naranja, azul-rojo, verde-púrpura, semáforo). Generadas en OKLCH con el perfil de luminosidad de las rampas originales; cada una con su versión clara y oscura. Las divergentes se dan vuelta solas donde lo alto es lo bueno (NDVI, área verde). El editor avisa si dos clases vecinas quedan casi iguales (distancia OKLab < 0,03) y que el semáforo no se lee con daltonismo.
+- **Dónde se guarda:** `localStorage` (`terrafoco_colores`). Una paleta vale para los dos temas; un color ajustado a mano, solo para el tema en que se ajustó. `?colores=…` (lo arma "Copiar enlace") deja un enlace listo; `?colores=original` vuelve a los de fábrica. Todo lo que llega se valida (capas y paletas conocidas, colores `#RRGGBB`).
 
 ## data.js
 - **Qué es:** el objeto global `GT` con **datos de ejemplo** (de la fase de prototipo no funcional) **y las reglas de negocio del visor**.

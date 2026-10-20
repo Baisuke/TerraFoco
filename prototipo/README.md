@@ -57,6 +57,7 @@ prototipo/
 │   └── styles.css          Sistema de estilos y tokens de diseño
 ├── js/
 │   ├── paleta.js           Paleta institucional — fuente única del color
+│   ├── colores-mapa.js     Colores del mapa a elección de quien lo usa
 │   ├── data.js             Datos de ejemplo
 │   ├── shell.js            Barra lateral y barra superior
 │   ├── mapa.js             Cartografía esquemática — último respaldo

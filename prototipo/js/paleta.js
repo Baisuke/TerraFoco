@@ -28,7 +28,11 @@
    botones.
 
    Este archivo es la única fuente de verdad del color: CSS lo replica en
-   variables y los módulos de JavaScript lo consumen desde aquí.
+   variables y los módulos de JavaScript lo consumen desde aquí. Quien
+   usa el visor puede cambiar los colores del mapa (botón de la paleta en la
+   barra superior): js/colores-mapa.js, que se carga justo después de este,
+   reemplaza aquí mismo las rampas elegidas antes de que nadie las lea. Lo
+   de este archivo es el "Original".
    ========================================================================== */
 
 const TEMA = (typeof document !== 'undefined' &&
@@ -113,6 +117,10 @@ const TEMAS_PALETA = {
       borde: 'rgba(255, 255, 255, 0.4)', bordeImagen: 'rgba(255, 255, 255, 0.72)',
       seleccion: '#FFFFFF', casco: 'rgba(0, 0, 0, 0.65)',
       halo: 'rgba(10, 10, 11, 0.85)', haloImagen: 'rgba(4, 4, 6, 0.92)',
+      /* Plazas y bandejones (urbano.html): casi blanco con un dejo verde. El
+         verde brillante ya es la clase "cumple" de areaVerde, y las plazas
+         en verde se confundían con las zonas que cumplen. */
+      plaza: '#EAFBF1', pasto: '#8FA89A',
       /* En oscuro la sombra es negra y la luz apenas perceptible: con luz
          blanca las laderas soleadas se leían como otra clase. */
       relieve: { sombra: 'rgba(0, 3, 8, 0.6)', luz: 'rgba(200, 215, 230, 0.08)',
@@ -183,6 +191,7 @@ const TEMAS_PALETA = {
       borde: 'rgba(255, 255, 255, 0.95)', bordeImagen: 'rgba(255, 255, 255, 0.85)',
       seleccion: '#09090B', casco: 'rgba(255, 255, 255, 0.9)',
       halo: 'rgba(255, 255, 255, 0.75)', haloImagen: '#FFFFFF',
+      plaza: '#14532D', pasto: '#6DBF8F',
       relieve: { sombra: 'rgba(9, 9, 11, 0.38)', luz: 'rgba(255, 255, 255, 0.28)',
                  acento: 'rgba(9, 9, 11, 0.1)' },
       cielo: { 'sky-color': '#DCDCE0', 'horizon-color': '#F4F4F5',
