@@ -18,7 +18,8 @@ const ICONOS = {
   buscar:  '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   pin:     '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
   sol:     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-  luna:    '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'
+  luna:    '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  paleta:  '<path d="M12 3a9 9 0 1 0 0 18c1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2a1.7 1.7 0 0 1 1.3-2.8H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3z"/><circle cx="7.5" cy="11.5" r="1.1"/><circle cx="10" cy="7.5" r="1.1"/><circle cx="14.5" cy="7.5" r="1.1"/><circle cx="17" cy="11.5" r="1.1"/>'
 };
 
 const MENU = [
@@ -99,6 +100,16 @@ function botonTema() {
          '</button>';
 }
 
+/* Colores del mapa a elección (js/colores-mapa.js). Sin ese módulo en la
+   página, no hay botón. */
+function botonColores() {
+  if (typeof GTColores === 'undefined') return '';
+  return '<button type="button" class="btn-icono" id="btnColores" ' +
+           'title="Colores del mapa" aria-label="Elegir los colores del mapa" aria-haspopup="dialog">' +
+           svgIcono('paleta', 16) +
+         '</button>';
+}
+
 /* El grupo del menú al que pertenece una página, para la ruta de la barra. */
 function grupoDe(pagina) {
   let grupo = '';
@@ -161,6 +172,7 @@ function pintarShell(paginaActiva, titulo, subtitulo, acciones, explicacion) {
       '</label>' +
       '<span class="badge badge--proto"><span class="dot"></span>Prototipo · datos de ejemplo</span>' +
       '<span class="reloj" id="reloj" title="Hora de Chile"></span>' +
+      botonColores() +
       botonTema() +
     '</header>';
 
@@ -213,6 +225,8 @@ function pintarShell(paginaActiva, titulo, subtitulo, acciones, explicacion) {
 
   const btnTema = document.getElementById('btnTema');
   if (btnTema && window.GT_cambiarTema) btnTema.addEventListener('click', window.GT_cambiarTema);
+  const btnColores = document.getElementById('btnColores');
+  if (btnColores) btnColores.addEventListener('click', function () { GTColores.abrir(paginaActiva); });
 
   /* Cada página puede definir qué exporta (window.GT_exportar): en Fuentes
      el botón descargaba los indicadores de las comunas, que no es lo que se

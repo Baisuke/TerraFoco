@@ -668,6 +668,63 @@ a:hover { color: var(--enlace-hover); text-decoration: underline; text-underline
 }
 .dialogo input:focus { outline: 2px solid var(--acento-texto); outline-offset: 1px; }
 
+/* Colores del mapa (js/colores-mapa.js): una fila por capa con su paleta y
+   un muestrario de clases que se puede tocar. La lista se desplaza dentro
+   del diálogo, así el pie con "Aplicar" queda siempre a la vista. */
+.dialogo--colores { width: min(640px, calc(100vw - 32px)); padding: 0; }
+.dialogo--colores form { gap: 0; max-height: min(86vh, 760px); }
+.colores__intro { padding: 20px 20px 12px; border-bottom: 1px solid var(--linea); }
+.colores__intro p { margin: 6px 0 0; line-height: 1.5; }
+.colores__lista { overflow-y: auto; padding: 4px 20px 16px; min-height: 0; flex: 1; }
+.colores__grupo-titulo {
+  margin: 16px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.colores__capa { padding: 10px 0; border-bottom: 1px solid var(--linea); }
+.colores__grupo .colores__capa:last-child { border-bottom: 0; }
+.colores__cabeza { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.colores__nombre { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 500; color: var(--titulo); }
+.colores__paleta {
+  width: 210px; height: 28px; padding: 0 8px; font: inherit; font-size: 12.5px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--r-sm);
+  background: var(--card-alto); color: var(--texto); cursor: pointer;
+}
+.colores__paleta option, .colores__paleta optgroup { background: var(--card-alto); color: var(--texto); }
+.colores__original {
+  height: 28px; padding: 0 10px; font: inherit; font-size: 12px; color: var(--texto-2);
+  border: 1px solid var(--linea-fuerte); border-radius: 999px; background: none; cursor: pointer;
+}
+.colores__original:hover:not(:disabled) { background: var(--hover-control); color: var(--titulo); }
+.colores__original:disabled { opacity: .4; cursor: default; }
+.colores__clases { display: grid; grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr)); gap: 6px; }
+.colores__clase { display: flex; flex-direction: column; gap: 4px; min-width: 0; cursor: pointer; }
+.colores__clase span {
+  font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Más específico que `.dialogo input`, que es para los campos de texto. */
+.dialogo .colores__clase input[type="color"] {
+  width: 100%; height: 30px; padding: 0; border: 1px solid var(--linea-fuerte);
+  border-radius: 6px; background: none; cursor: pointer; -webkit-appearance: none; appearance: none;
+}
+.colores__clase input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.colores__clase input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 5px; }
+.colores__clase input[type="color"]::-moz-color-swatch { border: 0; border-radius: 5px; }
+.colores__aviso { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: var(--aviso); }
+.colores__pie {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 12px 20px; border-top: 1px solid var(--linea);
+}
+.colores__espacio { flex: 1; }
+@media (max-width: 480px) {
+  .colores__intro, .colores__pie { padding-left: 16px; padding-right: 16px; }
+  .colores__lista { padding-left: 16px; padding-right: 16px; }
+  .colores__cabeza { flex-wrap: wrap; }
+  .colores__nombre { flex-basis: 100%; }
+  .colores__paleta { flex: 1; width: auto; }
+  .colores__pie [data-cancelar] { margin-left: auto; }
+  .colores__clase span { font-size: 10px; }
+}
+
 .select {
   height: 34px;
   padding: 0 32px 0 11px;
