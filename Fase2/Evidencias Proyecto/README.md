@@ -6,9 +6,9 @@ para identificar comunas donde la necesidad es alta y la intervención baja.
 
 Región piloto: **Libertador General Bernardo O'Higgins**, 33 comunas.
 
-> Este es el repositorio de **desarrollo**. La entrega académica vive en
-> `TERRAFOCO-APT122`, con la estructura de carpetas que exige la Escuela.
-> Se sincroniza con `python herramientas/sincronizar.py` — nunca al revés.
+> Este es el README técnico del código. La presentación general del proyecto
+> (descripción, integrantes y roles, metodología y arquitectura) está en el
+> [README de la raíz del repositorio](../../README.md).
 
 ---
 
