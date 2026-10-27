@@ -26,6 +26,8 @@
 - **3D estilo Google Earth:** `boton3D` y `orbitaConRueda`: **arrastrar con la rueda apretada** gira y cambia la inclinación (hasta 85°); `pistaOrbita` lo explica la primera vez. Pantalla completa (`pantallaCompleta`, Esc para salir).
 - **Clic en comuna:** abre el detalle (`abrirComuna` → [[#detalle-comuna.js]]); un segundo clic dentro de la comuna abierta consulta la celda (`alClicEnAbierta`).
 
+- **`interactivo: false`** (opción de `crear`): el clic no abre comunas ni vuelve a la región, y no hay ventana con el valor. Lo usa `viajes.html`, donde el clic marca la salida y la llegada.
+
 ## detalle-comuna.js
 - **Qué hace:** el **detalle intracomunal a 30 m** (erosión, inundación, pendiente, NDVI, calor) sobre el mapa. Es la escala a la que decide el programa: el SIRSD-S bonifica predios, no comunas.
 - **Dos modos:**

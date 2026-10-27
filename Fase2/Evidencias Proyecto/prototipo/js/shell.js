@@ -19,6 +19,7 @@ const ICONOS = {
   pin:     '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
   sol:     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   luna:    '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  auto:    '<path d="M5.5 17H3v-4l2.2-5h13.6L21 13v4h-2.5"/><path d="M3 13h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5"/>',
   paleta:  '<path d="M12 3a9 9 0 1 0 0 18c1 0 1.7-.8 1.7-1.7 0-.5-.2-.9-.5-1.2a1.7 1.7 0 0 1 1.3-2.8H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3z"/><circle cx="7.5" cy="11.5" r="1.1"/><circle cx="10" cy="7.5" r="1.1"/><circle cx="14.5" cy="7.5" r="1.1"/><circle cx="17" cy="11.5" r="1.1"/>'
 };
 
@@ -27,6 +28,7 @@ const MENU = [
   { id: 'index',        href: 'index.html',        nombre: 'Panel general',       icono: 'panel' },
   { id: 'visor',        href: 'visor.html',        nombre: 'Visor cartográfico',  icono: 'visor' },
   { id: 'predios',      href: 'predios.html',      nombre: 'Mis predios',         icono: 'pin' },
+  { id: 'viajes',       href: 'viajes.html',       nombre: 'Viajes a terreno',    icono: 'auto' },
   { grupo: 'Módulo 1 — Suelos' },
   { id: 'pertinencia',  href: 'pertinencia.html',  nombre: 'Índice de pertinencia', icono: 'diana' },
   { id: 'comuna',       href: 'comuna.html',       nombre: 'Ficha de comuna',     icono: 'capas' },
