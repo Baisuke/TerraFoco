@@ -634,7 +634,12 @@ GTMapaReal.crear = function (contenedor, opciones) {
                              /* Selector del panel de filtros que acompaña al
                                 mapa en pantalla completa. Sin él, la pantalla
                                 completa muestra solo el mapa. */
-                             panel: null, alCambiarPantalla: null }, opciones);
+                             panel: null, alCambiarPantalla: null,
+                             /* false: el clic no abre comunas ni vuelve a la
+                                región, y no hay ventana con el valor. Para
+                                pantallas donde el clic marca otra cosa (Viajes
+                                a terreno marca la salida y la llegada). */
+                             interactivo: true }, opciones);
   let mapa = null, geo = null, seleccionada = null, opacidadBase = 0.82;
   /* La opacidad con que entra la base actual. El detalle a 30 m se atenúa en
      proporción a ella, no en absoluto: cambiar a satelital baja el coropleto
@@ -876,6 +881,7 @@ GTMapaReal.crear = function (contenedor, opciones) {
           }
 
           mapa.on('click', 'comunas-relleno', function (e) {
+            if (!cfg.interactivo) return;
             const p = e.features[0].properties;
             /* Un clic dentro de la comuna ya abierta no la vuelve a abrir
                —el encuadre saltaba—: si la página quiere, es para mirar esa
@@ -905,13 +911,15 @@ GTMapaReal.crear = function (contenedor, opciones) {
           mapa.on('click', function (e) {
             const encima = mapa.queryRenderedFeatures(e.point,
                                                       { layers: ['comunas-relleno'] });
-            if (!encima.length) volverARegion();
+            if (!encima.length && cfg.interactivo) volverARegion();
           });
 
           mapa.on('mouseenter', 'comunas-relleno', function () {
+            if (!cfg.interactivo) return;
             mapa.getCanvas().style.cursor = 'pointer';
           });
           mapa.on('mouseleave', 'comunas-relleno', function () {
+            if (!cfg.interactivo) return;
             mapa.getCanvas().style.cursor = '';
           });
 
@@ -949,8 +957,10 @@ GTMapaReal.crear = function (contenedor, opciones) {
                 '</span></div>' : '')
             ).addTo(mapa);
           }
-          mapa.on('mousemove', 'comunas-relleno', pintarEmergente);
-          mapa.on('mouseleave', 'comunas-relleno', function () { emergente.remove(); });
+          if (cfg.interactivo) {
+            mapa.on('mousemove', 'comunas-relleno', pintarEmergente);
+            mapa.on('mouseleave', 'comunas-relleno', function () { emergente.remove(); });
+          }
 
           listo({
             cambiarCapa: function (capa) {

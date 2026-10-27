@@ -376,7 +376,10 @@ const GTPredios = (function () {
           '<span class="muted">' + esc(r.comuna || 'fuera de la región') + '</span>' +
           '<div class="emergente__celda"><span>Inundación: ' + (r.claseInu !== null ? CLASES_INU[r.claseInu] : '—') +
           ' · erosión: ' + (r.erosion30 !== null ? CLASES_ERO[r.erosion30] : '—') +
-          ' · pendiente: ' + (r.pendiente !== null ? GT.fmt(r.pendiente, 0) + ' %' : '—') + '</span></div>').addTo(m);
+          ' · pendiente: ' + (r.pendiente !== null ? GT.fmt(r.pendiente, 0) + ' %' : '—') + '</span></div>' +
+          // Cuánto cuesta ir a verlo: abre Viajes a terreno con el predio de llegada.
+          '<div class="tiny" style="margin-top:6px"><a href="viajes.html?hasta=' + r.lat.toFixed(5) + ',' +
+          r.lon.toFixed(5) + '">Calcular el viaje hasta aquí</a></div>').addTo(m);
       });
       m.on('mouseenter', 'predios', function () { m.getCanvas().style.cursor = 'pointer'; });
       m.on('mouseleave', 'predios', function () { m.getCanvas().style.cursor = ''; });
