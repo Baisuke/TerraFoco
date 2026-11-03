@@ -88,6 +88,9 @@ services:
       - "8000:8000"
     volumes:
       - ./api:/app
+      # Solo lectura, para las pruebas de integracion (tests/integracion):
+      # crean una base temporal y le aplican el esquema y las migraciones.
+      - ./bd:/bd:ro
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
   programador:

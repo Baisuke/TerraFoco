@@ -61,7 +61,9 @@ motor/          Procesamiento: ingesta, indicadores, orquestación
   indicadores/  RUSLE, terreno, inundación, áreas verdes y el almacén de factores
   orquestacion/ El programador de tareas
   tests/        ~270 pruebas, casi todas sin base de datos ni red
-api/            FastAPI: expone los indicadores al visor (~96 pruebas)
+                (+ tests/integracion: 9 contra PostgreSQL)
+api/            FastAPI: expone los indicadores al visor (~96 pruebas
+                + 12 de integración en tests/integracion)
 prototipo/      Front-end, funciona sin servidor
 bd/             esquema.sql, migraciones numeradas y semillas
 herramientas/   Inicializar, servir el visor, copia local, portable, entrega
@@ -77,7 +79,7 @@ por `00 Inicio`.
 
 ## Credenciales
 
-Copiar `.env.ejemplo` como `.env` y completar. Después de editarlo hay que
+Copiar `.env.example` como `.env` y completar. Después de editarlo hay que
 **recrear el contenedor**: Docker inyecta las variables al crearlo, no las
 relee.
 
@@ -216,6 +218,19 @@ docker cp terrafoco-programador:/datos/teselas/. prototipo/datos/teselas/
 docker exec -i terrafoco-programador python -m pytest tests -q
 docker compose exec -T api python -m pytest tests -q
 ```
+
+Las de integración (`motor/tests/integracion`, `api/tests/integracion`) crean
+una base aparte (`terrafoco_integracion`), le aplican `bd/esquema.sql` y las
+migraciones, siembran datos conocidos y la borran al terminar: nunca tocan la
+base de desarrollo. Sin PostgreSQL se omiten con el motivo. Para correr solo
+esas:
+
+```bash
+docker compose exec -T api python -m pytest tests -m integracion -v
+docker exec -i terrafoco-programador python -m pytest tests/integracion -v
+```
+
+El plan completo está en [docs/21-plan-de-pruebas.md](docs/21-plan-de-pruebas.md).
 
 ---
 

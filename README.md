@@ -39,7 +39,7 @@ modelo no es confiable se marcan en vez de ocultarse.
 | Motor de procesamiento | Python 3 · GDAL, rasterio, geopandas, shapely, numpy, pandas, pysheds, scipy |
 | API | FastAPI + Uvicorn, documentación OpenAPI automática |
 | Visor web | HTML, CSS y JavaScript · MapLibre GL JS · teselas PMTiles |
-| Pruebas | pytest (366 pruebas automatizadas) |
+| Pruebas | pytest: 387 pruebas automatizadas (unitarias, de contrato, de seguridad y 21 de integración con PostgreSQL) |
 | Contenedores | Docker y Docker Compose |
 | Servidor público | Google Cloud (Compute Engine, Santiago) · Caddy con HTTPS de Let's Encrypt |
 | Fuentes de datos | CIREN, IDE MINAGRI, INDAP (SIRSD-S), NASA Earthdata (SRTM, ECOSTRESS), Copernicus / Sentinel Hub (Sentinel-2), CR2MET, SoilGrids, ESA WorldCover, INE (Censo), OpenStreetMap, DesInventar |
@@ -54,7 +54,7 @@ Requisito: **Docker Desktop** instalado y abierto.
 ```bash
 git clone https://github.com/Baisuke/TerraFoco.git
 cd "TerraFoco/Fase2/Evidencias Proyecto"
-cp .env.ejemplo .env                 # completar las credenciales de las fuentes
+cp .env.example .env                 # completar las credenciales de las fuentes
 docker compose up -d                 # base de datos, API, motor y programador
 bash herramientas/inicializar.sh     # aplica las migraciones y carga las comunas
 ```
@@ -71,7 +71,13 @@ Ejecutar las pruebas:
 ```bash
 docker exec -i terrafoco-programador python -m pytest tests -q
 docker compose exec -T api python -m pytest tests -q
+# solo las de integración (crean y borran su propia base de pruebas)
+docker compose exec -T api python -m pytest tests -m integracion -v
+docker exec -i terrafoco-programador python -m pytest tests/integracion -v
 ```
+
+Qué se prueba, en qué niveles y con qué criterios está en el
+[Plan de pruebas](Fase2/Evidencias%20Grupales/13%20-%20Plan%20de%20pruebas.docx).
 
 El detalle de la instalación, la carga de datos y el despliegue está en el
 [Manual técnico](Fase2/Evidencias%20Grupales/09%20-%20Manual%20tecnico.docx)
@@ -104,7 +110,9 @@ El proyecto combina **CRISP-DM** y **Scrum**:
 
 Artefactos en `Fase2/Evidencias Grupales`: metodología (01), Product Vision (02),
 Product Backlog (03), Definition of Done (04), Sprint Backlog (05),
-Retrospectivas (06), Sprint Reviews (07) y Plan y resultados de pruebas (08).
+Retrospectivas (06), Sprint Reviews (07), Plan y resultados de pruebas (08),
+Manual técnico (09), Modelo de datos (10), Diagrama de clases (11),
+Especificación de requerimientos (12) y Plan de pruebas (13).
 
 ---
 
@@ -135,8 +143,11 @@ Retrospectivas (06), Sprint Reviews (07) y Plan y resultados de pruebas (08).
 
 La arquitectura completa está documentada como vista **4+1** (lógica,
 desarrollo, procesos, física y escenarios) en
-`Fase2/Evidencias Grupales/Diagramas 4+1`, junto con el modelo de datos, los
-diagramas de componentes y de estados y los procesos BPMN.
+`Fase2/Evidencias Grupales/Diagramas 4+1`, junto con los diagramas de
+componentes y de estados y los procesos BPMN. El modelo entidad-relación con su
+diccionario de datos y el diagrama de clases (dominio y diseño del código)
+están en los documentos 10 y 11, con sus archivos editables de draw.io en
+`Modelo de datos/` y `Diagrama de clases/`.
 
 ---
 
@@ -149,9 +160,11 @@ Fase 1/
                              carta Gantt, casos de uso, arquitectura inicial
 Fase2/
   Evidencias Individuales/   Diarios de reflexión 2.1 de cada integrante
-  Evidencias Grupales/       Guías 2.4 y 2.6, artefactos Scrum (01–07), pruebas (08),
-                             manual técnico (09), diagramas 4+1, modelo de datos, BPMN,
-                             justificación de la innovación
+  Evidencias Grupales/       Guías 2.4 y 2.6, artefactos Scrum (01–07), resultados de
+                             pruebas (08), manual técnico (09), modelo de datos (10),
+                             diagrama de clases (11), requerimientos (12), plan de
+                             pruebas (13), diagramas 4+1, BPMN, justificación de la
+                             innovación
   Evidencias Proyecto/       Presentación del proyecto y código del sistema:
     api/                     API FastAPI y sus pruebas
     motor/                   Ingesta, indicadores, programador y sus pruebas

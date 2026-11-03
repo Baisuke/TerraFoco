@@ -19,6 +19,11 @@ Esta carpeta contiene la documentación por fase del Proyecto APT. Aquí se expl
 | [11-solicitud-datos-indap.md](11-solicitud-datos-indap.md) | Solicitud del SIRSD-S, bitácora del trámite y plan alternativo | Gestión de contraparte |
 | [12-demo-en-codespaces.md](12-demo-en-codespaces.md) | Presentar el sistema —modelo, lectura y escritura— desde cualquier navegador, sin computador propio | Operación |
 | [13-modulo-inundaciones.md](13-modulo-inundaciones.md) | Módulo 2: variables, validación contra eventos, recalibración y límites declarados | Análisis |
+| [15-requerimientos.md](15-requerimientos.md) | Requerimientos funcionales y no funcionales (versión Word: documento 12) | Requerimientos |
+| [20-modelo-de-datos.md](20-modelo-de-datos.md) | Diagrama entidad-relación, diccionario de datos y migraciones | Modelo de datos |
+| [21-plan-de-pruebas.md](21-plan-de-pruebas.md) | Niveles de prueba, casos de integración y de sistema, criterios y trazabilidad | Plan de pruebas |
+| [22-diagrama-de-clases.md](22-diagrama-de-clases.md) | Modelo de dominio y diseño de clases y módulos | Diagrama de clases |
+| `uml/*.drawio` | Fuentes editables del modelo de datos y del diagrama de clases (draw.io, Lucidchart) | Diagramas |
 | `../prototipo/` | Prototipo no funcional navegable | ✅ Prototipo |
 
 ---

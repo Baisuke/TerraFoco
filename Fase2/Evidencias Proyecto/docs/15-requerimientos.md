@@ -8,7 +8,10 @@ del [documento 03](03-casos-de-uso.md) o de una historia de usuario del
 están pendientes se marcan como tales en lugar de escribirse en futuro
 indefinido.
 
-**Estado al cierre de la semana 4.**
+**Estado al cierre de la semana 4.** La versión vigente y completa —con
+interfaces externas y trazabilidad hasta las pruebas de integración— es la
+*Especificación de requerimientos* (documento 12, en `Fase2/Evidencias
+Grupales`); este archivo se mantiene como su fuente en el repositorio.
 
 ---
 
@@ -85,7 +88,7 @@ que no se puede verificar no es un requerimiento, es una intención.
 | RF-15 | Derivar pendiente y factor topográfico desde el modelo de elevación | HU-10 | M | ✅ | `test_terreno.py`; incluye la prueba de que promediar LS no es promediar pendiente |
 | RF-16 | Estimar la pérdida de suelo por comuna aplicando los cinco factores de RUSLE | HU-11, UC-07 | M | ✅ | `test_rusle.py`; 33 de 33 comunas con los cinco factores |
 | RF-17 | Clasificar el resultado en las cinco categorías de severidad | HU-11 | M | ✅ | `test_rusle.py` |
-| RF-18 | Calcular el índice de pertinencia territorial por comuna | HU-13, UC-07 | **M** | ✅ | Vista en `bd/migraciones/004`; es el resultado central del proyecto |
+| RF-18 | Calcular el índice de pertinencia territorial por comuna | HU-13, UC-07 | **M** | ✅ | Vista `indicadores.v_pertinencia` (`bd/migraciones/013`); es el resultado central del proyecto |
 | RF-19 | Ante falta de superficie bonificada, calcular el índice con monto y beneficiarios marcándolo como *precisión reducida*; las comunas sin datos quedan como *sin información* y no como índice cero | HU-13 | M | ✅ | La vista distingue ambos casos |
 | RF-20 | Contrastar el cálculo propio contra la línea base de CIREN y marcar las comunas fuera del dominio de validez | HU-12, UC-06 | M | ✅ | Columna `en_dominio`; ver sección 7 |
 
@@ -111,7 +114,7 @@ que no se puede verificar no es un requerimiento, es una intención.
 | RF-26 | Mostrar las comunas en un mapa coloreado según el indicador seleccionado | HU-20, UC-01 | M | ✅ | `prototipo/visor.html` con cartografía real |
 | RF-27 | Permitir cambiar la capa temática sin recargar la vista | HU-21, UC-02 | M | ✅ | `prototipo/js` |
 | RF-28 | Abrir la ficha de una comuna con su detalle sin salir del mapa | HU-22, UC-03 | M | ✅ | `detalle-comuna.js`; incluye el descenso al detalle intracomunal |
-| RF-29 | Exponer los indicadores mediante una interfaz de programación documentada | UC-05 | M | ✅ | Cuatro rutas: `/comunas`, `/comunas/geojson`, `/pertinencia`, `/pertinencia/{id}` |
+| RF-29 | Exponer los indicadores mediante una interfaz de programación documentada | UC-05 | M | ✅ | Diez routers con OpenAPI en `/docs`; pruebas de integración PI-01 a PI-07 |
 | RF-30 | Exportar un reporte de la región | HU-23, UC-04 | C | ⏳ | Primer candidato a recorte dentro de presentación |
 | RF-31 | Autenticar a los usuarios para las operaciones de administración | UC-14 | S | ✅ | Clave de administración en `api/seguridad.py`; `test_seguridad.py` |
 
@@ -189,9 +192,9 @@ no se puede aprobar ni reprobar.
 
 | ID | Requerimiento | Criterio medible | Estado |
 |---|---|---|---|
-| RNF-20 | El motor de cálculo debe tener pruebas automatizadas que corran ante cada cambio | 104 pruebas: 102 en el motor y 2 en la interfaz de programación. La suite del motor corre en menos de un segundo | ✅ |
+| RNF-20 | El motor de cálculo debe tener pruebas automatizadas que corran ante cada cambio | 387 pruebas: 270 unitarias del motor, 96 de la API y 21 de integración con PostgreSQL ([plan de pruebas](21-plan-de-pruebas.md)) | ✅ |
 | RNF-21 | Toda decisión que se aparta de la fuente original queda documentada con su razón | Revisión de los módulos que implementan ecuaciones | ✅ |
-| RNF-22 | El esquema evoluciona por migraciones versionadas | Cuatro migraciones numeradas; ningún cambio manual sobre la base | ✅ |
+| RNF-22 | El esquema evoluciona por migraciones versionadas | `esquema.sql` + 19 migraciones numeradas e idempotentes ([modelo de datos](20-modelo-de-datos.md)) | ✅ |
 
 ### 5.7 Portabilidad e interoperabilidad
 
@@ -225,7 +228,7 @@ Cada requerimiento crítico se puede seguir desde la necesidad hasta la prueba.
 | R-02 | El proyecto no dispone de presupuesto | Solo se usan fuentes públicas y software de código abierto |
 | R-03 | La ecuación de erosividad empleada no está calibrada sobre los 1.000 mm anuales | Seis comunas precordilleranas quedan fuera del dominio de validez declarado |
 | R-04 | La isla de calor urbana solo se mide en verano | El módulo 3 depende de imágenes de enero y febrero |
-| R-05 | La ejecución del SIRSD-S publicada cubre un solo año | La serie histórica depende de una gestión institucional en curso |
+| R-05 | La ejecución del SIRSD-S publicada cubre un solo año | Resuelta: INDAP entregó la serie 2012-2025 (migración 013, [documento 17](17-serie-sirsd.md)) |
 | R-06 | El acceso a la descarga masiva del USGS requiere aprobación previa | Riesgo de calendario para el módulo 3 |
 
 ---
