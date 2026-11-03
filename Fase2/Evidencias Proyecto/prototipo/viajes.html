@@ -18,13 +18,13 @@
 
     <div class="content">
 
-      <div class="notice" id="vjAviso" hidden></div>
+      <div class="notice" id="vjAviso" hidden aria-live="polite"></div>
 
       <div class="grid grid--main">
         <div class="card viaje__mapa">
           <div class="card__head">
-            <div class="card__title">Recorrido</div>
-            <div class="card__note" id="vjNota">Haga clic en el mapa para marcar la salida</div>
+            <div class="card__title">Mapa del viaje</div>
+            <div class="card__note" id="vjNota">Haga clic en el mapa o busque un lugar para marcar la salida</div>
           </div>
           <div class="viaje__barra">
             <div class="tabs" id="vjModo" aria-label="Colorear la ruta según">
@@ -39,17 +39,19 @@
                 <button type="button" data-valor="2">×2</button>
                 <button type="button" data-valor="4">×4</button>
               </div>
-              <label class="viaje__casilla"><input type="checkbox" id="vjSeguir" checked> Seguir al auto</label>
+              <label class="viaje__casilla"><input type="checkbox" id="vjSeguir" checked> Seguir</label>
               <label class="viaje__casilla"><input type="checkbox" id="vjConductor"> Vista de conductor</label>
             </div>
           </div>
-          <div class="map map--alto" id="mapa" style="--mapa-margen:360px">
+          <input type="range" class="range viaje__linea" id="vjLinea" min="0" max="1000" value="0" disabled
+                 aria-label="Avanzar o retroceder el recorrido">
+          <div class="map map--alto" id="mapa" style="--mapa-margen:380px">
             <div class="map__overlay map__overlay--bl" id="vjLeyenda" hidden></div>
-            <div class="map__overlay viaje__hud" id="vjHud" hidden aria-live="off">
+            <div class="map__overlay viaje__hud" id="vjHud" hidden>
               <svg class="viaje__medidor" viewBox="0 0 100 60" aria-hidden="true">
                 <path d="M12 50 A38 38 0 0 1 88 50" class="viaje__medidor-arco"/>
                 <path d="M12 50 A38 38 0 0 1 20.5 26" class="viaje__medidor-reserva"/>
-                <text x="10" y="59">E</text><text x="84" y="59">F</text>
+                <text x="8" y="59" id="hudE">E</text><text x="84" y="59" id="hudF">F</text>
                 <g id="hudAguja" transform="rotate(90 50 50)">
                   <line x1="50" y1="50" x2="50" y2="18" class="viaje__medidor-aguja"/>
                 </g>
@@ -62,86 +64,165 @@
                 <div>altura <strong id="hudAlt">—</strong> · pendiente <strong id="hudPend">—</strong></div>
                 <div class="muted">manejando <span id="hudHora">0 min</span></div>
               </div>
+              <span class="viaje__evento" id="hudEvento" hidden></span>
             </div>
           </div>
           <div class="viaje__perfil-caja" id="vjPerfilCaja" hidden>
-            <div class="viaje__perfil-titulo">Perfil de alturas <span class="tiny muted">· pase el cursor para ver cada tramo en el mapa</span></div>
+            <div class="viaje__perfil-titulo">Perfil de alturas <span class="tiny muted">· pase el cursor para ver cada tramo; un clic lleva el auto ahí</span></div>
             <div class="viaje__perfil" id="vjPerfil"></div>
           </div>
         </div>
 
         <div class="stack">
           <div class="card">
-            <div class="card__title">Salida y llegada</div>
-            <div class="viaje__puntos">
-              <div class="viaje__punto"><span class="viaje__marca viaje__marca--a viaje__marca--fija">A</span><div id="vjA"></div></div>
-              <div class="viaje__punto"><span class="viaje__marca viaje__marca--b viaje__marca--fija">B</span><div id="vjB"></div></div>
+            <div class="card__title">Recorrido</div>
+            <div class="viaje__buscar">
+              <input type="search" id="vjBuscar" placeholder="Buscar un lugar, calle o localidad" autocomplete="off"
+                     role="combobox" aria-expanded="false" aria-controls="vjSugerencias" aria-label="Buscar un lugar">
+              <button type="button" class="btn-icono" id="vjUbicacion" title="Salir desde mi ubicación" aria-label="Salir desde mi ubicación">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+              </button>
+              <div class="viaje__sugerencias" id="vjSugerencias" role="listbox" hidden></div>
             </div>
-            <div class="row" style="gap:8px;flex-wrap:wrap">
-              <button type="button" class="btn btn--chico" id="vjIntercambiar" disabled>Intercambiar</button>
+            <div class="viaje__paradas" id="vjParadas"></div>
+            <div class="row viaje__acciones">
+              <button type="button" class="btn btn--chico" id="vjAgregar" disabled>+ Agregar parada</button>
+              <button type="button" class="btn btn--chico" id="vjOrdenar" hidden title="Busca el orden de paradas más corto; suele ser también el que menos gasta">Ordenar para gastar menos</button>
+              <button type="button" class="btn btn--chico" id="vjInvertir" disabled>Invertir</button>
               <button type="button" class="btn btn--chico" id="vjBorrar" disabled>Borrar</button>
-              <button type="button" class="btn btn--chico" id="vjEjemplo">Probar un ejemplo</button>
+              <button type="button" class="btn btn--chico" id="vjEjemplo">Gira de ejemplo</button>
             </div>
             <div class="viaje__opciones">
-              <label class="viaje__casilla"><input type="checkbox" id="vjVuelta"> Ida y vuelta</label>
+              <label class="viaje__casilla"><input type="checkbox" id="vjVuelta"> Volver al punto de partida</label>
               <label class="viaje__casilla"><input type="checkbox" id="vjPeajes"> Evitar peajes</label>
               <label class="viaje__casilla"><input type="checkbox" id="vjRipio"> Evitar ripio y tierra</label>
             </div>
           </div>
 
-          <div class="card viaje__resultado" id="vjResultado" hidden>
+          <div class="card viaje__resultado" id="vjResultado" hidden aria-live="polite">
             <div class="card__head">
               <div class="card__title">Combustible del viaje</div>
               <div class="card__note" id="vjTramo">ida y vuelta</div>
             </div>
             <div class="viaje__total">
-              <div><span class="viaje__grande" id="vjLitros">—</span><span class="viaje__unidad">litros</span></div>
-              <div><span class="viaje__grande" id="vjCosto">—</span><span class="viaje__unidad">pesos</span></div>
+              <div><span class="viaje__grande" id="vjLitros">—</span><span class="viaje__unidad" id="vjUnidad">litros</span></div>
+              <div><span class="viaje__grande" id="vjCosto">—</span><span class="viaje__unidad" id="vjCostoRotulo">pesos</span></div>
             </div>
             <div class="cifras viaje__cifras" id="vjCifras"></div>
+            <div class="viaje__extra small" id="vjExtra" hidden></div>
             <p class="small muted viaje__idavuelta" id="vjIdaVuelta"></p>
+            <div class="viaje__llevar">
+              <span class="tiny muted">Llevarse el viaje</span>
+              <div class="viaje__llevar-botones">
+                <button type="button" class="btn btn--chico" id="vjInforme" title="Una hoja con todo, para imprimir o guardar como PDF">Informe</button>
+                <button type="button" class="btn btn--chico" id="vjGpx" title="Para el GPS o apps como OsmAnd y Wikiloc">GPX</button>
+                <button type="button" class="btn btn--chico" id="vjKml" title="Para Google Earth">KML</button>
+                <button type="button" class="btn btn--chico" id="vjCsv" title="El perfil y el consumo cada 100 m, para Excel">CSV</button>
+                <button type="button" class="btn btn--chico" id="vjGmaps">Google Maps</button>
+                <button type="button" class="btn btn--chico" id="vjWaze" title="Waze recibe solo un destino: navega a la primera parada">Waze</button>
+                <button type="button" class="btn btn--chico" id="vjCompartir">Copiar enlace</button>
+              </div>
+            </div>
           </div>
 
           <div class="card">
-            <div class="card__title">Vehículo</div>
+            <div class="card__title">Vehículo y manejo</div>
             <div class="viaje__form">
-              <label class="viaje__campo viaje__campo--ancho">Tipo
+              <label class="viaje__campo viaje__campo--ancho">Vehículo
                 <select class="select" id="vjVehiculo"></select></label>
               <label class="viaje__campo">Combustible
                 <select class="select" id="vjCombustible"></select></label>
-              <label class="viaje__campo">Precio por litro
+              <label class="viaje__campo"><span id="vjPrecioRotulo">Precio por litro</span>
                 <span class="viaje__prefijo"><span>$</span><input type="text" inputmode="numeric" id="vjPrecio" autocomplete="off"></span></label>
               <label class="viaje__campo" title="El rendimiento promedio de este tipo de vehículo. Si conoce el del suyo, escríbalo.">Rendimiento promedio
-                <span class="viaje__prefijo viaje__prefijo--sufijo"><input type="text" inputmode="decimal" id="vjRendimiento" autocomplete="off"><span>km/L</span></span></label>
+                <span class="viaje__prefijo viaje__prefijo--sufijo"><input type="text" inputmode="decimal" id="vjRendimiento" autocomplete="off"><span id="vjRendUnidad">km/L</span></span></label>
               <label class="viaje__campo">Van
                 <select class="select" id="vjOcupantes"></select></label>
               <div class="viaje__campo viaje__campo--ancho">
                 <div class="umbral__cab"><label for="vjCarga">Carga</label><strong id="vjCargaValor">sin carga</strong></div>
                 <input type="range" class="range" id="vjCarga" min="0" max="800" step="50" value="0">
               </div>
+              <div class="viaje__campo">Manejo
+                <div class="tabs tabs--ancho" id="vjEstilo" aria-label="Estilo de manejo">
+                  <button type="button" data-valor="suave">Suave</button>
+                  <button type="button" data-valor="normal" class="is-active">Normal</button>
+                  <button type="button" data-valor="agresivo">Rápido</button>
+                </div></div>
+              <label class="viaje__campo">En autopista, hasta
+                <select class="select" id="vjMaxKmh">
+                  <option value="">lo que permite la vía</option>
+                  <option value="120">120 km/h</option>
+                  <option value="110">110 km/h</option>
+                  <option value="100">100 km/h</option>
+                  <option value="90">90 km/h</option>
+                  <option value="80">80 km/h</option>
+                </select></label>
               <label class="viaje__casilla viaje__campo--ancho"><input type="checkbox" id="vjAire"> Aire acondicionado encendido</label>
+              <div class="viaje__campo viaje__campo--ancho">
+                <label class="viaje__casilla"><input type="checkbox" id="vjClima"> Considerar el viento y la temperatura de hoy</label>
+                <span class="tiny muted" id="vjClimaDato"></span>
+              </div>
+              <label class="viaje__campo">Peajes del viaje
+                <span class="viaje__prefijo"><span>$</span><input type="text" inputmode="numeric" id="vjPeajesMonto" placeholder="0" autocomplete="off"></span></label>
+              <label class="viaje__campo" title="Para estimar el gasto mensual y anual de un viaje que se repite">Veces al mes
+                <span class="viaje__prefijo viaje__prefijo--sufijo"><input type="text" inputmode="numeric" id="vjFrecuencia" placeholder="—" autocomplete="off"><span>viajes</span></span></label>
             </div>
             <p class="tiny muted" style="margin:0">El rendimiento es un promedio real del tipo de vehículo, no el de la
-              etiqueta. Precios de referencia: cámbielos por los de su bencinera; quedan guardados en este navegador.</p>
+              etiqueta. Precios de referencia: cámbielos por los de su bencinera o su tarifa eléctrica; quedan guardados
+              en este navegador.</p>
+          </div>
+
+          <div class="card">
+            <div class="card__head">
+              <div class="card__title">Mis viajes</div>
+              <div class="card__note" id="vjGuardadosResumen"></div>
+            </div>
+            <div class="viaje__guardar">
+              <input type="text" id="vjNombreViaje" placeholder="Nombre del viaje" maxlength="120" aria-label="Nombre del viaje">
+              <button type="button" class="btn btn--chico btn--primary" id="vjGuardar" disabled>Guardar</button>
+            </div>
+            <div class="viaje__guardados" id="vjGuardados"></div>
+            <button type="button" class="btn btn--chico" id="vjPlanilla" disabled title="Un viaje por fila, para la rendición de gastos">Descargar planilla de rendición</button>
           </div>
         </div>
       </div>
 
       <div class="grid grid--2" id="vjDetalle" hidden>
-        <div class="card">
-          <div class="card__title">En qué se va el combustible</div>
-          <div class="viaje__barra-gasto" id="vjBarra"></div>
-          <div class="viaje__causas" id="vjCausas"></div>
-        </div>
         <div class="stack">
           <div class="card">
-            <div class="card__title">Por tipo de camino <span class="tiny muted">· la ida</span></div>
+            <div class="card__title">En qué se va el combustible</div>
+            <div class="viaje__barra-gasto" id="vjBarra"></div>
+            <div class="viaje__causas" id="vjCausas"></div>
+          </div>
+          <div class="card">
+            <div class="card__title">Cómo gastar menos en este viaje</div>
+            <div class="viaje__consejos" id="vjConsejos"></div>
+          </div>
+          <div class="card">
+            <div class="card__title">El mismo viaje en otro vehículo</div>
+            <div class="viaje__comparar" id="vjComparar"></div>
+            <p class="tiny muted" style="margin:0" id="vjCompararNota"></p>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card" id="vjTramosCaja" hidden>
+            <div class="card__title">Tramos del viaje</div>
+            <div class="table__wrap" id="vjTramos"></div>
+          </div>
+          <div class="card">
+            <div class="card__title">Por tipo de camino <span class="tiny muted" id="vjTiposNota"></span></div>
             <div class="viaje__tipos" id="vjTipos"></div>
           </div>
           <div class="card" id="vjAlternativas" hidden>
             <div class="card__title">Rutas posibles</div>
             <div class="viaje__alts" id="vjAltLista"></div>
             <p class="small muted" style="margin:0" id="vjAltNota"></p>
+          </div>
+          <div class="card" id="vjIndicacionesCaja" hidden>
+            <details class="viaje__como">
+              <summary><strong>Indicaciones paso a paso</strong> <span class="muted" id="vjIndicacionesNota"></span></summary>
+              <ol class="viaje__indicaciones" id="vjIndicaciones"></ol>
+            </details>
           </div>
           <div class="card">
             <div class="card__title">Notas del cálculo</div>
@@ -155,27 +236,35 @@
           <summary><strong>Cómo se calcula</strong> <span class="muted">· el modelo, paso a paso</span></summary>
           <ol class="ayuda__lista">
             <li><strong>El camino.</strong> Se pide la ruta a un servicio abierto sobre OpenStreetMap (Valhalla). Llega con su
-              altura cada 30 m y, por cada tramo, el tipo de vía, la superficie (asfalto, ripio, tierra), la velocidad
-              esperada y cuán urbana es la zona.</li>
+              altura cada 30 m, las indicaciones y, por cada tramo, el tipo de vía, la superficie (asfalto, ripio, tierra), la
+              velocidad esperada y cuán urbana es la zona. Con paradas, el orden más corto lo busca el mismo servicio.</li>
             <li><strong>La física, cada 30 m.</strong> Para avanzar, el motor vence la <em>rodadura</em> de los neumáticos (el doble
-              en ripio), el <em>aire</em> (crece con el cuadrado de la velocidad y baja con la altura) y la <em>pendiente</em> (en
-              subida; en bajada el motor corta la inyección y no gasta). Además pierde energía solo por estar girando.</li>
-            <li><strong>Detenerse y arrancar.</strong> Cada cruce o semáforo obliga a volver a acelerar el vehículo y a esperar en
-              ralentí. Se cuentan más detenciones en calles urbanas que en carretera.</li>
+              en ripio), el <em>aire</em> (crece con el cuadrado de la velocidad, baja con la altura y el calor, y el viento del día
+              lo empuja a favor o en contra según el rumbo de cada tramo) y la <em>pendiente</em>. Además pierde energía solo por
+              estar girando.</li>
+            <li><strong>Bajadas y frenadas.</strong> Un motor a combustión corta la inyección en bajada, pero no recupera; un
+              híbrido guarda cerca de un tercio del frenado en la batería y un eléctrico, más de la mitad.</li>
+            <li><strong>Detenerse y arrancar.</strong> Cada cruce o semáforo obliga a volver a acelerar y a esperar en ralentí
+              (salvo en los que se apagan solos). Se cuentan más detenciones en calles urbanas que en carretera, y un manejo
+              rápido acelera más fuerte.</li>
             <li><strong>El promedio pone la escala.</strong> El modelo se ajusta para que, en un recorrido mixto y plano, dé exactamente
               el rendimiento promedio elegido. Así, una ruta con subidas o ripio gasta más que ese promedio y una de autopista en
               bajada, menos.</li>
-            <li><strong>Peso y aire acondicionado.</strong> Cada persona suma 75 kg y la carga, lo indicado; el aire acondicionado
-              agrega unos 1,2 kW que el motor tiene que producir.</li>
+            <li><strong>Peso y accesorios.</strong> Cada persona suma 75 kg y la carga, lo indicado; el aire acondicionado agrega
+              unos 1,2 kW que el motor tiene que producir.</li>
           </ol>
-          <p class="tiny muted" style="margin:6px 0 0">Es una estimación: el tráfico, el estilo de manejo, la presión de los
-            neumáticos y el viento pueden moverla un 10 a 20 %. Los peajes no se suman.</p>
+          <p class="tiny muted" style="margin:6px 0 0">Es una estimación: el tráfico, el estado del vehículo y la presión de los
+            neumáticos pueden moverla un 10 a 20 %. Fuentes: OpenStreetMap (Valhalla y OSRM de FOSSGIS, Photon de Komoot),
+            AWS Terrain Tiles y Open-Meteo, todos abiertos y sin clave.</p>
         </details>
       </div>
 
     </div>
   </div>
 </div>
+
+<!-- La hoja del informe: solo se ve al imprimir. -->
+<div class="informe" id="vjInformeHoja"></div>
 
 <script src="js/api-base.js"></script>
 <script src="js/paleta.js"></script>
@@ -189,19 +278,22 @@
 <script src="js/mapa-real.js"></script>
 <script src="js/viaje-calculo.js"></script>
 <script src="js/viajes.js"></script>
+<script src="js/viajes-extras.js"></script>
 <script>
 pintarShell('viajes', 'Viajes a terreno', 'General · combustible de una visita', '',
-            'Marque una salida y una llegada dentro de la región y vea cuánto combustible gasta el viaje según el ' +
-            'camino, la pendiente y el vehículo.');
+            'Marque una salida, una llegada y las paradas que quiera dentro de la región, y vea cuánto combustible ' +
+            'gasta el viaje según el camino, la pendiente, el clima y el vehículo.');
 
+GTViajesExtras.montar();
 GTViajes.iniciar();
 GT.hidratar();
-/* Aquí el clic marca la salida y la llegada: no abre comunas. */
+/* Aquí el clic marca puntos: no abre comunas. */
 GTMapaReal.crear(document.getElementById('mapa'), { interactivo: false })
-  .then(GTViajes.montar).catch(function (e) {
-  console.warn('[viajes] sin mapa:', e.message);
-  document.getElementById('vjNota').textContent = 'No se pudo cargar el mapa: revise la conexión y recargue la página.';
-});
+  .then(GTViajes.montar)
+  .catch(function (e) {
+    console.warn('[viajes] sin mapa:', e.message);
+    document.getElementById('vjNota').textContent = 'No se pudo cargar el mapa: revise la conexión y recargue la página.';
+  });
 </script>
 </body>
 </html>
