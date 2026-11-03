@@ -62,6 +62,7 @@ prototipo/
 │   ├── colores-mapa.js     Colores del mapa a elección de quien lo usa
 │   ├── viaje-calculo.js    Modelo de consumo de combustible de un viaje
 │   ├── viajes.js           Viajes a terreno: ruta, perfil y animación
+│   ├── viajes-extras.js    Buscador, descargas, informe y Mis viajes
 │   ├── data.js             Datos de ejemplo
 │   ├── shell.js            Barra lateral y barra superior
 │   ├── mapa.js             Cartografía esquemática — último respaldo
