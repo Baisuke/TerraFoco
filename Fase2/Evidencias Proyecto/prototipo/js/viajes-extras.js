@@ -394,7 +394,8 @@ const GTViajesExtras = (function () {
                (o.cargaKg ? ' · ' + GT.fmt(o.cargaKg) + ' kg' : ' · sin carga')) +
           fila('Manejo', d.estilo + (o.maxKmh ? ' · hasta ' + o.maxKmh + ' km/h' : '') + (o.aire ? ' · con aire acondicionado' : '')) +
           fila('Clima', clima) +
-          (t.cruces || t.peajes ? fila('Peajes', (t.cruces ? 'cruza ' + t.cruces.total + ' (' + d.textoPeajes(t.cruces) + ')' : '') +
+          (t.cruces || t.peajes ? fila('Peajes', (t.cruces ? (t.cruces.total ? 'cruza ' + t.cruces.total + ' (' +
+                                       d.textoPeajes(t.cruces) + ')' : 'no cruza peajes') : '') +
                                        (t.cruces && t.peajes ? ' · ' : '') + (t.peajes ? d.pesos(t.peajes) : '')) : '') +
         '</table></section>' +
       '</div>' +
