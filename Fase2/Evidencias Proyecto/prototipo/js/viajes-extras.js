@@ -362,6 +362,7 @@ const GTViajesExtras = (function () {
     const clima = d.clima ? 'viento de ' + GT.fmt(d.clima.ms * 3.6, 0) + ' km/h, ' + GT.fmt(d.clima.temperatura, 0) +
                             ' °C (Open-Meteo, al calcular)' : 'sin viento, 15 °C';
     const indicaciones = r.perfil.indicaciones;
+    const conPeajes = d.tramos.every(function (x) { return typeof x.peajes === 'number'; });
     return '<header class="informe__cabeza">' +
         '<div class="informe__marca">TerraFoco · Viajes a terreno</div>' +
         '<h1>' + esc(d.nombre) + '</h1>' +
@@ -371,7 +372,9 @@ const GTViajesExtras = (function () {
         [[GT.fmt(t.litros, 1) + ' ' + u, 'consumo estimado'], [d.pesos(t.costo), t.peajes ? 'costo, con peajes' : 'costo'],
          [GT.fmt(t.km, 1) + ' km', 'distancia'], [d.duracion(t.segundos), 'manejando'],
          [t.litros > 0 ? GT.fmt(t.km / t.litros, 1) + ' km/' + u : '—', 'rendimiento en la ruta'],
-         [GT.fmt(t.co2, 1) + ' kg', 'CO₂']].map(function (c) {
+         [GT.fmt(t.co2, 1) + ' kg', 'CO₂'],
+         [t.cruces ? String(t.cruces.total) : '—', t.cruces && t.cruces.total === 1 ? 'peaje' : 'peajes']
+        ].map(function (c) {
           return '<div><strong>' + c[0] + '</strong><span>' + c[1] + '</span></div>';
         }).join('') +
       '</section>' +
@@ -391,13 +394,15 @@ const GTViajesExtras = (function () {
                (o.cargaKg ? ' · ' + GT.fmt(o.cargaKg) + ' kg' : ' · sin carga')) +
           fila('Manejo', d.estilo + (o.maxKmh ? ' · hasta ' + o.maxKmh + ' km/h' : '') + (o.aire ? ' · con aire acondicionado' : '')) +
           fila('Clima', clima) +
-          (t.peajes ? fila('Peajes', d.pesos(t.peajes)) : '') +
+          (t.cruces || t.peajes ? fila('Peajes', (t.cruces ? 'cruza ' + t.cruces.total + ' (' + d.textoPeajes(t.cruces) + ')' : '') +
+                                       (t.cruces && t.peajes ? ' · ' : '') + (t.peajes ? d.pesos(t.peajes) : '')) : '') +
         '</table></section>' +
       '</div>' +
       (d.tramos.length > 1 ? '<section><h2>Tramos</h2><table class="informe__tabla informe__tabla--datos"><thead><tr><th>Tramo</th>' +
-        '<th>km</th><th>Tiempo</th><th>' + u + '</th><th>Pesos</th></tr></thead><tbody>' +
+        '<th>km</th><th>Tiempo</th>' + (conPeajes ? '<th>Peajes</th>' : '') + '<th>' + u + '</th><th>Pesos</th></tr></thead><tbody>' +
         d.tramos.map(function (x) {
-          return '<tr><td>' + x.rotulo + '</td><td>' + GT.fmt(x.km, 1) + '</td><td>' + d.duracion(x.segundos) + '</td><td>' +
+          return '<tr><td>' + x.rotulo + '</td><td>' + GT.fmt(x.km, 1) + '</td><td>' + d.duracion(x.segundos) + '</td>' +
+                 (conPeajes ? '<td>' + x.peajes + '</td>' : '') + '<td>' +
                  GT.fmt(x.litros, 2) + '</td><td>' + d.pesos(Math.max(0, x.litros) * o.precio) + '</td></tr>';
         }).join('') + '</tbody></table></section>' : '') +
       '<div class="informe__dos">' +
@@ -459,6 +464,7 @@ const GTViajesExtras = (function () {
       combustible: Object.keys(GTViaje.COMBUSTIBLES).find(function (k) { return GTViaje.COMBUSTIBLES[k] === o.combustible; }),
       vehiculoNombre: o.vehiculo.nombre, unidad: o.combustible.unidad,
       km: t.km, litros: t.litros, segundos: t.segundos, combustibleCosto: t.combustible, peajes: t.peajes,
+      cantidadPeajes: t.cruces ? t.cruces.total : null,
       costo: t.costo, co2: t.co2, recorrido: d.nombre,
     };
     const lista = leerViajes();
@@ -500,10 +506,11 @@ const GTViajesExtras = (function () {
     const lista = leerViajes();
     if (!lista.length) return;
     const filas = [['Fecha', 'Viaje', 'Recorrido', 'Vuelta al inicio', 'Km', 'Consumo', 'Unidad', 'Combustible ($)',
-                    'Peajes ($)', 'Total ($)', 'CO2 (kg)', 'Vehículo']];
+                    'Peajes (cantidad)', 'Peajes ($)', 'Total ($)', 'CO2 (kg)', 'Vehículo']];
     lista.slice().reverse().forEach(function (v) {
       filas.push([GT_fecha(v.fecha, false), v.nombre, v.recorrido, v.vuelta ? 'sí' : 'no', num(v.km, 1),
-                  num(v.litros, 2), v.unidad, Math.round(v.combustibleCosto), Math.round(v.peajes || 0),
+                  num(v.litros, 2), v.unidad, Math.round(v.combustibleCosto),
+                  typeof v.cantidadPeajes === 'number' ? v.cantidadPeajes : '', Math.round(v.peajes || 0),
                   Math.round(v.costo), num(v.co2, 1), v.vehiculoNombre]);
     });
     descargar(csv(filas, ['Viajes a terreno guardados en TerraFoco. Montos estimados con el modelo físico.']),
