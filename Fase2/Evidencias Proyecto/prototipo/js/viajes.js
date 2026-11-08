@@ -605,13 +605,15 @@ const GTViajes = (function () {
       });
   }
 
-  /* Clase, superficie, velocidad y densidad de cada arco de un tramo. */
+  /* Clase, superficie, velocidad y densidad de cada arco de un tramo; y el
+     tipo del nodo en que termina, que dice dónde hay una plaza o un pórtico
+     de peaje. */
   function atributos(forma) {
     const consulta = {
       encoded_polyline: forma, costing: 'auto', shape_match: 'edge_walk',
       filters: { action: 'include', attributes: [
         'edge.road_class', 'edge.surface', 'edge.unpaved', 'edge.speed', 'edge.density',
-        'edge.end_shape_index', 'edge.names', 'edge.toll'] },
+        'edge.end_shape_index', 'edge.names', 'edge.toll', 'node.type'] },
     };
     return pedirJson(VALHALLA + '/trace_attributes', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(consulta),
@@ -860,7 +862,26 @@ const GTViajes = (function () {
     x.combustible = x.costo;
     x.peajes = peajes();
     x.costo += x.peajes;
+    x.cruces = crucesDePeaje(r);
     return x;
+  }
+
+  /* Cuántos peajes cruza el viaje entero (la vuelta invertida los cruza otra
+     vez). null si la ruta no lo informa (OSRM o la recta). */
+  function crucesDePeaje(r) {
+    const a = r.ida.peajes, b = r.vuelta ? r.vuelta.peajes : null;
+    if (!a || (r.vuelta && !b)) return null;
+    if (!b) return a;
+    return { total: a.total + b.total, plazas: a.plazas + b.plazas, porticos: a.porticos + b.porticos };
+  }
+
+  function textoPeajes(n) {
+    if (!n) return 'sin dato';
+    if (!n.total) return 'la ruta no pasa por peajes';
+    const partes = [];
+    if (n.plazas) partes.push(n.plazas + (n.plazas === 1 ? ' plaza' : ' plazas'));
+    if (n.porticos) partes.push(n.porticos + (n.porticos === 1 ? ' pórtico TAG' : ' pórticos TAG'));
+    return partes.join(' y ');
   }
 
   function duracion(s) {
@@ -888,7 +909,12 @@ const GTViajes = (function () {
 
   function pintarTodo() {
     const hay = S.rutas.length > 0;
-    ['vjResultado', 'vjDetalle', 'vjPerfilCaja', 'vjLeyenda'].forEach(function (id) { $(id).hidden = !hay; });
+    ['vjResultado', 'vjPerfilCaja', 'vjLeyenda'].forEach(function (id) { $(id).hidden = !hay; });
+    /* El detalle va en el tablero de abajo junto a "Mis viajes", que se ve
+       siempre: sin ruta se esconden sus cajas una por una. Tramos,
+       alternativas e indicaciones deciden solas si se ven cuando hay ruta. */
+    document.querySelectorAll('.viaje__con-ruta').forEach(function (el) { el.hidden = !hay; });
+    if (!hay) ['vjTramosCaja', 'vjAlternativas', 'vjIndicacionesCaja'].forEach(function (id) { $(id).hidden = true; });
     $('vjPlay').disabled = !hay;
     $('vjLinea').disabled = !hay;
     pintarRutasMapa();
@@ -928,8 +954,10 @@ const GTViajes = (function () {
       [GT.fmt(Math.max(0, 100 * t.litros / o.vehiculo.estanque), 0) + ' %',
        (electrico ? 'de una batería de ' : 'de un estanque de ') + o.vehiculo.estanque + ' ' + u],
       ['↑' + GT.fmt(r.ida.subida, 0) + ' · ↓' + GT.fmt(r.ida.bajada, 0) + ' m', 'desnivel' + (r.vuelta ? ' de la ida' : '')],
+      [t.cruces ? t.cruces.total + (t.cruces.total === 1 ? ' peaje' : ' peajes') : '— peajes',
+       textoPeajes(t.cruces) + (t.cruces && t.cruces.total && r.vuelta ? ', ida y vuelta' : ''), 'viaje__cifra-peajes'],
     ].map(function (c) {
-      return '<div class="cifra"><span class="cifra__valor">' + c[0] + '</span>' +
+      return '<div class="cifra' + (c[2] ? ' ' + c[2] : '') + '"><span class="cifra__valor">' + c[0] + '</span>' +
              '<span class="cifra__rotulo">' + c[1] + '</span></div>';
     }).join('');
 
@@ -1092,22 +1120,30 @@ const GTViajes = (function () {
 
   function pintarTramos() {
     const r = S.rutas[S.elegida], u = combustible().unidad, precio = opcionesCalculo().precio;
-    const filas = r.vuelta
-      ? [r.ida, r.vuelta].map(function (x, t) {
-          return { rotulo: rotuloTramo(t), km: x.km, segundos: x.segundos, litros: x.litros, subida: x.subida };
-        })
-      : r.ida.porTramo.map(function (x, t) {
-          return { rotulo: rotuloTramo(t), km: x.m / 1000, segundos: x.segundos, litros: x.litros, subida: x.subida };
-        });
+    const filas = filasTramos(r);
     $('vjTramosCaja').hidden = filas.length < 2;
     if (filas.length < 2) return;
+    const conPeajes = filas.every(function (f) { return f.peajes !== null; });
     $('vjTramos').innerHTML = '<table class="table viaje__tabla"><thead><tr><th>Tramo</th><th>km</th><th>Tiempo</th>' +
-      '<th>Sube</th><th>' + u + '</th><th>Pesos</th></tr></thead><tbody>' +
+      '<th>Sube</th>' + (conPeajes ? '<th>Peajes</th>' : '') + '<th>' + u + '</th><th>Pesos</th></tr></thead><tbody>' +
       filas.map(function (f) {
         return '<tr><td><strong>' + f.rotulo + '</strong></td><td>' + GT.fmt(f.km, 1) + '</td><td>' + duracion(f.segundos) +
-               '</td><td>' + GT.fmt(f.subida, 0) + ' m</td><td>' + GT.fmt(f.litros, 2) + '</td><td>' +
-               pesos(Math.max(0, f.litros) * precio) + '</td></tr>';
+               '</td><td>' + GT.fmt(f.subida, 0) + ' m</td>' + (conPeajes ? '<td>' + f.peajes + '</td>' : '') +
+               '<td>' + GT.fmt(f.litros, 2) + '</td><td>' + pesos(Math.max(0, f.litros) * precio) + '</td></tr>';
       }).join('') + '</tbody></table>';
+  }
+
+  /* Una fila por tramo: A → B, B → C… o la ida y la vuelta. */
+  function filasTramos(r) {
+    return r.vuelta
+      ? [r.ida, r.vuelta].map(function (x, t) {
+          return { rotulo: rotuloTramo(t), km: x.km, segundos: x.segundos, litros: x.litros, subida: x.subida,
+                   peajes: x.peajes ? x.peajes.total : null };
+        })
+      : r.ida.porTramo.map(function (x, t) {
+          return { rotulo: rotuloTramo(t), km: x.m / 1000, segundos: x.segundos, litros: x.litros, subida: x.subida,
+                   peajes: x.peajes };
+        });
   }
 
   function pintarAlternativas() {
@@ -1173,8 +1209,19 @@ const GTViajes = (function () {
   function pintarNotas() {
     const r = S.rutas[S.elegida], o = opcionesCalculo();
     const notas = r.avisos.slice();
-    if (r.ida.peajeKm > 0.05 && !$('vjPeajes').checked && !peajes()) {
+    const cruces = crucesDePeaje(r);
+    const evitar = $('vjPeajes').checked;
+    if (cruces && cruces.total && evitar) {
+      notas.push('Se pidió evitar peajes, pero no hay un camino razonable sin ellos: la ruta igual cruza ' +
+                 cruces.total + (cruces.total === 1 ? ' peaje' : ' peajes') + ' (' + textoPeajes(cruces) + ').');
+    } else if (cruces && cruces.total && !peajes()) {
+      notas.push('El viaje cruza ' + cruces.total + (cruces.total === 1 ? ' peaje' : ' peajes') + ' (' + textoPeajes(cruces) +
+                 '), marcados en el mapa: puede sumar su costo en "Peajes del viaje".');
+    } else if (!cruces && r.ida.peajeKm > 0.05 && !evitar && !peajes()) {
       notas.push('La ruta pasa por tramos con peaje: puede sumar su costo en "Peajes del viaje".');
+    }
+    if (!cruces && r.fuente !== 'valhalla') {
+      notas.push('Con este servicio de rutas no se sabe cuántos peajes cruza el viaje.');
     }
     if (S.clima && $('vjClima').checked && S.clima.temperatura >= 27 && !o.aire) {
       notas.push('Hoy hace ' + GT.fmt(S.clima.temperatura, 0) + ' °C: si va a usar el aire acondicionado, márquelo.');
@@ -1221,10 +1268,15 @@ const GTViajes = (function () {
   }
 
   function pintarLeyenda() {
+    const r = S.rutas[S.elegida];
+    const n = r ? V.contarPeajes(r.perfil.peajes || null) : null;
     $('vjLeyenda').innerHTML = '<div class="legend">' + leyendaDe(S.modo).map(function (f) {
       return '<div class="legend__row"><span class="legend__swatch" style="background:' + f[0] + '"></span>' +
              '<span>' + f[1] + '</span></div>';
-    }).join('') + '</div>';
+    }).join('') +
+    (n && n.total ? '<div class="legend__row"><span class="legend__swatch viaje__peaje-marca" style="background:' +
+                    PALETA.ambar + '"></span><span>Peaje (' + textoPeajes(n) + ')</span></div>' : '') +
+    '</div>';
   }
 
   /* ------------------------------------------------------------------------
@@ -1354,7 +1406,7 @@ const GTViajes = (function () {
 
     const simbolo = (m.getStyle().layers || []).find(function (l) { return l.type === 'symbol'; });
     const antes = simbolo ? simbolo.id : undefined;
-    ['vj-alt', 'vj-ruta', 'vj-hecho', 'vj-cursor', 'vj-auto'].forEach(function (id) {
+    ['vj-alt', 'vj-ruta', 'vj-hecho', 'vj-cursor', 'vj-auto', 'vj-peajes'].forEach(function (id) {
       m.addSource(id, { type: 'geojson', data: VACIO });
     });
     m.addLayer({ id: 'vj-alt', type: 'line', source: 'vj-alt',
@@ -1367,6 +1419,11 @@ const GTViajes = (function () {
     m.addLayer({ id: 'vj-ruta', type: 'line', source: 'vj-ruta',
                  layout: { 'line-cap': 'round', 'line-join': 'round' },
                  paint: { 'line-color': ['get', 'c'], 'line-width': 5 } }, antes);
+    // Peajes: la plaza, un punto más grande; el pórtico TAG, uno chico.
+    m.addLayer({ id: 'vj-peajes', type: 'circle', source: 'vj-peajes',
+                 paint: { 'circle-radius': ['match', ['get', 'tipo'], 'plaza', 6, 4.5],
+                          'circle-color': PALETA.ambar,
+                          'circle-stroke-color': PALETA.mapa.seleccion, 'circle-stroke-width': 2 } });
     m.addLayer({ id: 'vj-hecho', type: 'line', source: 'vj-hecho',
                  layout: { 'line-cap': 'round', 'line-join': 'round' },
                  paint: { 'line-color': PALETA.mapa.seleccion, 'line-width': 2.2, 'line-opacity': 0.95 } });
@@ -1399,9 +1456,14 @@ const GTViajes = (function () {
     const m = S.mapa;
     if (!m || !m.getSource('vj-ruta')) return;
     if (!S.rutas.length) {
-      ['vj-alt', 'vj-ruta', 'vj-hecho', 'vj-auto', 'vj-cursor'].forEach(function (id) { m.getSource(id).setData(VACIO); });
+      ['vj-alt', 'vj-ruta', 'vj-hecho', 'vj-auto', 'vj-cursor', 'vj-peajes'].forEach(function (id) { m.getSource(id).setData(VACIO); });
       return;
     }
+    m.getSource('vj-peajes').setData({ type: 'FeatureCollection',
+      features: (S.rutas[S.elegida].perfil.peajes || []).map(function (x) {
+        return { type: 'Feature', properties: { tipo: x.tipo, nombre: x.nombre },
+                 geometry: { type: 'Point', coordinates: x.p } };
+      }) });
     m.getSource('vj-alt').setData({ type: 'FeatureCollection', features: S.rutas.map(function (r, i) {
       return i === S.elegida ? null : { type: 'Feature', properties: { i: i },
                                         geometry: { type: 'LineString', coordinates: r.perfil.coords } };
@@ -1915,12 +1977,8 @@ const GTViajes = (function () {
       vuelta: $('vjVuelta').checked, vueltaInvertida: vueltaInvertida(),
       ruta: r, total: total(r), opciones: o, nombre: nombreViaje(),
       estilo: V.ESTILOS[S.estilo].nombre, clima: $('vjClima').checked ? S.clima : null,
-      tramos: (r.vuelta ? [r.ida, r.vuelta].map(function (x, t) {
-        return { rotulo: rotuloTramo(t), km: x.km, segundos: x.segundos, litros: x.litros };
-      }) : r.ida.porTramo.map(function (x, t) {
-        return { rotulo: rotuloTramo(t), km: x.m / 1000, segundos: x.segundos, litros: x.litros };
-      })),
-      mapa: S.mapa, duracion: duracion, pesos: pesos,
+      tramos: filasTramos(r),
+      mapa: S.mapa, duracion: duracion, pesos: pesos, textoPeajes: textoPeajes,
     };
   }
 

@@ -1896,6 +1896,34 @@ body {
    Viajes a terreno (viajes.html)
    -------------------------------------------------------------------------- */
 
+/* Sin huecos. Arriba, la tarjeta del mapa se estira hasta el alto de la
+   columna derecha (recorrido, resultado y vehículo) y el mapa ocupa lo que
+   sobra; nunca queda más bajo que antes. `.card:has(> .map--alto)` la
+   dejaba arriba con su alto propio y debajo quedaba un hueco que crecía al
+   aparecer el resultado. */
+.viaje__arriba { align-items: stretch; }
+.viaje__arriba > .viaje__mapa { align-self: stretch; }
+.viaje__mapa > .map--alto {
+  flex: 1 1 auto; height: auto;
+  min-height: max(460px, calc(100vh - var(--mapa-margen, 270px)));
+}
+/* Abajo, el detalle en columnas que el navegador equilibra (multicolumna):
+   cada caja va entera en una columna y las dos terminan casi a la par, sin
+   el hueco que dejaban dos pilas de distinto alto. */
+.viaje__tablero { columns: 2; column-gap: 16px; margin-bottom: -14px; }
+.viaje__tablero > .card { break-inside: avoid; margin-bottom: 14px; }
+@media (min-width: 1900px) { .viaje__tablero { columns: 3; } }
+/* Sin ruta solo queda "Mis viajes": a lo ancho, no media fila vacía. */
+.viaje__tablero:not(:has(> .viaje__con-ruta:not([hidden]))) { columns: 1; }
+@media (max-width: 720px) {
+  .viaje__tablero { columns: 1; }
+  .viaje__mapa > .map--alto { min-height: 70vh; }
+}
+/* La cifra de peajes ocupa la fila entera: con siete cifras en dos
+   columnas, la última quedaba sola con medio renglón vacío. */
+.viaje__cifras .viaje__cifra-peajes { grid-column: 1 / -1; }
+.viaje__peaje-marca { border-radius: 50%; }
+
 .viaje__barra {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   margin-bottom: 10px;
@@ -2215,7 +2243,7 @@ strong.viaje__vehiculo-cifra { color: var(--titulo); font-weight: 500; }
   }
   .informe__marca { font-size: 9pt; color: #52525B; letter-spacing: .06em; text-transform: uppercase; }
   .informe__fecha { font-size: 9pt; color: #67676F; }
-  .informe__cifras { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 14px 0; }
+  .informe__cifras { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 14px 0; }
   .informe__cifras div {
     border: 1px solid #E4E4E7; border-radius: 6px; padding: 6px 8px; display: flex; flex-direction: column;
   }

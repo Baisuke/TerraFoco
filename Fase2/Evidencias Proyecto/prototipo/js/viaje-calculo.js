@@ -292,7 +292,51 @@ const GTViaje = (function () {
     const cum = acumulada(coords);
     return { coords: coords, cum: cum, largo: cum[cum.length - 1], piezas: piezas,
              fuente: perfiles[0].fuente, tramos: perfiles.length, indicaciones: indicaciones,
+             peajes: unirPeajes(perfiles),
              conPendiente: perfiles.every(function (p) { return p.conPendiente; }) };
+  }
+
+  /* Los peajes de cada tramo, uno detrás de otro. Si algún tramo no sabe
+     cuántos tiene (OSRM, la recta), el viaje entero queda sin dato. */
+  function unirPeajes(perfiles) {
+    if (perfiles.some(function (p) { return !p.peajes; })) return null;
+    const lista = [];
+    let desplazamiento = 0;
+    perfiles.forEach(function (p, t) {
+      p.peajes.forEach(function (x) {
+        lista.push(Object.assign({}, x, { d: x.d + desplazamiento, tramo: t }));
+      });
+      desplazamiento += p.piezas.length ? p.piezas[p.piezas.length - 1].hasta : 0;
+    });
+    return lista;
+  }
+
+  /* Los peajes que cruza un tramo de Valhalla: el nodo donde termina cada
+     arco dice si es una plaza de peaje (barrier=toll_booth en OSM) o un
+     pórtico de cobro electrónico, TAG (highway=toll_gantry). Una plaza con
+     varias casetas puede venir en nodos seguidos: los que caen a menos de
+     200 m del anterior del mismo tipo cuentan como uno. */
+  function peajesDeArcos(arcos, coords, cum) {
+    const lista = [];
+    arcos.forEach(function (e) {
+      const tipo = e.end_node && e.end_node.type;
+      if (tipo !== 'toll_booth' && tipo !== 'toll_gantry') return;
+      const i = Math.min(cum.length - 1, e.end_shape_index || 0);
+      const x = { d: cum[i], p: coords[i], tipo: tipo === 'toll_booth' ? 'plaza' : 'portico',
+                  nombre: (e.names && e.names[0]) || '', tramo: 0 };
+      const previo = lista[lista.length - 1];
+      if (previo && previo.tipo === x.tipo && x.d - previo.d < 200) return;
+      lista.push(x);
+    });
+    return lista;
+  }
+
+  /* Cuántos peajes hay en una lista, por tipo. */
+  function contarPeajes(lista) {
+    if (!lista) return null;
+    const n = { total: lista.length, plazas: 0, porticos: 0 };
+    lista.forEach(function (x) { if (x.tipo === 'plaza') n.plazas++; else n.porticos++; });
+    return n;
   }
 
   /* Valhalla: cada tramo trae su forma, su altura cada 30 m y sus
@@ -318,6 +362,8 @@ const GTViaje = (function () {
         };
       };
       const p = armarPerfil(coords, tramo.elevation, atributos, 'valhalla');
+      // Sin atributos de este tramo no se sabe qué peajes tiene.
+      p.peajes = rastros && rastros[t] ? peajesDeArcos(arcos, coords, cum) : null;
       p.indicaciones = (tramo.maneuvers || []).map(function (m) {
         return { texto: m.instruction, tipo: m.type, largo: (m.length || 0) * 1000,
                  d: cum[Math.min(cum.length - 1, m.begin_shape_index || 0)],
@@ -379,8 +425,12 @@ const GTViaje = (function () {
                                     rumbo: (x.rumbo + 180) % 360 });
     });
     const coords = perfil.coords.slice().reverse();
+    // Los mismos peajes, ahora en el orden en que se cruzan al volver.
+    const peajes = perfil.peajes ? perfil.peajes.slice().reverse().map(function (x) {
+      return Object.assign({}, x, { d: L - x.d });
+    }) : null;
     return Object.assign({}, perfil, { coords: coords, cum: acumulada(coords), piezas: piezas,
-                                       indicaciones: [] });
+                                       indicaciones: [], peajes: peajes });
   }
 
   /* ------------------------------------------------------------------------
@@ -482,8 +532,13 @@ const GTViaje = (function () {
     Object.keys(TIPOS).forEach(function (t) { porTipo[t] = { m: 0, litros: 0 }; });
     const porTramo = [];
     for (let t = 0; t < (perfil.tramos || 1); t++) {
-      porTramo.push({ m: 0, litros: 0, segundos: 0, subida: 0, bajada: 0 });
+      porTramo.push({ m: 0, litros: 0, segundos: 0, subida: 0, bajada: 0,
+                      peajes: perfil.peajes ? 0 : null });
     }
+    (perfil.peajes || []).forEach(function (x) {
+      const tr = porTramo[x.tramo] || porTramo[0];
+      tr.peajes++;
+    });
     let subida = 0, bajada = 0, peajeM = 0, lAcum = 0, tAcum = 0, maxSubida = 0;
     const acum = [];
     perfil.piezas.forEach(function (p, i) {
@@ -513,6 +568,7 @@ const GTViaje = (function () {
       co2: Math.max(0, litros) * comb.co2,
       desglose: desglose, porTipo: porTipo, porTramo: porTramo,
       subida: subida, bajada: bajada, maxSubida: maxSubida, peajeKm: peajeM / 1000,
+      peajes: contarPeajes(perfil.peajes || null),
       ripioKm: porTipo.ripio.m / 1000,
       estanque: litros / veh.estanque,
       acum: acum, calibracion: k, unidad: comb.unidad,
@@ -525,7 +581,7 @@ const GTViaje = (function () {
     vehiculo: vehiculo, combustiblesDe: combustiblesDe,
     perfilDesdeValhalla: perfilDesdeValhalla, perfilDesdeOsrm: perfilDesdeOsrm,
     perfilRecto: perfilRecto, unirPerfiles: unirPerfiles, invertir: invertir,
-    calcular: calcular, calibracion: calibracion,
+    calcular: calcular, calibracion: calibracion, contarPeajes: contarPeajes,
     decodificar: decodificar, distancia: distancia, rumbo: rumbo, puntoEn: puntoEn,
     acumulada: acumulada,
   };

@@ -20,7 +20,9 @@
 
       <div class="notice" id="vjAviso" hidden aria-live="polite"></div>
 
-      <div class="grid grid--main">
+      <!-- Arriba, el mapa y lo esencial. El mapa se estira hasta el alto de la
+           columna derecha, así no queda un hueco debajo de él. -->
+      <div class="grid grid--main viaje__arriba">
         <div class="card viaje__mapa">
           <div class="card__head">
             <div class="card__title">Mapa del viaje</div>
@@ -171,63 +173,62 @@
               etiqueta. Precios de referencia: cámbielos por los de su bencinera o su tarifa eléctrica; quedan guardados
               en este navegador.</p>
           </div>
-
-          <div class="card">
-            <div class="card__head">
-              <div class="card__title">Mis viajes</div>
-              <div class="card__note" id="vjGuardadosResumen"></div>
-            </div>
-            <div class="viaje__guardar">
-              <input type="text" id="vjNombreViaje" placeholder="Nombre del viaje" maxlength="120" aria-label="Nombre del viaje">
-              <button type="button" class="btn btn--chico btn--primary" id="vjGuardar" disabled>Guardar</button>
-            </div>
-            <div class="viaje__guardados" id="vjGuardados"></div>
-            <button type="button" class="btn btn--chico" id="vjPlanilla" disabled title="Un viaje por fila, para la rendición de gastos">Descargar planilla de rendición</button>
-          </div>
         </div>
       </div>
 
-      <div class="grid grid--2" id="vjDetalle" hidden>
-        <div class="stack">
-          <div class="card">
-            <div class="card__title">En qué se va el combustible</div>
-            <div class="viaje__barra-gasto" id="vjBarra"></div>
-            <div class="viaje__causas" id="vjCausas"></div>
-          </div>
-          <div class="card">
-            <div class="card__title">Cómo gastar menos en este viaje</div>
-            <div class="viaje__consejos" id="vjConsejos"></div>
-          </div>
-          <div class="card">
-            <div class="card__title">El mismo viaje en otro vehículo</div>
-            <div class="viaje__comparar" id="vjComparar"></div>
-            <p class="tiny muted" style="margin:0" id="vjCompararNota"></p>
-          </div>
+      <!-- Abajo, el detalle. Las cajas fluyen en columnas que el navegador
+           equilibra solas (como un muro de ladrillos): no quedan huecos aunque
+           cambie el alto de una caja o aparezcan y desaparezcan cajas. Las que
+           solo tienen sentido con una ruta llevan .viaje__con-ruta. -->
+      <div class="viaje__tablero" id="vjDetalle">
+        <div class="card viaje__con-ruta" hidden>
+          <div class="card__title">En qué se va el combustible</div>
+          <div class="viaje__barra-gasto" id="vjBarra"></div>
+          <div class="viaje__causas" id="vjCausas"></div>
         </div>
-        <div class="stack">
-          <div class="card" id="vjTramosCaja" hidden>
-            <div class="card__title">Tramos del viaje</div>
-            <div class="table__wrap" id="vjTramos"></div>
+        <div class="card" id="vjAlternativas" hidden>
+          <div class="card__title">Rutas posibles</div>
+          <div class="viaje__alts" id="vjAltLista"></div>
+          <p class="small muted" style="margin:0" id="vjAltNota"></p>
+        </div>
+        <div class="card viaje__con-ruta" hidden>
+          <div class="card__title">Cómo gastar menos en este viaje</div>
+          <div class="viaje__consejos" id="vjConsejos"></div>
+        </div>
+        <div class="card" id="vjTramosCaja" hidden>
+          <div class="card__title">Tramos del viaje</div>
+          <div class="table__wrap" id="vjTramos"></div>
+        </div>
+        <div class="card viaje__con-ruta" hidden>
+          <div class="card__title">Por tipo de camino <span class="tiny muted" id="vjTiposNota"></span></div>
+          <div class="viaje__tipos" id="vjTipos"></div>
+        </div>
+        <div class="card viaje__con-ruta" hidden>
+          <div class="card__title">El mismo viaje en otro vehículo</div>
+          <div class="viaje__comparar" id="vjComparar"></div>
+          <p class="tiny muted" style="margin:0" id="vjCompararNota"></p>
+        </div>
+        <div class="card" id="vjIndicacionesCaja" hidden>
+          <details class="viaje__como">
+            <summary><strong>Indicaciones paso a paso</strong> <span class="muted" id="vjIndicacionesNota"></span></summary>
+            <ol class="viaje__indicaciones" id="vjIndicaciones"></ol>
+          </details>
+        </div>
+        <div class="card viaje__con-ruta" hidden>
+          <div class="card__title">Notas del cálculo</div>
+          <ul class="ayuda__lista viaje__notas" id="vjNotas"></ul>
+        </div>
+        <div class="card">
+          <div class="card__head">
+            <div class="card__title">Mis viajes</div>
+            <div class="card__note" id="vjGuardadosResumen"></div>
           </div>
-          <div class="card">
-            <div class="card__title">Por tipo de camino <span class="tiny muted" id="vjTiposNota"></span></div>
-            <div class="viaje__tipos" id="vjTipos"></div>
+          <div class="viaje__guardar">
+            <input type="text" id="vjNombreViaje" placeholder="Nombre del viaje" maxlength="120" aria-label="Nombre del viaje">
+            <button type="button" class="btn btn--chico btn--primary" id="vjGuardar" disabled>Guardar</button>
           </div>
-          <div class="card" id="vjAlternativas" hidden>
-            <div class="card__title">Rutas posibles</div>
-            <div class="viaje__alts" id="vjAltLista"></div>
-            <p class="small muted" style="margin:0" id="vjAltNota"></p>
-          </div>
-          <div class="card" id="vjIndicacionesCaja" hidden>
-            <details class="viaje__como">
-              <summary><strong>Indicaciones paso a paso</strong> <span class="muted" id="vjIndicacionesNota"></span></summary>
-              <ol class="viaje__indicaciones" id="vjIndicaciones"></ol>
-            </details>
-          </div>
-          <div class="card">
-            <div class="card__title">Notas del cálculo</div>
-            <ul class="ayuda__lista viaje__notas" id="vjNotas"></ul>
-          </div>
+          <div class="viaje__guardados" id="vjGuardados"></div>
+          <button type="button" class="btn btn--chico" id="vjPlanilla" disabled title="Un viaje por fila, para la rendición de gastos">Descargar planilla de rendición</button>
         </div>
       </div>
 
