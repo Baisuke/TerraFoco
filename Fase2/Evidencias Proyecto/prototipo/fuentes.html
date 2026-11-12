@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fuentes de datos · TerraFoco</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -133,8 +136,11 @@
 <script src="js/mapa.js"></script>
 <script src="js/graficos.js"></script>
 <script>
+/* La sesión (login.html) la abre la API con una cookie HttpOnly; cerrarla
+   también es tarea del servidor, que la borra. */
+const BOTON_SALIR = '<button class="btn" id="btnCerrarSesion" title="Cerrar la sesión de administración">Cerrar sesión</button>';
 pintarShell('fuentes', 'Fuentes de datos', 'Núcleo · ingesta, normalización y almacenamiento',
-            BOTON_EXPORTAR,
+            BOTON_EXPORTAR + BOTON_SALIR,
             "Estado de las fuentes de datos que alimentan el sistema y de los procesos que las mantienen actualizadas.");
 
 /* ==========================================================================
@@ -382,6 +388,13 @@ document.getElementById('salirAdmin').addEventListener('click', function () {
   avisar('Se olvidó la clave de administración en esta pestaña.');
 });
 guardarClave(claveGuardada());
+
+document.getElementById('btnCerrarSesion').addEventListener('click', function () {
+  guardarClave('');
+  fetch(GT_API_BASE + '/sesion/salir', { method: 'POST', credentials: 'same-origin' })
+    .catch(function () {})
+    .finally(function () { location.replace('login.html'); });
+});
 
 /* La escritura. Es lo único de todo el prototipo que modifica la base. */
 function cambiarEstado(id, estado, sel) {

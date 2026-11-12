@@ -1968,3 +1968,19 @@ body {
 
 /* La lista de servicios no alarga la página: se desplaza dentro de la tarjeta. */
 #equipoLista > .stack { max-height: 340px; overflow-y: auto; }
+
+/* Inicio de sesión de Fuentes de datos (login.html): la tarjeta del 404,
+   angosta y con los campos del diálogo de la clave. */
+.ingreso { gap: 14px; padding: 32px 28px; width: min(420px, 100%); margin: 24px auto; }
+.ingreso__marca .sidebar__mark { width: 34px; height: 34px; gap: 3px; }
+.ingreso__texto { margin: 0; line-height: 1.55; }
+.ingreso__form { display: flex; flex-direction: column; gap: 12px; margin: 4px 0; }
+.ingreso__campo { display: flex; flex-direction: column; gap: 5px; }
+.ingreso__campo input {
+  font: inherit; padding: 9px 11px;
+  border: 1px solid var(--linea-fuerte); border-radius: var(--r-sm);
+  background: var(--fondo); color: var(--texto);
+}
+.ingreso__campo input:focus { outline: 2px solid var(--acento-texto); outline-offset: 1px; }
+.ingreso__error { margin: 0; color: var(--rojo); }
+.ingreso .btn--primary { justify-content: center; }

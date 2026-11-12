@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión · TerraFoco</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="js/tema.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+
+    <div class="content">
+      <!-- El formulario no decide nada: manda usuario y contraseña a la API
+           (/api/sesion), que responde con una cookie HttpOnly. Caddy no
+           entrega fuentes.html sin esa cookie (despliegue/Caddyfile). -->
+      <section class="card ingreso">
+        <div class="ingreso__marca" aria-hidden="true"><div class="sidebar__mark"></div></div>
+        <h2 class="portada__titulo">Área de administración</h2>
+        <p class="small muted ingreso__texto">La página <strong>Fuentes de datos</strong> muestra el estado del
+          motor y permite gestionar el catálogo. Ingresa con la cuenta de administración.</p>
+
+        <form id="frmIngreso" class="ingreso__form" novalidate>
+          <label class="ingreso__campo">
+            <span class="tiny muted">Usuario</span>
+            <input type="text" id="inpUsuario" name="username" autocomplete="username"
+                   autocapitalize="off" spellcheck="false" required>
+          </label>
+          <label class="ingreso__campo">
+            <span class="tiny muted">Contraseña</span>
+            <input type="password" id="inpContrasena" name="password" autocomplete="current-password" required>
+          </label>
+          <p class="small ingreso__error" id="msgError" role="alert" hidden></p>
+          <button type="submit" class="btn btn--primary" id="btnEntrar">Iniciar sesión</button>
+        </form>
+
+        <p class="tiny muted" style="margin:0">¿No tienes la cuenta? El resto del sitio es público:
+          <a href="index.html">volver al inicio</a>.</p>
+      </section>
+    </div>
+  </div>
+</div>
+<script src="js/api-base.js"></script>
+<script src="js/paleta.js"></script>
+<script src="js/colores-mapa.js"></script>
+<script src="js/data.js"></script>
+<script src="js/shell.js"></script>
+<script>
+pintarShell('fuentes', 'Iniciar sesión', 'Fuentes de datos · acceso restringido', '', '');
+document.querySelector('.ingreso__marca .sidebar__mark').innerHTML = '<span></span>'.repeat(9);
+
+/* Solo páginas de este sitio: la API aplica la misma regla al redirigir. */
+const volver = (function () {
+  const v = new URLSearchParams(location.search).get('volver') || '';
+  return /^\/[a-z0-9_-]+\.html$/.test(v) ? v : '/fuentes.html';
+})();
+
+const frm = document.getElementById('frmIngreso');
+const btn = document.getElementById('btnEntrar');
+const err = document.getElementById('msgError');
+const inpUsuario = document.getElementById('inpUsuario');
+const inpContrasena = document.getElementById('inpContrasena');
+
+function mostrarError(texto) {
+  err.textContent = texto;
+  err.hidden = !texto;
+}
+
+/* Con la sesión ya abierta no hay nada que pedir. */
+fetch(GT_API_BASE + '/sesion', { credentials: 'same-origin', cache: 'no-store' })
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (d) { if (d && d.activa) location.replace(volver); })
+  .catch(function () {});
+
+inpUsuario.focus();
+
+frm.addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  if (!inpUsuario.value.trim() || !inpContrasena.value) {
+    mostrarError('Escribe el usuario y la contraseña.');
+    return;
+  }
+  mostrarError('');
+  btn.disabled = true;
+  btn.textContent = 'Verificando…';
+  fetch(GT_API_BASE + '/sesion', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usuario: inpUsuario.value.trim(), contrasena: inpContrasena.value })
+  }).then(function (r) {
+    if (r.ok) { location.replace(volver); return; }
+    return r.json().catch(function () { return {}; }).then(function (d) {
+      const porEstado = {
+        401: 'Usuario o contraseña incorrectos.',
+        429: 'Demasiados intentos. Espera unos minutos antes de volver a probar.',
+        503: 'El inicio de sesión no está disponible en este servidor.'
+      };
+      mostrarError(porEstado[r.status] || (d && d.detail) || 'No se pudo iniciar sesión.');
+      inpContrasena.value = '';
+      inpContrasena.focus();
+    });
+  }).catch(function () {
+    mostrarError('No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.');
+  }).finally(function () {
+    btn.disabled = false;
+    btn.textContent = 'Iniciar sesión';
+  });
+});
+</script>
+</body>
+</html>

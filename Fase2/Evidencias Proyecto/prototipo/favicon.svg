@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+  <!-- La marca de la barra lateral (shell.js): grilla de 3x3 con la diagonal
+       resaltada. Sigue el tema del sistema, igual que css/styles.css. -->
+  <style>
+    rect { fill: #D9D9DD; }
+    .d { fill: #18181B; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #2A2A2E; }
+      .d { fill: #F4F4F5; }
+    }
+  </style>
+  <rect class="d" x="0" y="0" width="6" height="6" rx="1"/>
+  <rect x="8" y="0" width="6" height="6" rx="1"/>
+  <rect x="16" y="0" width="6" height="6" rx="1"/>
+  <rect x="0" y="8" width="6" height="6" rx="1"/>
+  <rect class="d" x="8" y="8" width="6" height="6" rx="1"/>
+  <rect x="16" y="8" width="6" height="6" rx="1"/>
+  <rect x="0" y="16" width="6" height="6" rx="1"/>
+  <rect x="8" y="16" width="6" height="6" rx="1"/>
+  <rect class="d" x="16" y="16" width="6" height="6" rx="1"/>
+</svg>
