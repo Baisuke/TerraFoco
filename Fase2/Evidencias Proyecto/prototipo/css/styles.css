@@ -2300,3 +2300,39 @@ strong.viaje__vehiculo-cifra { color: var(--titulo); font-weight: 500; }
 @media (min-width: 721px) and (max-width: 1080px) {
   .grid--visor { grid-template-columns: 210px minmax(0, 1fr); }
 }
+
+/* --------------------------------------------------------------------------
+   Inicio (index.html): qué es TerraFoco, el mapa con su panel al borde
+   derecho y una tarjeta por módulo.
+   -------------------------------------------------------------------------- */
+.portada__intro { gap: 10px; }
+.portada__titulo { margin: 0; font-size: 22px; font-weight: 500; line-height: 1.25; color: var(--titulo); }
+.portada__texto { margin: 0; max-width: 80ch; font-size: 14.5px; line-height: 1.6; color: var(--texto); }
+.portada__pasos {
+  display: flex; flex-wrap: wrap; gap: 6px 28px; margin: 4px 0 0; padding-left: 18px;
+  font-size: 13px; color: var(--texto-2);
+}
+.portada__pasos strong { color: var(--titulo); font-weight: 500; }
+.grid--portada { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+.portada__lado { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.portada__panel { gap: 8px; }
+.portada__panel .stat:last-of-type { border-bottom: 1px solid var(--linea); }
+.portada__panel .kpi__value { font-size: 26px; }
+.portada__grupo { text-transform: uppercase; letter-spacing: .04em; }
+.portada__comuna {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: calc(100% + 12px); margin: 0 -6px; padding: 5px 6px;
+  border: 0; border-radius: var(--r-sm); background: none;
+  font: inherit; font-size: 13px; color: var(--texto); text-align: left; cursor: pointer;
+}
+.portada__comuna:hover { background: var(--tint); }
+.portada__seccion { margin: 6px 0 10px; }
+.modulos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.modulo { gap: 6px; text-decoration: none; color: var(--texto); }
+.modulo:hover { border-color: var(--borde-hover); }
+.modulo strong { color: var(--titulo); font-weight: 500; font-size: 14px; }
+.modulo .small { line-height: 1.5; }
+.modulo__icono { color: var(--acento); display: inline-flex; }
+@media (max-width: 1280px) { .modulos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1080px) { .grid--portada { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px)  { .modulos { grid-template-columns: minmax(0, 1fr); } }

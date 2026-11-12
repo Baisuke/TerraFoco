@@ -147,6 +147,17 @@
         </div>
       </div>
 
+      <!-- Las dos erosiones lado a lado (UC-06). Estaba en el panel general,
+           donde era lo más técnico de la portada; aquí acompaña al índice,
+           que se calcula con una u otra. -->
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">Comunas por clase de erosión</div>
+          <div class="card__note" id="notaComparacion">inventario CIREN frente al cálculo propio</div>
+        </div>
+        <div id="comparacion"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -390,6 +401,29 @@ GT.evolucionFocalizacion().then(function (e) {
   }
 });
 
+});
+/* ---- Comparación por clase (UC-06) ----
+   Inventario CIREN contra el cálculo propio, ambos medidos. */
+GT.hidratar().then(function () {
+  const clases = GT.clasesErosion.map(function (c) { return c.nombre; });
+  const conteoCiren = GT.clasesErosion.map(function () { return 0; });
+  const conteoPropio = GT.clasesErosion.map(function () { return 0; });
+  let nCiren = 0, nPropio = 0;
+  function claseIdx(v) { return GT.clasesErosion.indexOf(GT.claseErosion(v)); }
+  GT.comunas.forEach(function (c, i) {
+    const e = GTMapa.erosionesDe(c, i);
+    if (typeof e.ciren === 'number') { conteoCiren[claseIdx(e.ciren)]++; nCiren++; }
+    // Fuera del dominio el modelo sobreestima: se cuenta solo si se pidió.
+    if (typeof e.propia === 'number' && (e.enDominio || GT.incluirFueraDeDominio)) {
+      conteoPropio[claseIdx(e.propia)]++; nPropio++;
+    }
+  });
+  GTGrafico.comparacion(document.getElementById('comparacion'), clases, conteoCiren, conteoPropio,
+                        ['CIREN' + (GT.anioCiren ? ' ' + GT.anioCiren : ''),
+                         'Cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')]);
+  /* Si los dos lados no cuentan las mismas comunas, se dice. */
+  document.getElementById('notaComparacion').textContent = 'inventario CIREN frente al cálculo propio' +
+    (nPropio !== nCiren ? ' · ' + nCiren + ' y ' + nPropio + ' comunas (fuera del dominio del modelo se omiten)' : '');
 });
 /* Desde el visor se llega con #metodologia: la nota se abre sola. */
 if (location.hash === '#metodologia') {

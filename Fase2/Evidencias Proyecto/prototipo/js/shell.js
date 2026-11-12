@@ -25,7 +25,7 @@ const ICONOS = {
 
 const MENU = [
   { grupo: 'General' },
-  { id: 'index',        href: 'index.html',        nombre: 'Panel general',       icono: 'panel' },
+  { id: 'index',        href: 'index.html',        nombre: 'Inicio',              icono: 'panel' },
   { id: 'visor',        href: 'visor.html',        nombre: 'Visor cartográfico',  icono: 'visor' },
   { id: 'predios',      href: 'predios.html',      nombre: 'Mis predios',         icono: 'pin' },
   { id: 'viajes',       href: 'viajes.html',       nombre: 'Viajes a terreno',    icono: 'auto' },
