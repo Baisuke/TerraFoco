@@ -1078,6 +1078,11 @@ GTMapaReal.crearConRespaldo = function (contenedor, opciones) {
 function marcarOrigen(contenedor, esReal) {
   const previo = contenedor.querySelector('.map__origen');
   if (previo) previo.remove();
+  /* Con geometrías reales no se rotula: "Geometrías reales · en vivo desde
+     PostGIS" era un chip más apilado en la esquina, encima de la capa y los
+     controles, y no le decía nada a quien mira el mapa. Solo se avisa
+     cuando el mapa es el esquema de respaldo. */
+  if (esReal) return;
   const chip = document.createElement('div');
   /* La posición sale de la clase y no de un style en línea: en pantalla
      completa hay que correr estos avisos para que el panel de filtros no los

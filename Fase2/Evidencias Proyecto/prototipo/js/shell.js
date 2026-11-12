@@ -172,7 +172,9 @@ function pintarShell(paginaActiva, titulo, subtitulo, acciones, explicacion) {
                'aria-label="Ir a la ficha de una comuna" autocomplete="off">' +
         '<datalist id="listaComunas"></datalist>' +
       '</label>' +
-      '<span class="badge badge--proto"><span class="dot"></span>Prototipo · datos de ejemplo</span>' +
+      /* Sin la etiqueta de estado ("Datos reales · …"): se pidió quitarla
+         del encabezado. Las páginas que la rotulaban la buscan y, al no
+         encontrarla, no hacen nada. */
       '<span class="reloj" id="reloj" title="Hora de Chile"></span>' +
       botonColores() +
       botonTema() +

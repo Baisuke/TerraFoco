@@ -857,22 +857,28 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--acento); }
    decía qué se estaba viendo. Se apilan en ese orden. */
 #capaActiva { padding: 7px 11px; font-size: 13px; font-weight: 500; }
 #capaActiva ~ .map__origen { top: 52px; }
-#capaActiva ~ .mapbar { top: 86px; }
 .map__overlay--bl { bottom: 12px; left: 12px; }
 .map__overlay--br { bottom: 12px; right: 12px; font-family: var(--mono); color: var(--muted); font-size: 11px; }
 /* El chip de origen es información secundaria: más chico y sin peso. */
 .map__origen { font-size: 11.5px; font-weight: 400; color: var(--texto-2); padding: 6px 10px; }
 
-/* Barra de controles del mapa. Va bajo el chip de origen: arriba a la derecha
-   esta el zoom, abajo a la derecha la escala y la atribucion, y abajo a la
-   izquierda el panel de detalle. */
+/* Barra de controles del mapa: arriba a la derecha, junto al zoom, como en
+   los visores de ArcGIS. Iba apilada arriba a la izquierda bajo el título y
+   el chip de origen, y esa esquina juntaba cuatro filas de botones encima
+   del dato. A la izquierda queda solo qué se está viendo; abajo, la leyenda
+   y la escala. */
 .mapbar {
   position: absolute;
-  top: 48px; left: 12px;
+  top: 10px; right: 52px;
   z-index: 3;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
-  transition: left .18s;
+  max-width: calc(100% - 300px);
+}
+@media (max-width: 720px) {
+  .mapbar { max-width: calc(100% - 64px); }
 }
 
 /* Conmutador de mapa base: control segmentado. Va sobre el mapa y no en el
@@ -990,7 +996,6 @@ body.sin-desplazamiento { overflow: hidden; }
 .map__panel .tabs { margin-left: 0 !important; margin-top: 12px; }
 
 /* Lo que flota sobre el mapa se corre para no quedar tapado por el panel. */
-.map--completa .mapbar,
 .map--completa .map__origen,
 .map--completa .map__overlay--tl { left: calc(var(--panel-ancho, 0px) + 12px); }
 .map--completa .map__overlay--bl,
