@@ -25,10 +25,9 @@ const ICONOS = {
 
 const MENU = [
   { grupo: 'General' },
-  { id: 'index',        href: 'index.html',        nombre: 'Panel general',       icono: 'panel' },
+  { id: 'index',        href: 'index.html',        nombre: 'Inicio',              icono: 'panel' },
   { id: 'visor',        href: 'visor.html',        nombre: 'Visor cartográfico',  icono: 'visor' },
   { id: 'predios',      href: 'predios.html',      nombre: 'Mis predios',         icono: 'pin' },
-  { id: 'viajes',       href: 'viajes.html',       nombre: 'Viajes a terreno',    icono: 'auto' },
   { grupo: 'Módulo 1 — Suelos' },
   { id: 'pertinencia',  href: 'pertinencia.html',  nombre: 'Índice de pertinencia', icono: 'diana' },
   { id: 'comuna',       href: 'comuna.html',       nombre: 'Ficha de comuna',     icono: 'capas' },
@@ -172,7 +171,9 @@ function pintarShell(paginaActiva, titulo, subtitulo, acciones, explicacion) {
                'aria-label="Ir a la ficha de una comuna" autocomplete="off">' +
         '<datalist id="listaComunas"></datalist>' +
       '</label>' +
-      '<span class="badge badge--proto"><span class="dot"></span>Prototipo · datos de ejemplo</span>' +
+      /* Sin la etiqueta de estado ("Datos reales · …"): se pidió quitarla
+         del encabezado. Las páginas que la rotulaban la buscan y, al no
+         encontrarla, no hacen nada. */
       '<span class="reloj" id="reloj" title="Hora de Chile"></span>' +
       botonColores() +
       botonTema() +

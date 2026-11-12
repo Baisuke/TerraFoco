@@ -637,8 +637,7 @@ GTMapaReal.crear = function (contenedor, opciones) {
                              panel: null, alCambiarPantalla: null,
                              /* false: el clic no abre comunas ni vuelve a la
                                 región, y no hay ventana con el valor. Para
-                                pantallas donde el clic marca otra cosa (Viajes
-                                a terreno marca la salida y la llegada). */
+                                pantallas donde el clic marca otra cosa. */
                              interactivo: true }, opciones);
   let mapa = null, geo = null, seleccionada = null, opacidadBase = 0.82;
   /* La opacidad con que entra la base actual. El detalle a 30 m se atenúa en
@@ -868,15 +867,34 @@ GTMapaReal.crear = function (contenedor, opciones) {
             });
           }
 
+          /* Acerca a la comuna elegida. Con detalle a 30 m lo hace el
+             detalle al abrirse; sin él (el panel general, las capas
+             comunales del visor) el mapa quedaba en la vista regional y la
+             comuna elegida era una más entre 33. Se corre a la izquierda de
+             la ficha si la hay. */
+          function encuadrarComuna(nombre) {
+            const f = geo.features.filter(function (x) { return x.properties.nombre === nombre; });
+            if (!f.length) return;
+            const m = { top: 40, bottom: 40, left: 40, right: 40 };
+            const ficha = contenedor.querySelector('.map__ficha:not([hidden])');
+            if (ficha && ficha.offsetWidth < contenedor.offsetWidth / 2) m.right += ficha.offsetWidth + 14;
+            mapa.fitBounds(limitesDe({ features: f }), { padding: m, duration: 600, maxZoom: 12 });
+          }
+
+          function abrir(c) {
+            seleccionada = c.nombre;
+            pintarSeleccion();
+            if (cfg.alSeleccionar) cfg.alSeleccionar(c);
+            if (detalle && detalleActivo && detalle.disponible()) detalle.mostrar(c);
+            else encuadrarComuna(c.nombre);
+          }
+
           /* Abre una comuna como el clic, desde fuera del mapa: el buscador
              y el enlace compartido de inundaciones. */
           function abrirComuna(nombre) {
             const c = GT.comunas.find(function (x) { return x.nombre === nombre; });
             if (!c) return false;
-            seleccionada = nombre;
-            pintarSeleccion();
-            if (cfg.alSeleccionar) cfg.alSeleccionar(c);
-            if (detalle && detalleActivo && detalle.disponible()) detalle.mostrar(c);
+            abrir(c);
             return true;
           }
 
@@ -890,11 +908,9 @@ GTMapaReal.crear = function (contenedor, opciones) {
               cfg.alClicEnAbierta(e.lngLat);
               return;
             }
-            seleccionada = p.nombre;
-            pintarSeleccion();
             const c = GT.comunas.find(function (x) { return x.nombre === p.nombre; });
-            if (cfg.alSeleccionar && c) cfg.alSeleccionar(c);
-            if (detalle && c && detalleActivo && detalle.disponible()) detalle.mostrar(c);
+            if (c) abrir(c);
+            else { seleccionada = p.nombre; pintarSeleccion(); }
           });
 
           /* Vuelta a la vista regional. La usan el clic fuera de las comunas
@@ -948,7 +964,14 @@ GTMapaReal.crear = function (contenedor, opciones) {
               '<strong>' + p.nombre + '</strong><br>' +
               (p._valor !== undefined ? valorComuna + ' ' + (p._unidad || '') : 'sin dato') +
               (p._nota ? ' <span class="muted">· ' + p._nota + '</span>' : '') +
-              (celda ? ' <span class="muted">· comuna</span>' +
+              /* Dentro de la comuna abierta, sin celda bajo el cursor: se
+                 decía "0,42 · muy alta" sobre un hueco del mapa, y se leía
+                 como el valor de ese punto. Es el promedio de la comuna. */
+              (!celda && detalle && detalleActivo && p.nombre === seleccionada
+                ? ' <span class="muted">· promedio de la comuna</span>' +
+                  '<div class="emergente__celda"><span class="muted">En este punto no hay celda: ' +
+                  'sin dato del terreno o clase oculta</span></div>' : '') +
+              (celda ? ' <span class="muted">· promedio de la comuna</span>' +
                 '<div class="emergente__celda"><i style="background:' + celda.color + '"></i>' +
                 '<span>' + celda.etiqueta + ': ' +
                 (celda.valor
@@ -1054,6 +1077,11 @@ GTMapaReal.crearConRespaldo = function (contenedor, opciones) {
 function marcarOrigen(contenedor, esReal) {
   const previo = contenedor.querySelector('.map__origen');
   if (previo) previo.remove();
+  /* Con geometrías reales no se rotula: "Geometrías reales · en vivo desde
+     PostGIS" era un chip más apilado en la esquina, encima de la capa y los
+     controles, y no le decía nada a quien mira el mapa. Solo se avisa
+     cuando el mapa es el esquema de respaldo. */
+  if (esReal) return;
   const chip = document.createElement('div');
   /* La posición sale de la clase y no de un style en línea: en pantalla
      completa hay que correr estos avisos para que el panel de filtros no los

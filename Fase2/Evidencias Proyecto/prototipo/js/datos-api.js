@@ -285,13 +285,14 @@
         return c.fueraDeDominio;
       }).length : 0;
 
-      badge.innerHTML = '<span class="dot"></span>Datos reales · ' + fuente +
-                        (GT.anioErosion ? ' ' + GT.anioErosion : '') +
-                        (enIndice < GT.comunas.length
-                          ? ' · ' + enIndice + ' de ' + GT.comunas.length +
-                            ' comunas en el índice' : '') +
-                        (fuera ? ' · incluye ' + fuera +
-                                 ' fuera de dominio' : '');
+      /* En la barra, corto: "Datos reales". El detalle va al pasar el
+         cursor; una usuaria lo leyó como ruido. Lo que no se esconde es el
+         aviso de comunas fuera de dominio, que cambia lo que se mira. */
+      badge.innerHTML = '<span class="dot"></span>Datos reales' +
+                        (fuera ? ' · incluye ' + fuera + ' fuera de dominio' : '');
+      badge.title = 'Erosión: ' + fuente + (GT.anioErosion ? ' ' + GT.anioErosion : '') +
+                    (enIndice < GT.comunas.length
+                      ? ' · ' + enIndice + ' de ' + GT.comunas.length + ' comunas en el índice de pertinencia' : '');
       /* Con comunas fuera de dominio a la vista el aviso cambia de color: se
          está mostrando algo que el modelo sobreestima, y eso no puede tener
          el mismo verde que un dato validado. */

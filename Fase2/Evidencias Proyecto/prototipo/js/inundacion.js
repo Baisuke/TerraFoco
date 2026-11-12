@@ -128,6 +128,7 @@ const GTInundacion = (function () {
     montarExportar();
     cargarPronostico();
     pintarEventos();
+    pintarEquipamiento();
 
     if (!conMapa()) {
       $('anNota').textContent = 'mapa esquemático: sin detalle por celda';
@@ -476,6 +477,7 @@ const GTInundacion = (function () {
     if (!S.promesaEquipo) {
       S.promesaEquipo = traerJson(GT_api('/exposicion/equipamiento'), 10000).then(function (g) {
         S.equipo = g && g.features ? g : null;
+        S.equipoListo = true;
         return S.equipo;
       });
     }
@@ -487,69 +489,158 @@ const GTInundacion = (function () {
     return S.equipo.features.filter(function (f) { return f.properties.id_comuna === S.idComuna; });
   }
 
+  /* Escuelas, salud y emergencias. Los botones de categoría filtran a la
+     vez la lista y los puntos del mapa, y están desde que se abre la
+     página: sin comuna se busca en toda la región; con comuna, cuáles
+     quedan sobre el umbral. Antes solo aparecían al elegir una comuna, y
+     el botón desplegaba la lista sin tocar el mapa. */
   function pintarEquipamiento() {
     const nota = $('exNota'), cuerpo = $('exCuerpo');
-    if (!S.resumen || !S.detalle) {
-      S.equipoComuna = [];
-      nota.textContent = 'elige una comuna';
-      cuerpo.innerHTML = '<p class="small muted" style="margin:0">Los servicios que un plan de emergencia revisa primero: ' +
-        'escuelas, jardines infantiles, centros de salud, ' +
-        'bomberos y policía que quedan sobre celdas que superan el umbral.</p>';
-      return;
-    }
     if (!S.equipo) {
-      nota.textContent = S.promesaEquipo ? 'cargando' : '';
-      cuerpo.innerHTML = '<p class="small muted" style="margin:0">Sin datos de equipamiento: correr ' +
-                         '<span class="mono">python -m ingesta.equipamiento</span>.</p>';
+      if (!S.promesaEquipo) traerEquipamiento().then(function () { pintarEquipamiento(); });
+      S.equipoComuna = [];
+      nota.textContent = S.equipoListo ? '' : 'cargando';
+      cuerpo.innerHTML = S.equipoListo
+        ? '<p class="small muted" style="margin:0">Sin datos de equipamiento: correr ' +
+          '<span class="mono">python -m ingesta.equipamiento</span>.</p>'
+        : '<p class="small muted" style="margin:0">Cargando escuelas, centros de salud, bomberos y policía…</p>';
       return;
     }
-    const ev = GTCalculo.evaluarEquipamiento(equipoDeComuna(), S.detalle).filter(function (e) { return e.dentro; });
-    S.equipoComuna = ev;
-    const sobre = ev.filter(function (e) { return e.sobre; })
-      .sort(function (a, b) { return (b.valor || 0) - (a.valor || 0); });
-    nota.textContent = sobre.length + ' de ' + ev.length + ' sobre el umbral';
+    const conComuna = !!(S.resumen && S.detalle);
+    let ev, lista;
+    if (conComuna) {
+      ev = GTCalculo.evaluarEquipamiento(equipoDeComuna(), S.detalle).filter(function (e) { return e.dentro; });
+      S.equipoComuna = ev;
+      lista = ev.filter(function (e) { return e.sobre; })
+        .sort(function (a, b) { return (b.valor || 0) - (a.valor || 0); });
+      nota.textContent = lista.length + ' de ' + ev.length + ' sobre el umbral';
+    } else {
+      S.equipoComuna = [];
+      ev = S.equipo.features.map(function (f) { return { f: f, sobre: false, valor: null, clase: null }; });
+      // Por nombre, y los que OpenStreetMap no nombra al final.
+      lista = ev.slice().sort(function (a, b) {
+        const na = a.f.properties.nombre || '', nb = b.f.properties.nombre || '';
+        if (!na !== !nb) return na ? -1 : 1;
+        return na.localeCompare(nb, 'es');
+      });
+      nota.textContent = 'toda la región · ' + GT.fmt(ev.length);
+    }
+    S.equipoLista = lista;
+    S.equipoConComuna = conComuna;
 
     const porCat = Object.keys(CATEGORIAS).map(function (k) {
       const t = ev.filter(function (e) { return e.f.properties.categoria === k; });
-      const s = t.filter(function (e) { return e.sobre; });
-      return '<div class="equipo__cat"><i style="background:' + CATEGORIAS[k].color + '"></i>' +
-             '<span>' + CATEGORIAS[k].nombre + '</span><strong>' + s.length + '</strong>' +
-             '<span class="tiny muted">de ' + t.length + '</span></div>';
-    }).join('');
-
-    const filas = sobre.slice(0, 40).map(function (e) {
-      const p = e.f.properties;
-      return '<button type="button" class="equipo" data-id="' + p.id + '">' +
-        '<i style="background:' + CATEGORIAS[p.categoria].color + '"></i>' +
-        '<span class="equipo__nombre">' + esc(p.nombre || 'Sin nombre en OSM') +
-          '<span class="tiny muted">' + esc(TIPOS[p.tipo] || p.tipo) + '</span></span>' +
-        '<span class="equipo__valor mono">' + (e.valor !== null ? GT.fmt(e.valor, 2) : '') +
-          '<span class="tiny" style="color:' + colorClase(e.clase) + '">' + CLASES[e.clase] + '</span></span>' +
-      '</button>';
+      const s = conComuna ? t.filter(function (e) { return e.sobre; }) : t;
+      return '<button type="button" class="equipo__cat" data-cat="' + k + '" aria-pressed="' +
+               (S.filtroCat === k ? 'true' : 'false') + '" title="Mostrar solo ' + CATEGORIAS[k].nombre.toLowerCase() +
+               ' en la lista y en el mapa">' +
+             '<i style="background:' + CATEGORIAS[k].color + '"></i>' +
+             '<span>' + CATEGORIAS[k].nombre + '</span><strong>' + GT.fmt(s.length) + '</strong>' +
+             (conComuna ? '<span class="tiny muted">de ' + t.length + '</span>' : '') + '</button>';
     }).join('');
 
     cuerpo.innerHTML = '<div class="equipo__cats">' + porCat + '</div>' +
-      (sobre.length
-        ? '<div class="stack" style="gap:2px;margin-top:10px">' + filas + '</div>' +
-          (sobre.length > 40 ? '<div class="tiny muted">y ' + (sobre.length - 40) + ' más (ver CSV)</div>' : '')
-        : '<p class="small muted" style="margin:10px 0 0">' +
-          (ev.length ? 'Ninguno queda sobre el umbral actual.' : 'OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.') + '</p>') +
-      '<div class="tiny muted" style="margin-top:8px">Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
-      'con huecos en lo rural. Se evalúa la celda de 30 m donde cae cada punto.</div>';
+      (ev.length
+        ? '<input type="search" class="equipo__buscar" id="equipoBuscar" placeholder="Buscar por nombre" ' +
+            'aria-label="Buscar escuela, centro de salud o cuartel por nombre" autocomplete="off" value="' + esc(S.filtroTexto || '') + '">' +
+          '<div id="equipoLista"></div>'
+        : '<p class="small muted" style="margin:10px 0 0">OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.</p>') +
+      '<div class="tiny muted" style="margin-top:8px">' +
+        (conComuna ? '' : 'Elige una comuna para ver cuáles quedan sobre el umbral de riesgo. ') +
+        'Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
+        'con huecos en lo rural.' + (conComuna ? ' Se evalúa la celda de 30 m donde cae cada punto.' : '') + '</div>';
 
-    cuerpo.querySelectorAll('.equipo').forEach(function (b) {
+    cuerpo.querySelectorAll('.equipo__cat').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const k = b.getAttribute('data-cat');
+        S.filtroCat = S.filtroCat === k ? null : k;
+        cuerpo.querySelectorAll('.equipo__cat').forEach(function (x) {
+          x.setAttribute('aria-pressed', x.getAttribute('data-cat') === S.filtroCat ? 'true' : 'false');
+        });
+        // Elegir una categoría es querer verla: se encienden los puntos.
+        if (S.filtroCat && !S.capas.equipamiento) activarCapa('equipamiento', true);
+        else filtrarCapaEquipo();
+        pintarListaEquipo();
+      });
+    });
+    const buscar = $('equipoBuscar');
+    if (buscar) buscar.addEventListener('input', function () {
+      S.filtroTexto = buscar.value;
+      pintarListaEquipo();
+    });
+    pintarListaEquipo();
+  }
+
+  /* Solo la lista, para no rehacer la caja de búsqueda mientras se escribe. */
+  function pintarListaEquipo() {
+    const caja = $('equipoLista');
+    if (!caja) return;
+    const texto = norm(S.filtroTexto || '');
+    if (!S.filtroCat && !texto) {
+      caja.innerHTML = '<p class="tiny muted" style="margin:8px 0 0">Elige una categoría o escribe un nombre para ver el listado.</p>';
+      return;
+    }
+    const lista = (S.equipoLista || []).filter(function (e) {
+      const p = e.f.properties;
+      return (!S.filtroCat || p.categoria === S.filtroCat) &&
+             (!texto || norm(p.nombre || '').indexOf(texto) >= 0);
+    });
+    const filas = lista.slice(0, 40).map(function (e) {
+      const p = e.f.properties;
+      const comuna = !S.equipoConComuna ? comunaDeId(p.id_comuna) : null;
+      return '<button type="button" class="equipo" data-id="' + p.id + '">' +
+        '<i style="background:' + CATEGORIAS[p.categoria].color + '"></i>' +
+        '<span class="equipo__nombre">' + esc(p.nombre || 'Sin nombre en OSM') +
+          '<span class="tiny muted">' + esc(TIPOS[p.tipo] || p.tipo) + (comuna ? ' · ' + esc(comuna.nombre) : '') + '</span></span>' +
+        (S.equipoConComuna
+          ? '<span class="equipo__valor mono">' + (e.valor !== null ? GT.fmt(e.valor, 2) : '') +
+              '<span class="tiny" style="color:' + colorClase(e.clase) + '">' + CLASES[e.clase] + '</span></span>'
+          : '') +
+      '</button>';
+    }).join('');
+    caja.innerHTML = lista.length
+      ? '<div class="stack" style="gap:2px;margin-top:8px">' + filas + '</div>' +
+        (lista.length > 40 ? '<div class="tiny muted">y ' + (lista.length - 40) + ' más: afina la búsqueda' +
+          (S.equipoConComuna ? ' o descarga el CSV' : ' o elige una comuna') + '</div>' : '')
+      : '<p class="tiny muted" style="margin:8px 0 0">Ninguno coincide' +
+        (S.equipoConComuna ? ' sobre el umbral actual.' : '.') + '</p>';
+    caja.querySelectorAll('.equipo').forEach(function (b) {
       b.addEventListener('click', function () { irAEquipo(+b.getAttribute('data-id')); });
     });
   }
 
+  function comunaDeId(id) {
+    /* En esta página las comunas de GT no traen su código (solo se carga la
+       inundación); el índice del detalle a 30 m sí lo tiene. */
+    const c = GT.comunas.filter(function (x) { return x.idComuna && Number(x.idComuna) === Number(id); })[0];
+    if (c) return c;
+    const indice = window.TERRAFOCO_INUNDACION && window.TERRAFOCO_INUNDACION.comunas;
+    const f = (indice || []).filter(function (x) { return Number(x.id_comuna) === Number(id); })[0];
+    const nombre = f ? nombreGT(f.nombre) : null;
+    return nombre ? { nombre: nombre } : null;
+  }
+
   function irAEquipo(id) {
-    const e = S.equipoComuna.filter(function (x) { return x.f.properties.id === id; })[0];
+    const e = (S.equipoLista || []).filter(function (x) { return x.f.properties.id === id; })[0];
     if (!e || !S.mapa) return;
     if (!S.capas.equipamiento) activarCapa('equipamiento', true);
     const c = e.f.geometry.coordinates;
-    S.mapa.flyTo({ center: c, zoom: Math.max(S.mapa.getZoom(), 15.5), duration: 700 });
-    inspeccionar({ lng: c[0], lat: c[1] });
-    popupEquipo(e.f.properties, c);
+    const volar = function () {
+      S.mapa.flyTo({ center: c, zoom: Math.max(S.mapa.getZoom(), 15.5), duration: 700 });
+      if (S.detalle && S.detalle.base()) inspeccionar({ lng: c[0], lat: c[1] });
+      popupEquipo(e.f.properties, c);
+    };
+    /* Desde la lista de la región: primero se abre su comuna, que trae el
+       detalle a 30 m y el umbral, y después se vuela al punto. */
+    const comuna = !S.equipoConComuna ? comunaDeId(e.f.properties.id_comuna) : null;
+    if (comuna && S.api.abrirComuna && S.api.abrirComuna(comuna.nombre)) setTimeout(volar, 900);
+    else volar();
+  }
+
+  /* Los puntos del mapa siguen a la categoría elegida. */
+  function filtrarCapaEquipo() {
+    if (!S.mapa || !capaEquipoLista || !S.mapa.getLayer('equipamiento-punto')) return;
+    S.mapa.setFilter('equipamiento-punto', S.filtroCat ? ['==', ['get', 'categoria'], S.filtroCat] : null);
   }
 
   /* ---------------------------------------------------------------------
@@ -678,6 +769,7 @@ const GTInundacion = (function () {
         S.mapa.getSource('equipamiento').setData(datos);
         S.mapa.setLayoutProperty('equipamiento-punto', 'visibility', 'visible');
       }
+      filtrarCapaEquipo();
     });
   }
 
@@ -810,6 +902,38 @@ const GTInundacion = (function () {
      Explorador de pesos
      --------------------------------------------------------------------- */
 
+  /* Qué hace cada variable, en palabras de quien no es hidrólogo. */
+  const QUE_MIDE = {
+    acumulacion: 'cuánta agua llega a cada punto desde el terreno más alto que lo rodea; los fondos de quebrada y de valle reciben más',
+    curvatura: 'si el terreno forma una hondonada, donde el agua se junta, o una loma, donde escurre',
+    pendiente: 'qué tan inclinado es el terreno; en lo plano el agua se queda',
+    distancia_cauces: 'qué tan cerca está de un río o estero',
+    twi: 'dónde el suelo tiende a saturarse, combinando pendiente y superficie que drena hacia ahí',
+    cobertura: 'cuánta vegetación hay (NDVI); con más cubierta el agua se infiltra mejor'
+  };
+
+  /* Recuadro bajo el mapa: las variables que pesan hoy y las que no. */
+  function pintarFactores(variables) {
+    const caja = $('factores');
+    if (!caja || !variables) return;
+    const usadas = variables.filter(function (v) { return v.peso > 0; });
+    const otras = variables.filter(function (v) { return !(v.peso > 0); });
+    caja.innerHTML =
+      '<div class="card__title">Qué se considera</div>' +
+      '<p class="small" style="margin:6px 0">La susceptibilidad de cada celda de 30 m sale del relieve. Hoy el índice usa:</p>' +
+      '<ul class="small" style="margin:0 0 6px;padding-left:18px">' + usadas.map(function (v) {
+        return '<li><strong>' + esc(v.nombre) + ' (' + GT.fmt(v.peso, 0) + ' %)</strong>: ' +
+               esc(QUE_MIDE[v.clave] || v.como || '') + '.</li>';
+      }).join('') + '</ul>' +
+      (otras.length
+        ? '<p class="tiny muted" style="margin:0">También se calcularon ' +
+          otras.map(function (v) { return esc(v.nombre.charAt(0).toLowerCase() + v.nombre.slice(1)); }).join(', ') +
+          ', pero no mejoraron la coincidencia con las inundaciones históricas, así que pesan 0. ' +
+          '<a href="#como-se-calcula">Ver cómo se calcula</a></p>'
+        : '<p class="tiny muted" style="margin:0"><a href="#como-se-calcula">Ver cómo se calcula</a></p>');
+    caja.hidden = false;
+  }
+
   function cargarModelo() {
     S.promesaModelo = traerJson(RUTA_VARIABLES, 10000).then(function (d) {
       if (!d || !d.variables) {
@@ -820,6 +944,7 @@ const GTInundacion = (function () {
       S.modelo = new GTCalculo.Modelo(d);
       if (!S.pesos) S.pesos = S.modelo.calibrados.slice();
       montarPesos();
+      pintarFactores(d.variables);
       return S.modelo;
     });
   }
@@ -1028,9 +1153,27 @@ const GTInundacion = (function () {
     const d = S.pronostico, caja = $('lluviaTabla');
     if (!d) return;
     const solo = $('lluviaSoloAltas') && $('lluviaSoloAltas').checked;
+    /* Una tabla de 33 comunas casi todas en cero no decía nada a primera
+       vista. Arriba va la frase que importa y, por omisión, solo las
+       comunas donde llueve; las secas se muestran a pedido. */
+    const conLluvia = function (c) { return (c.total_7d || 0) >= 1; };
     const comunas = d.comunas.filter(function (c) {
-      return !solo || c.clase === 'Alta' || c.clase === 'Muy alta';
+      return (!solo || c.clase === 'Alta' || c.clase === 'Muy alta') && (S.lluviaTodas || conLluvia(c));
     });
+    const secas = d.comunas.filter(function (c) {
+      return (!solo || c.clase === 'Alta' || c.clase === 'Muy alta') && !conLluvia(c);
+    }).length;
+    const en72 = d.comunas.filter(function (c) { return (c.total_72h || 0) >= 1; });
+    const en7 = d.comunas.filter(conLluvia);
+    const mayor = d.comunas.slice().sort(function (a, b) { return b.max_diaria - a.max_diaria; })[0];
+    const resumen = !en7.length
+      ? 'No se pronostica lluvia en ninguna comuna en los próximos 7 días.'
+      : (en72.length
+          ? 'En las próximas 72 horas llueve en <strong>' + en72.length + ' comuna' + (en72.length === 1 ? '' : 's') + '</strong>'
+          : 'En las próximas 72 horas no llueve') +
+        '; en 7 días, en ' + en7.length + '. El día más lluvioso deja <strong>' + GT.fmt(mayor.max_diaria, 0) +
+        ' mm en ' + esc(mayor.nombre) + '</strong>' +
+        (mayor.clase === 'Alta' || mayor.clase === 'Muy alta' ? ', comuna de susceptibilidad ' + mayor.clase.toLowerCase() : '') + '.';
     const tope = Math.max(10, Math.max.apply(null, d.comunas.map(function (c) { return c.max_diaria; })));
     const dias = d.dias.map(function (x) {
       const f = new Date(x + 'T12:00:00');
@@ -1038,7 +1181,8 @@ const GTInundacion = (function () {
     });
     $('lluviaNota').textContent = (d.vencido ? 'copia anterior · ' : '') + 'consultado ' +
       new Date(d.consultado).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-    caja.innerHTML = '<div class="table__wrap"><table class="table table--lluvia"><thead><tr>' +
+    caja.innerHTML = '<p class="small lluvia__resumen">' + resumen + '</p>' +
+      (comunas.length ? '<div class="table__wrap"><table class="table table--lluvia"><thead><tr>' +
       '<th>Comuna</th><th>Clase</th><th class="lluvia__dias">' + dias.map(function (x) { return '<span>' + x + '</span>'; }).join('') +
       '</th><th class="num">72 h</th><th class="num">7 días</th></tr></thead><tbody>' +
       comunas.map(function (c) {
@@ -1054,7 +1198,16 @@ const GTInundacion = (function () {
           '<td class="num mono">' + GT.fmt(c.total_72h, 0) + '</td>' +
           '<td class="num mono muted">' + GT.fmt(c.total_7d, 0) + '</td>' +
         '</tr>';
-      }).join('') + '</tbody></table></div>';
+      }).join('') + '</tbody></table></div>' : '') +
+      (secas
+        ? '<button type="button" class="enlace small lluvia__secas" id="lluviaVerSecas">' +
+            (S.lluviaTodas ? 'Ocultar las ' + secas + ' comunas sin lluvia' : 'Mostrar las ' + secas + ' comunas sin lluvia') + '</button>'
+        : '');
+    const verSecas = $('lluviaVerSecas');
+    if (verSecas) verSecas.addEventListener('click', function () {
+      S.lluviaTodas = !S.lluviaTodas;
+      pintarPronostico();
+    });
     caja.querySelectorAll('tr[data-nombre] .enlace').forEach(function (b) {
       b.addEventListener('click', function () {
         const n = nombreGT(b.closest('tr').getAttribute('data-nombre'));

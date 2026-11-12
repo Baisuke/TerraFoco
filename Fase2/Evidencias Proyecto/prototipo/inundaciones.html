@@ -39,6 +39,10 @@
           <div class="map map--alto" id="mapa" style="--mapa-margen:440px">
             <div class="map__overlay map__overlay--bl" id="leyenda"></div>
           </div>
+          <!-- Qué variables entran al índice y con qué peso, en palabras.
+               Estaba solo al final de la página y dentro del análisis
+               técnico plegado. Lo llena inundacion.js con los pesos vigentes. -->
+          <div class="factores-inund" id="factores" hidden></div>
         </div>
 
         <div class="stack">
@@ -184,8 +188,8 @@
 
           <div class="card" id="exposicion">
             <div class="card__head">
-              <div class="card__title">Escuelas, salud y emergencias sobre el umbral</div>
-              <div class="card__note" id="exNota">elige una comuna</div>
+              <div class="card__title">Escuelas, salud y emergencias</div>
+              <div class="card__note" id="exNota">cargando</div>
             </div>
             <div id="exCuerpo"></div>
           </div>
@@ -249,7 +253,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" id="como-se-calcula">
         <div class="card__head">
           <div class="card__title">Cómo se calcula</div>
           <div class="card__note">detalle en docs/13-modulo-inundaciones.md</div>
