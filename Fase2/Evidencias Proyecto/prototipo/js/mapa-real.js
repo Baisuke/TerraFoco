@@ -637,8 +637,7 @@ GTMapaReal.crear = function (contenedor, opciones) {
                              panel: null, alCambiarPantalla: null,
                              /* false: el clic no abre comunas ni vuelve a la
                                 región, y no hay ventana con el valor. Para
-                                pantallas donde el clic marca otra cosa (Viajes
-                                a terreno marca la salida y la llegada). */
+                                pantallas donde el clic marca otra cosa. */
                              interactivo: true }, opciones);
   let mapa = null, geo = null, seleccionada = null, opacidadBase = 0.82;
   /* La opacidad con que entra la base actual. El detalle a 30 m se atenúa en

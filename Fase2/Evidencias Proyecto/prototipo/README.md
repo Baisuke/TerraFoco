@@ -39,7 +39,6 @@ Este es un **prototipo no funcional**: existe únicamente la capa de presentaci�
 | `inundaciones.html` | Susceptibilidad a inundaciones | Módulo 2 |
 | `urbano.html` | Análisis térmico y cobertura urbana | Módulo 3 |
 | `fuentes.html` | Catálogo de fuentes y pipeline | Núcleo |
-| `viajes.html` | Viajes a terreno: combustible de una visita | Capa de presentación |
 
 ---
 
@@ -54,15 +53,11 @@ prototipo/
 ├── inundaciones.html       Módulo de inundaciones
 ├── urbano.html             Módulo urbano
 ├── fuentes.html            Fuentes de datos
-├── viajes.html             Viajes a terreno
 ├── css/
 │   └── styles.css          Sistema de estilos y tokens de diseño
 ├── js/
 │   ├── paleta.js           Paleta institucional — fuente única del color
 │   ├── colores-mapa.js     Colores del mapa a elección de quien lo usa
-│   ├── viaje-calculo.js    Modelo de consumo de combustible de un viaje
-│   ├── viajes.js           Viajes a terreno: ruta, perfil y animación
-│   ├── viajes-extras.js    Buscador, descargas, informe y Mis viajes
 │   ├── data.js             Datos de ejemplo
 │   ├── shell.js            Barra lateral y barra superior
 │   ├── mapa.js             Cartografía esquemática — último respaldo

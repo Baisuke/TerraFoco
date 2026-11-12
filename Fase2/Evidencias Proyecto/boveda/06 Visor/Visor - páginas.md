@@ -4,7 +4,7 @@
 
 **Orden de carga típico** (importa: cada script usa globales del anterior): `tema.js` (en `<head>`, antes del CSS) → `api-base.js` → `paleta.js` → `data.js` → `datos/indicadores.js` → `datos-api.js` → `shell.js` → `mapa.js` → `datos/comunas.js` → `mapa-real.js` → módulos de la página. → [[Visor - scripts base]]
 
-Menú lateral (`MENU` en shell.js): **General** (Panel, Visor, Mis predios, Viajes a terreno) · **Módulo 1 — Suelos** (Pertinencia, Ficha de comuna) · **Módulos 2 y 3** (Inundaciones, Ciudades "complementario") · **Núcleo** (Fuentes, Ayuda).
+Menú lateral (`MENU` en shell.js): **General** (Panel, Visor, Mis predios) · **Módulo 1 — Suelos** (Pertinencia, Ficha de comuna) · **Módulos 2 y 3** (Inundaciones, Ciudades "complementario") · **Núcleo** (Fuentes, Ayuda).
 
 ---
 
@@ -18,14 +18,6 @@ Menú lateral (`MENU` en shell.js): **General** (Panel, Visor, Mis predios, Viaj
 ## predios.html
 - **Mis predios** (para el ejecutivo de área de INDAP). Carga un CSV (o texto pegado) con nombre y lat/lon o UTM 19S; evalúa cada predio: inundación, erosión, pendiente, % cultivo/pradera y pertinencia de su comuna. Exporta CSV y KML. **Nada sale del navegador.**
 - **Probar con predios de ejemplo:** carga `datos/predios_ejemplo.csv`, 12 predios **ficticios** sobre suelo agrícola elegidos para mostrar situaciones distintas (vega junto a un río, valle sin riesgo, ladera de secano, precordillera fuera de dominio). `datos/predios_ejemplo_utm.csv` trae cuatro de ellos en UTM para probar ese formato. → [[Visor - mapas y módulos#predios.js]] · [[Privacidad y datos personales]]
-
-## viajes.html
-- **Viajes a terreno.** Salida, llegada y hasta 6 paradas (una gira de visitas) dentro de las 33 comunas, con clic en el mapa, el **buscador de lugares** o **mi ubicación**; se arrastran, reordenan o quitan, y **"Ordenar para gastar menos"** busca el mejor orden. Estima litros o kWh, pesos (con peajes), tiempo, km/L, CO₂, % del estanque, costo por persona y al mes según el camino (tipo de vía, ripio, pendiente), el **viento y la temperatura de hoy**, el vehículo (8, con **híbrido y eléctrico**), la carga, el aire acondicionado, el **estilo de manejo** y el tope de velocidad. → [[Consumo de combustible]]
-- Resultados: en qué se va el combustible, **consejos calculados** para gastar menos, **el mismo viaje en otro vehículo**, tramos, tipos de camino, rutas posibles e **indicaciones paso a paso** en español.
-- Mapa y **perfil de alturas** coloreados por consumo, tipo de camino o pendiente, con hitos de km y las paradas marcadas; el cursor sobre el perfil marca el tramo en el mapa y un clic lleva el auto ahí.
-- **▶ Recorrer:** el autito (su forma cambia con el vehículo) recorre la ruta a ×1, ×2 o ×4, se detiene en cada parada y avisa ripio y subidas; tablero con km, velocidad, vía, altura, pendiente, consumo, pesos y la aguja del estanque; barra para adelantar o retroceder; "Vista de conductor".
-- **Llevarse el viaje:** informe imprimible (PDF), GPX, KML, CSV del perfil, Google Maps, Waze y el enlace (`?p=lat,lon;…&vuelta=1`). **Mis viajes** guarda viajes en el navegador y baja la planilla de rendición. "Mis predios" abre la página con el predio de llegada (`?hasta=`). El mapa se crea con `interactivo: false`: el clic marca puntos, no abre comunas.
-- Archivos: `js/viaje-calculo.js` (el modelo, sin DOM), `js/viajes.js` (camino, cálculo, mapa, perfil y autito) y `js/viajes-extras.js` (buscador, descargas, informe y Mis viajes).
 
 ## pertinencia.html
 - **Índice de pertinencia.** Pregunta del módulo, dispersión necesidad vs. inversión, brecha crítica, cobertura adecuada, distribución por categoría, **¿cuánto costaría cerrar la brecha?** (UF), **¿ha mejorado la focalización?** (por año), ranking comunal exportable. Selector de origen y casilla "fuera de dominio". → [[Índice de pertinencia]]
