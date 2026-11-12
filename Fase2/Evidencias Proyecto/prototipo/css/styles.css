@@ -2340,3 +2340,6 @@ strong.viaje__vehiculo-cifra { color: var(--titulo); font-weight: 500; }
 /* Lluvia pronosticada: la frase de resumen sobre la tabla. */
 .lluvia__resumen { margin: 0 16px 8px; line-height: 1.55; }
 .lluvia__secas { margin: 8px 16px 0; }
+
+/* La lista de servicios no alarga la página: se desplaza dentro de la tarjeta. */
+#equipoLista > .stack { max-height: 340px; overflow-y: auto; }

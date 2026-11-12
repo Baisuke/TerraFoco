@@ -517,8 +517,11 @@ const GTInundacion = (function () {
     } else {
       S.equipoComuna = [];
       ev = S.equipo.features.map(function (f) { return { f: f, sobre: false, valor: null, clase: null }; });
+      // Por nombre, y los que OpenStreetMap no nombra al final.
       lista = ev.slice().sort(function (a, b) {
-        return String(a.f.properties.nombre || '~').localeCompare(String(b.f.properties.nombre || '~'), 'es');
+        const na = a.f.properties.nombre || '', nb = b.f.properties.nombre || '';
+        if (!na !== !nb) return na ? -1 : 1;
+        return na.localeCompare(nb, 'es');
       });
       nota.textContent = 'toda la región · ' + GT.fmt(ev.length);
     }
@@ -607,7 +610,14 @@ const GTInundacion = (function () {
   }
 
   function comunaDeId(id) {
-    return GT.comunas.filter(function (c) { return c.idComuna === id; })[0] || null;
+    /* En esta página las comunas de GT no traen su código (solo se carga la
+       inundación); el índice del detalle a 30 m sí lo tiene. */
+    const c = GT.comunas.filter(function (x) { return x.idComuna && Number(x.idComuna) === Number(id); })[0];
+    if (c) return c;
+    const indice = window.TERRAFOCO_INUNDACION && window.TERRAFOCO_INUNDACION.comunas;
+    const f = (indice || []).filter(function (x) { return Number(x.id_comuna) === Number(id); })[0];
+    const nombre = f ? nombreGT(f.nombre) : null;
+    return nombre ? { nombre: nombre } : null;
   }
 
   function irAEquipo(id) {
