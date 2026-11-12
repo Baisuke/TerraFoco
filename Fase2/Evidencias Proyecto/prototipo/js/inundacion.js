@@ -128,6 +128,7 @@ const GTInundacion = (function () {
     montarExportar();
     cargarPronostico();
     pintarEventos();
+    pintarEquipamiento();
 
     if (!conMapa()) {
       $('anNota').textContent = 'mapa esquemático: sin detalle por celda';
@@ -476,6 +477,7 @@ const GTInundacion = (function () {
     if (!S.promesaEquipo) {
       S.promesaEquipo = traerJson(GT_api('/exposicion/equipamiento'), 10000).then(function (g) {
         S.equipo = g && g.features ? g : null;
+        S.equipoListo = true;
         return S.equipo;
       });
     }
@@ -487,51 +489,63 @@ const GTInundacion = (function () {
     return S.equipo.features.filter(function (f) { return f.properties.id_comuna === S.idComuna; });
   }
 
+  /* Escuelas, salud y emergencias. Los botones de categoría filtran a la
+     vez la lista y los puntos del mapa, y están desde que se abre la
+     página: sin comuna se busca en toda la región; con comuna, cuáles
+     quedan sobre el umbral. Antes solo aparecían al elegir una comuna, y
+     el botón desplegaba la lista sin tocar el mapa. */
   function pintarEquipamiento() {
     const nota = $('exNota'), cuerpo = $('exCuerpo');
-    if (!S.resumen || !S.detalle) {
-      S.equipoComuna = [];
-      nota.textContent = 'elige una comuna';
-      cuerpo.innerHTML = '<p class="small muted" style="margin:0">Los servicios que un plan de emergencia revisa primero: ' +
-        'escuelas, jardines infantiles, centros de salud, ' +
-        'bomberos y policía que quedan sobre celdas que superan el umbral.</p>';
-      return;
-    }
     if (!S.equipo) {
-      nota.textContent = S.promesaEquipo ? 'cargando' : '';
-      cuerpo.innerHTML = '<p class="small muted" style="margin:0">Sin datos de equipamiento: correr ' +
-                         '<span class="mono">python -m ingesta.equipamiento</span>.</p>';
+      if (!S.promesaEquipo) traerEquipamiento().then(function () { pintarEquipamiento(); });
+      S.equipoComuna = [];
+      nota.textContent = S.equipoListo ? '' : 'cargando';
+      cuerpo.innerHTML = S.equipoListo
+        ? '<p class="small muted" style="margin:0">Sin datos de equipamiento: correr ' +
+          '<span class="mono">python -m ingesta.equipamiento</span>.</p>'
+        : '<p class="small muted" style="margin:0">Cargando escuelas, centros de salud, bomberos y policía…</p>';
       return;
     }
-    const ev = GTCalculo.evaluarEquipamiento(equipoDeComuna(), S.detalle).filter(function (e) { return e.dentro; });
-    S.equipoComuna = ev;
-    const sobre = ev.filter(function (e) { return e.sobre; })
-      .sort(function (a, b) { return (b.valor || 0) - (a.valor || 0); });
-    nota.textContent = sobre.length + ' de ' + ev.length + ' sobre el umbral';
+    const conComuna = !!(S.resumen && S.detalle);
+    let ev, lista;
+    if (conComuna) {
+      ev = GTCalculo.evaluarEquipamiento(equipoDeComuna(), S.detalle).filter(function (e) { return e.dentro; });
+      S.equipoComuna = ev;
+      lista = ev.filter(function (e) { return e.sobre; })
+        .sort(function (a, b) { return (b.valor || 0) - (a.valor || 0); });
+      nota.textContent = lista.length + ' de ' + ev.length + ' sobre el umbral';
+    } else {
+      S.equipoComuna = [];
+      ev = S.equipo.features.map(function (f) { return { f: f, sobre: false, valor: null, clase: null }; });
+      lista = ev.slice().sort(function (a, b) {
+        return String(a.f.properties.nombre || '~').localeCompare(String(b.f.properties.nombre || '~'), 'es');
+      });
+      nota.textContent = 'toda la región · ' + GT.fmt(ev.length);
+    }
+    S.equipoLista = lista;
+    S.equipoConComuna = conComuna;
 
-    /* Las categorías son filtros: con 300 servicios en una comuna urbana
-       el listado completo se alargaba sin fin. El listado aparece al elegir
-       una categoría o al escribir un nombre. */
     const porCat = Object.keys(CATEGORIAS).map(function (k) {
       const t = ev.filter(function (e) { return e.f.properties.categoria === k; });
-      const s = t.filter(function (e) { return e.sobre; });
+      const s = conComuna ? t.filter(function (e) { return e.sobre; }) : t;
       return '<button type="button" class="equipo__cat" data-cat="' + k + '" aria-pressed="' +
-               (S.filtroCat === k ? 'true' : 'false') + '" title="Ver ' + CATEGORIAS[k].nombre.toLowerCase() + ' sobre el umbral">' +
+               (S.filtroCat === k ? 'true' : 'false') + '" title="Mostrar solo ' + CATEGORIAS[k].nombre.toLowerCase() +
+               ' en la lista y en el mapa">' +
              '<i style="background:' + CATEGORIAS[k].color + '"></i>' +
-             '<span>' + CATEGORIAS[k].nombre + '</span><strong>' + s.length + '</strong>' +
-             '<span class="tiny muted">de ' + t.length + '</span></button>';
+             '<span>' + CATEGORIAS[k].nombre + '</span><strong>' + GT.fmt(s.length) + '</strong>' +
+             (conComuna ? '<span class="tiny muted">de ' + t.length + '</span>' : '') + '</button>';
     }).join('');
 
-    S.equipoSobre = sobre;
     cuerpo.innerHTML = '<div class="equipo__cats">' + porCat + '</div>' +
-      (sobre.length
+      (ev.length
         ? '<input type="search" class="equipo__buscar" id="equipoBuscar" placeholder="Buscar por nombre" ' +
             'aria-label="Buscar escuela, centro de salud o cuartel por nombre" autocomplete="off" value="' + esc(S.filtroTexto || '') + '">' +
           '<div id="equipoLista"></div>'
-        : '<p class="small muted" style="margin:10px 0 0">' +
-          (ev.length ? 'Ninguno queda sobre el umbral actual.' : 'OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.') + '</p>') +
-      '<div class="tiny muted" style="margin-top:8px">Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
-      'con huecos en lo rural. Se evalúa la celda de 30 m donde cae cada punto.</div>';
+        : '<p class="small muted" style="margin:10px 0 0">OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.</p>') +
+      '<div class="tiny muted" style="margin-top:8px">' +
+        (conComuna ? '' : 'Elige una comuna para ver cuáles quedan sobre el umbral de riesgo. ') +
+        'Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
+        'con huecos en lo rural.' + (conComuna ? ' Se evalúa la celda de 30 m donde cae cada punto.' : '') + '</div>';
 
     cuerpo.querySelectorAll('.equipo__cat').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -540,6 +554,9 @@ const GTInundacion = (function () {
         cuerpo.querySelectorAll('.equipo__cat').forEach(function (x) {
           x.setAttribute('aria-pressed', x.getAttribute('data-cat') === S.filtroCat ? 'true' : 'false');
         });
+        // Elegir una categoría es querer verla: se encienden los puntos.
+        if (S.filtroCat && !S.capas.equipamiento) activarCapa('equipamiento', true);
+        else filtrarCapaEquipo();
         pintarListaEquipo();
       });
     });
@@ -560,38 +577,60 @@ const GTInundacion = (function () {
       caja.innerHTML = '<p class="tiny muted" style="margin:8px 0 0">Elige una categoría o escribe un nombre para ver el listado.</p>';
       return;
     }
-    const lista = (S.equipoSobre || []).filter(function (e) {
+    const lista = (S.equipoLista || []).filter(function (e) {
       const p = e.f.properties;
       return (!S.filtroCat || p.categoria === S.filtroCat) &&
              (!texto || norm(p.nombre || '').indexOf(texto) >= 0);
     });
     const filas = lista.slice(0, 40).map(function (e) {
       const p = e.f.properties;
+      const comuna = !S.equipoConComuna ? comunaDeId(p.id_comuna) : null;
       return '<button type="button" class="equipo" data-id="' + p.id + '">' +
         '<i style="background:' + CATEGORIAS[p.categoria].color + '"></i>' +
         '<span class="equipo__nombre">' + esc(p.nombre || 'Sin nombre en OSM') +
-          '<span class="tiny muted">' + esc(TIPOS[p.tipo] || p.tipo) + '</span></span>' +
-        '<span class="equipo__valor mono">' + (e.valor !== null ? GT.fmt(e.valor, 2) : '') +
-          '<span class="tiny" style="color:' + colorClase(e.clase) + '">' + CLASES[e.clase] + '</span></span>' +
+          '<span class="tiny muted">' + esc(TIPOS[p.tipo] || p.tipo) + (comuna ? ' · ' + esc(comuna.nombre) : '') + '</span></span>' +
+        (S.equipoConComuna
+          ? '<span class="equipo__valor mono">' + (e.valor !== null ? GT.fmt(e.valor, 2) : '') +
+              '<span class="tiny" style="color:' + colorClase(e.clase) + '">' + CLASES[e.clase] + '</span></span>'
+          : '') +
       '</button>';
     }).join('');
     caja.innerHTML = lista.length
       ? '<div class="stack" style="gap:2px;margin-top:8px">' + filas + '</div>' +
-        (lista.length > 40 ? '<div class="tiny muted">y ' + (lista.length - 40) + ' más: afina la búsqueda o descarga el CSV</div>' : '')
-      : '<p class="tiny muted" style="margin:8px 0 0">Ninguno coincide.</p>';
+        (lista.length > 40 ? '<div class="tiny muted">y ' + (lista.length - 40) + ' más: afina la búsqueda' +
+          (S.equipoConComuna ? ' o descarga el CSV' : ' o elige una comuna') + '</div>' : '')
+      : '<p class="tiny muted" style="margin:8px 0 0">Ninguno coincide' +
+        (S.equipoConComuna ? ' sobre el umbral actual.' : '.') + '</p>';
     caja.querySelectorAll('.equipo').forEach(function (b) {
       b.addEventListener('click', function () { irAEquipo(+b.getAttribute('data-id')); });
     });
   }
 
+  function comunaDeId(id) {
+    return GT.comunas.filter(function (c) { return c.idComuna === id; })[0] || null;
+  }
+
   function irAEquipo(id) {
-    const e = S.equipoComuna.filter(function (x) { return x.f.properties.id === id; })[0];
+    const e = (S.equipoLista || []).filter(function (x) { return x.f.properties.id === id; })[0];
     if (!e || !S.mapa) return;
     if (!S.capas.equipamiento) activarCapa('equipamiento', true);
     const c = e.f.geometry.coordinates;
-    S.mapa.flyTo({ center: c, zoom: Math.max(S.mapa.getZoom(), 15.5), duration: 700 });
-    inspeccionar({ lng: c[0], lat: c[1] });
-    popupEquipo(e.f.properties, c);
+    const volar = function () {
+      S.mapa.flyTo({ center: c, zoom: Math.max(S.mapa.getZoom(), 15.5), duration: 700 });
+      if (S.detalle && S.detalle.base()) inspeccionar({ lng: c[0], lat: c[1] });
+      popupEquipo(e.f.properties, c);
+    };
+    /* Desde la lista de la región: primero se abre su comuna, que trae el
+       detalle a 30 m y el umbral, y después se vuela al punto. */
+    const comuna = !S.equipoConComuna ? comunaDeId(e.f.properties.id_comuna) : null;
+    if (comuna && S.api.abrirComuna && S.api.abrirComuna(comuna.nombre)) setTimeout(volar, 900);
+    else volar();
+  }
+
+  /* Los puntos del mapa siguen a la categoría elegida. */
+  function filtrarCapaEquipo() {
+    if (!S.mapa || !capaEquipoLista || !S.mapa.getLayer('equipamiento-punto')) return;
+    S.mapa.setFilter('equipamiento-punto', S.filtroCat ? ['==', ['get', 'categoria'], S.filtroCat] : null);
   }
 
   /* ---------------------------------------------------------------------
@@ -720,6 +759,7 @@ const GTInundacion = (function () {
         S.mapa.getSource('equipamiento').setData(datos);
         S.mapa.setLayoutProperty('equipamiento-punto', 'visibility', 'visible');
       }
+      filtrarCapaEquipo();
     });
   }
 
