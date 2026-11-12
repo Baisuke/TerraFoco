@@ -1103,9 +1103,27 @@ const GTInundacion = (function () {
     const d = S.pronostico, caja = $('lluviaTabla');
     if (!d) return;
     const solo = $('lluviaSoloAltas') && $('lluviaSoloAltas').checked;
+    /* Una tabla de 33 comunas casi todas en cero no decía nada a primera
+       vista. Arriba va la frase que importa y, por omisión, solo las
+       comunas donde llueve; las secas se muestran a pedido. */
+    const conLluvia = function (c) { return (c.total_7d || 0) >= 1; };
     const comunas = d.comunas.filter(function (c) {
-      return !solo || c.clase === 'Alta' || c.clase === 'Muy alta';
+      return (!solo || c.clase === 'Alta' || c.clase === 'Muy alta') && (S.lluviaTodas || conLluvia(c));
     });
+    const secas = d.comunas.filter(function (c) {
+      return (!solo || c.clase === 'Alta' || c.clase === 'Muy alta') && !conLluvia(c);
+    }).length;
+    const en72 = d.comunas.filter(function (c) { return (c.total_72h || 0) >= 1; });
+    const en7 = d.comunas.filter(conLluvia);
+    const mayor = d.comunas.slice().sort(function (a, b) { return b.max_diaria - a.max_diaria; })[0];
+    const resumen = !en7.length
+      ? 'No se pronostica lluvia en ninguna comuna en los próximos 7 días.'
+      : (en72.length
+          ? 'En las próximas 72 horas llueve en <strong>' + en72.length + ' comuna' + (en72.length === 1 ? '' : 's') + '</strong>'
+          : 'En las próximas 72 horas no llueve') +
+        '; en 7 días, en ' + en7.length + '. El día más lluvioso deja <strong>' + GT.fmt(mayor.max_diaria, 0) +
+        ' mm en ' + esc(mayor.nombre) + '</strong>' +
+        (mayor.clase === 'Alta' || mayor.clase === 'Muy alta' ? ', comuna de susceptibilidad ' + mayor.clase.toLowerCase() : '') + '.';
     const tope = Math.max(10, Math.max.apply(null, d.comunas.map(function (c) { return c.max_diaria; })));
     const dias = d.dias.map(function (x) {
       const f = new Date(x + 'T12:00:00');
@@ -1113,7 +1131,8 @@ const GTInundacion = (function () {
     });
     $('lluviaNota').textContent = (d.vencido ? 'copia anterior · ' : '') + 'consultado ' +
       new Date(d.consultado).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-    caja.innerHTML = '<div class="table__wrap"><table class="table table--lluvia"><thead><tr>' +
+    caja.innerHTML = '<p class="small lluvia__resumen">' + resumen + '</p>' +
+      (comunas.length ? '<div class="table__wrap"><table class="table table--lluvia"><thead><tr>' +
       '<th>Comuna</th><th>Clase</th><th class="lluvia__dias">' + dias.map(function (x) { return '<span>' + x + '</span>'; }).join('') +
       '</th><th class="num">72 h</th><th class="num">7 días</th></tr></thead><tbody>' +
       comunas.map(function (c) {
@@ -1129,7 +1148,16 @@ const GTInundacion = (function () {
           '<td class="num mono">' + GT.fmt(c.total_72h, 0) + '</td>' +
           '<td class="num mono muted">' + GT.fmt(c.total_7d, 0) + '</td>' +
         '</tr>';
-      }).join('') + '</tbody></table></div>';
+      }).join('') + '</tbody></table></div>' : '') +
+      (secas
+        ? '<button type="button" class="enlace small lluvia__secas" id="lluviaVerSecas">' +
+            (S.lluviaTodas ? 'Ocultar las ' + secas + ' comunas sin lluvia' : 'Mostrar las ' + secas + ' comunas sin lluvia') + '</button>'
+        : '');
+    const verSecas = $('lluviaVerSecas');
+    if (verSecas) verSecas.addEventListener('click', function () {
+      S.lluviaTodas = !S.lluviaTodas;
+      pintarPronostico();
+    });
     caja.querySelectorAll('tr[data-nombre] .enlace').forEach(function (b) {
       b.addEventListener('click', function () {
         const n = nombreGT(b.closest('tr').getAttribute('data-nombre'));

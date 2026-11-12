@@ -147,6 +147,36 @@
         </div>
       </div>
 
+      <!-- La pregunta al revés: partir del dinero y ver en qué erosión cae.
+           Lo pidió una usuaria: "cuánto destina INDAP a suelos con mayor
+           erosión". Por comuna, según la clase de su erosión media. -->
+      <div class="card" id="dinero">
+        <div class="card__head">
+          <div class="card__title">¿Dónde va el dinero del programa?</div>
+          <div class="card__note" id="dineroNota">planes e incentivo según la clase de erosión de la comuna</div>
+        </div>
+        <p class="small" id="dineroLectura" style="margin:0;line-height:1.6;max-width:80ch"></p>
+        <div class="table__wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Clase de erosión</th>
+                <th class="num">Comunas</th>
+                <th class="num">Superficie<br>de la región</th>
+                <th class="num">Planes<br>ejecutados</th>
+                <th class="num">Superficie<br>intervenida</th>
+                <th class="num">Incentivo<br>mil UF</th>
+                <th style="min-width:130px">Parte del incentivo</th>
+              </tr>
+            </thead>
+            <tbody id="dineroTabla"></tbody>
+          </table>
+        </div>
+        <div class="tiny muted">Cada comuna entra con la clase de su erosión media. Una comuna de clase moderada
+          también tiene hectáreas severas, así que esto no dice en qué suelo exacto se ejecutó cada plan: las
+          planillas de INDAP no traen esa ubicación ni el tipo de práctica.</div>
+      </div>
+
       <!-- Las dos erosiones lado a lado (UC-06). Estaba en el panel general,
            donde era lo más técnico de la portada; aquí acompaña al índice,
            que se calcula con una u otra. -->
@@ -402,6 +432,54 @@ GT.evolucionFocalizacion().then(function (e) {
 });
 
 });
+/* ---- ¿Dónde va el dinero? ----
+   Planes, hectáreas e incentivo sumados por la clase de erosión media de
+   cada comuna, con el origen elegido en la barra superior. */
+GT.hidratar().then(function () {
+  const tot = { n: 0, sup: 0, planes: 0, ha: 0, uf: 0 };
+  const filas = GT.clasesErosion.map(function (cl) {
+    return { clase: cl, n: 0, sup: 0, planes: 0, ha: 0, uf: 0 };
+  });
+  GT.comunas.forEach(function (c) {
+    if (typeof c.erosion !== 'number') return;
+    const f = filas[GT.clasesErosion.indexOf(GT.claseErosion(c.erosion))];
+    const uf = c.incentivoUF || 0;
+    f.n++; f.sup += c.sup || 0; f.planes += c.planes || 0; f.ha += c.haBonif || 0; f.uf += uf;
+    tot.n++; tot.sup += c.sup || 0; tot.planes += c.planes || 0; tot.ha += c.haBonif || 0; tot.uf += uf;
+  });
+  const pct = function (a, b) { return b ? Math.round(100 * a / b) : 0; };
+  const conFilas = filas.filter(function (f) { return f.n; });
+  document.getElementById('dineroTabla').innerHTML = conFilas.map(function (f) {
+    const p = pct(f.uf, tot.uf);
+    return '<tr>' +
+      '<td><span class="badge" style="background:' + f.clase.hex + '2E;border-color:' + f.clase.hex +
+        '66;color:var(--texto)">' + f.clase.nombre + '</span></td>' +
+      '<td class="num mono">' + f.n + '</td>' +
+      '<td class="num mono">' + pct(f.sup, tot.sup) + ' %</td>' +
+      '<td class="num mono">' + GT.fmt(f.planes) + '</td>' +
+      '<td class="num mono">' + GT.fmt(f.ha) + ' ha</td>' +
+      '<td class="num mono">' + GT.fmt(f.uf / 1000, 1) + '</td>' +
+      '<td><div class="bar-row" style="margin:0"><div class="bar-row__track"><div class="bar-row__fill" style="width:' +
+        p + '%;background:' + f.clase.hex + '"></div></div><div class="bar-row__val">' + p + ' %</div></div></td>' +
+    '</tr>';
+  }).join('');
+  /* La lectura: lo que va a las severas o peores frente a lo que pesan. */
+  const severas = filas.filter(function (f) { return f.clase.max > 18; });
+  const ufSev = severas.reduce(function (a, f) { return a + f.uf; }, 0);
+  const supSev = severas.reduce(function (a, f) { return a + f.sup; }, 0);
+  const nSev = severas.reduce(function (a, f) { return a + f.n; }, 0);
+  const segun = GT.origenErosion === 'TerraFoco' ? 'el cálculo propio' : 'el inventario CIREN';
+  const periodo = GT.periodoInversion ? ' entre ' + GT.periodoInversion[0] + ' y ' + GT.periodoInversion[1] : '';
+  document.getElementById('dineroNota').textContent = 'erosión media de cada comuna según ' + segun;
+  document.getElementById('dineroLectura').innerHTML = !tot.uf
+    ? 'No hay incentivo cargado para esta región.'
+    : nSev
+      ? 'Las <strong>' + nSev + ' comunas</strong> con erosión media severa o superior recibieron el <strong>' +
+        pct(ufSev, tot.uf) + ' %</strong> del incentivo' + periodo + ' (' + GT.fmt(ufSev / 1000, 1) +
+        ' mil UF), y son el ' + pct(supSev, tot.sup) + ' % de la superficie de la región.'
+      : 'Ninguna comuna tiene erosión media severa o superior según ' + segun + '.';
+});
+
 /* ---- Comparación por clase (UC-06) ----
    Inventario CIREN contra el cálculo propio, ambos medidos. */
 GT.hidratar().then(function () {
@@ -418,7 +496,11 @@ GT.hidratar().then(function () {
       conteoPropio[claseIdx(e.propia)]++; nPropio++;
     }
   });
-  GTGrafico.comparacion(document.getElementById('comparacion'), clases, conteoCiren, conteoPropio,
+  /* Solo las clases que algún lado tiene: con barras en cero para Muy
+     severa y Extrema el gráfico sugería categorías que no hay. */
+  const hay = clases.map(function (_, k) { return conteoCiren[k] + conteoPropio[k] > 0; });
+  const solo = function (a) { return a.filter(function (_, k) { return hay[k]; }); };
+  GTGrafico.comparacion(document.getElementById('comparacion'), solo(clases), solo(conteoCiren), solo(conteoPropio),
                         ['CIREN' + (GT.anioCiren ? ' ' + GT.anioCiren : ''),
                          'Cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')]);
   /* Si los dos lados no cuentan las mismas comunas, se dice. */

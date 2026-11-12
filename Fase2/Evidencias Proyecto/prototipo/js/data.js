@@ -134,12 +134,14 @@ GT.capas = [
   /* Los ids se conservan por compatibilidad, pero ya no dicen años: son el
      cálculo propio y el inventario CIREN. datos-api.js completa la fuente
      con el año del dato cargado. */
-  { id: 'erosion26',  nombre: 'Erosión estimada TerraFoco', fuente: 'Cálculo propio',   activa: true,  grupo: 'Suelos' },
-  { id: 'erosion10',  nombre: 'Erosión actual CIREN',       fuente: 'Inventario CIREN', activa: false, grupo: 'Suelos' },
-  { id: 'ndvi',       nombre: 'Cobertura vegetal (NDVI)',fuente: 'Sentinel-2',  activa: false, grupo: 'Suelos' },
+  /* En el orden de la pregunta: primero lo que hizo el programa, después
+     la erosión donde cae y al final el terreno que la explica. */
+  { id: 'inversion',  nombre: 'Inversión SIRSD-S',       fuente: 'INDAP · SAG', activa: false, grupo: 'Programa INDAP' },
+  { id: 'pertinencia',nombre: 'Índice de pertinencia',   fuente: 'TerraFoco',    activa: false, grupo: 'Programa INDAP' },
+  { id: 'erosion26',  nombre: 'Erosión estimada TerraFoco', fuente: 'Cálculo propio',   activa: true,  grupo: 'Erosión' },
+  { id: 'erosion10',  nombre: 'Erosión actual CIREN',       fuente: 'Inventario CIREN', activa: false, grupo: 'Erosión' },
+  { id: 'ndvi',       nombre: 'Cobertura vegetal (NDVI)',fuente: 'Sentinel-2',  activa: false, grupo: 'Terreno' },
   { id: 'pendiente',  nombre: 'Pendiente',               fuente: 'NASADEM 30 m', activa: false, grupo: 'Terreno' },
-  { id: 'inversion',  nombre: 'Inversión SIRSD-S',       fuente: 'INDAP · SAG', activa: false, grupo: 'Programas' },
-  { id: 'pertinencia',nombre: 'Índice de pertinencia',   fuente: 'TerraFoco',    activa: false, grupo: 'Programas' },
   { id: 'limites',    nombre: 'Límites comunales',       fuente: 'IDE Chile',   activa: true,  grupo: 'Base' }
 ];
 

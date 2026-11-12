@@ -114,11 +114,13 @@ document.getElementById('capas').innerHTML = Object.keys(grupos).map(function (g
   return '<div class="card__title" style="margin-top:10px">' + g + '</div>' +
     grupos[g].map(function (c) {
       const esBase = c.id === 'limites';
+      /* El rótulo apunta a su casilla: sin `for`, hacer clic en el nombre
+         de la capa no la elegía, solo el círculo. */
       return '<div class="layer">' +
-               '<input type="' + (esBase ? 'checkbox' : 'radio') + '" ' +
-                 (esBase ? 'id="capa-limites"' : 'name="capa" value="' + c.id + '"') +
+               '<input type="' + (esBase ? 'checkbox' : 'radio') + '" id="capa-' + c.id + '"' +
+                 (esBase ? '' : ' name="capa" value="' + c.id + '"') +
                  (c.activa ? ' checked' : '') + '>' +
-               '<label>' + c.nombre + '<div class="layer__meta">' + c.fuente + '</div></label>' +
+               '<label for="capa-' + c.id + '">' + c.nombre + '<div class="layer__meta">' + c.fuente + '</div></label>' +
              '</div>';
     }).join('');
 }).join('');
