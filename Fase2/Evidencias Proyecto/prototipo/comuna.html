@@ -536,28 +536,44 @@ document.getElementById('programa').innerHTML =
               GT.fmt(GT.medianaInversion(), 1) + ' UF por ha erosionada')
     : '');
 
-/* ---- Lectura ---- */
+/* ---- Lectura ----
+   Parte por el programa y después dice en qué erosión cae, que es la
+   pregunta del módulo. Antes partía por la erosión media ("ligera") y
+   seguía con "UF por hectárea con erosión severa", que se leía como una
+   contradicción: faltaba decir que una comuna de erosión media ligera
+   también tiene hectáreas severas, y cuántas. */
 const mediana = GT.medianaInversion();
-const unidad = GT.unidadInversion();
-const erosionTxt = '<strong>' + comuna.nombre + '</strong> presenta una erosión estimada de <strong>' +
-  GT.fmt(comuna.erosion, 1) + ' t/ha/año</strong>, clasificada como <strong>' +
-  GT.claseErosion(comuna.erosion).nombre.toLowerCase() + '</strong>. ';
-document.getElementById('lectura').innerHTML = !enIndice
-  ? erosionTxt + (comuna.fueraDeDominio
+const segunOrigen = GT.origenErosion === 'TerraFoco' ? 'según el cálculo propio' : 'según el inventario CIREN';
+const programaTxt = comuna.planes
+  ? (periodo ? 'Entre ' + periodo.replace('–', ' y ') + ' ' : '') + 'INDAP ejecutó <strong>' +
+    GT.fmt(comuna.planes) + ' planes</strong> del programa de suelos (SIRSD-S) en <strong>' + comuna.nombre +
+    '</strong>, sobre <strong>' + GT.fmt(comuna.haBonif) + ' ha</strong>, con un incentivo de <strong>' +
+    (typeof comuna.incentivoUF === 'number' ? GT.fmt(comuna.incentivoUF / 1000, 1) + ' mil UF'
+                                             : '$' + GT.fmt(comuna.monto) + ' millones') + '</strong>. '
+  : '<strong>' + comuna.nombre + '</strong> no registra planes ejecutados del programa de suelos (SIRSD-S)' +
+    (periodo ? ' entre ' + periodo.replace('–', ' y ') : '') + '. ';
+const territorioTxt = 'El territorio tiene una erosión media <strong>' +
+  GT.claseErosion(comuna.erosion).nombre.toLowerCase() + '</strong> (' + GT.fmt(comuna.erosion, 1) +
+  ' t/ha/año, ' + segunOrigen + ')' +
+  (typeof comuna.haErosionSevera === 'number' && !oculta
+    ? ', y <strong>' + GT.fmt(comuna.haErosionSevera) + ' ha</strong> con erosión severa o superior' +
+      (GT.origenErosion === 'TerraFoco' ? '. ' : ' según el cálculo propio. ')
+    : '. ');
+document.getElementById('lectura').innerHTML = programaTxt + territorioTxt + (!enIndice
+  ? (comuna.fueraDeDominio
       ? 'Queda fuera del índice: su superficie con erosión severa sale del cálculo propio, ' +
-        'que en la precordillera sobreestima, y dividir la inversión por ella daría una brecha que no existe. '
-      : 'No tiene índice con el origen de erosión elegido. ') +
-    'La serie del programa sí es real y se muestra arriba.'
-  : erosionTxt + 'El programa pagó <strong>' + GT.fmt(inversion, decUF(inversion)) + ' ' +
-    (enUF ? 'UF por cada hectárea con erosión severa' : 'ha bonificadas por cada 1.000 hectáreas comunales') +
-    '</strong>' + (periodo ? ' entre ' + periodo.replace('–', ' y ') : '') + ', ' +
+        'que en la precordillera sobreestima, y dividir la inversión por ella daría una brecha que no existe.'
+      : 'No tiene índice con el origen de erosión elegido.')
+  : 'Repartido sobre esas hectáreas, el programa pagó <strong>' + GT.fmt(inversion, decUF(inversion)) + ' ' +
+    (enUF ? 'UF por hectárea con erosión severa' : 'ha bonificadas por cada 1.000 hectáreas comunales') +
+    '</strong>, ' +
     (inversion < mediana
       ? 'por debajo de la mediana regional de ' + GT.fmt(mediana, decUF(mediana)) + '. ' +
         (comuna.indice > 0.6 ? 'La comuna concentra un problema severo con una intervención comparativamente baja.'
                              : 'Con una erosión también menor, la brecha es moderada.')
       : 'por sobre la mediana regional de ' + GT.fmt(mediana, decUF(mediana)) + '. ' +
         (comuna.indice <= 0.4 ? 'La intervención supera lo que la magnitud del problema haría esperar.'
-                              : 'La intervención se corresponde con la magnitud del problema.'));
+                              : 'La intervención se corresponde con la magnitud del problema.')));
 
 });
 </script>

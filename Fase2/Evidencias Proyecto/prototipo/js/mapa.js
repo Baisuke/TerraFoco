@@ -390,11 +390,27 @@ GTMapa.leyendaRampa = function (rampa, min, max, unidad) {
          '</div>';
 };
 
+/* Colores que la capa usa de verdad en las comunas cargadas. La leyenda
+   listaba todas las clases aunque ninguna comuna cayera en Muy severa o
+   Extrema, y se leía como si el mapa las tuviera. Sin capa, null: se
+   muestran todas. */
+GTMapa.coloresPresentes = function (capa) {
+  if (!capa) return null;
+  const usados = {};
+  GT.comunas.forEach(function (c, i) {
+    const r = GTMapa.valorCapa(c, capa, i);
+    if (r && r.v !== undefined && r.v !== null) usados[r.color] = true;
+  });
+  return usados;
+};
+
 /* Leyenda por clases de NDVI o pendiente (GTMapa.clases). */
-GTMapa.leyendaCortes = function (clave) {
+GTMapa.leyendaCortes = function (clave, capa) {
   const c = GTMapa.clases[clave];
   const colores = GTMapa.rampas[c.rampa];
+  const usados = GTMapa.coloresPresentes(capa);
   return '<div class="legend">' + c.nombres.map(function (n, i) {
+    if (usados && !usados[colores[i]]) return '';
     return '<div class="legend__row">' +
              '<span class="legend__swatch" style="background:' + colores[i] + '"></span>' +
              '<span>' + n + '</span>' +
@@ -414,8 +430,10 @@ GTMapa.filaSinDato = function (texto) {
 
 /* Las cinco categorías del índice, con sus cortes: la misma leyenda que
    los badges de la tabla y la ficha. */
-GTMapa.leyendaPertinencia = function () {
+GTMapa.leyendaPertinencia = function (capa) {
+  const usados = GTMapa.coloresPresentes(capa);
   return '<div class="legend">' + GT.categoriasPertinencia.map(function (c, i) {
+    if (usados && !usados[c.hex]) return '';
     const desde = i === 0 ? '0' : GT.fmt(GT.categoriasPertinencia[i - 1].max, 2);
     const hasta = c.max > 1 ? '1' : GT.fmt(c.max, 2);
     return '<div class="legend__row">' +
@@ -449,8 +467,10 @@ GTMapa.leyendaInundacion = function () {
   '</div>';
 };
 
-GTMapa.leyendaClases = function () {
+GTMapa.leyendaClases = function (capa) {
+  const usados = GTMapa.coloresPresentes(capa);
   return '<div class="legend">' + GT.clasesErosion.map(function (c, i) {
+    if (usados && !usados[c.hex]) return '';
     const desde = i === 0 ? '0' : GT.clasesErosion[i - 1].max;
     const hasta = c.max === 999 ? '+' : '– ' + c.max;
     return '<div class="legend__row">' +

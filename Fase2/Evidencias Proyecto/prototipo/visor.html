@@ -124,22 +124,29 @@ document.getElementById('capas').innerHTML = Object.keys(grupos).map(function (g
 }).join('');
 
 const leyendas = {
-  erosion26:   function () { return GTMapa.leyendaClases(); },
-  erosion10:   function () { return GTMapa.leyendaClases(); },
+  erosion26:   function () { return GTMapa.leyendaClases('erosion26') + sinDatoErosion('erosion26'); },
+  erosion10:   function () { return GTMapa.leyendaClases('erosion10') + sinDatoErosion('erosion10'); },
   /* Por clases, las mismas del detalle a 30 m: el promedio comunal y la
      celda se leen con una sola leyenda. */
-  ndvi:        function () { return GTMapa.leyendaCortes('ndvi'); },
-  pendiente:   function () { return GTMapa.leyendaCortes('pendiente'); },
+  ndvi:        function () { return GTMapa.leyendaCortes('ndvi', 'ndvi'); },
+  pendiente:   function () { return GTMapa.leyendaCortes('pendiente', 'pendiente'); },
   inversion:   function () {
     return GT.unidadInversion().indexOf('UF') === 0
-      ? GTMapa.leyendaCortes('inversion') + sinIndice()
+      ? GTMapa.leyendaCortes('inversion', 'inversion') + sinIndice()
       : GTMapa.leyendaRampa('agua', '0,5', '20', 'ha / 1.000 ha');
   },
   pertinencia: function () {
-    return GTMapa.leyendaPertinencia() + sinIndice();
+    return GTMapa.leyendaPertinencia('pertinencia') + sinIndice();
   }
 };
 
+/* Las comunas grises de las capas de erosión: cuántas quedan sin color. */
+function sinDatoErosion(capa) {
+  const n = GT.comunas.filter(function (c, i) {
+    return GTMapa.valorCapa(c, capa, i).v === undefined;
+  }).length;
+  return n ? GTMapa.filaSinDato(n + (capa === 'erosion26' ? ' sin dato o fuera del dominio del modelo' : ' sin dato')) : '';
+}
 /* Las comunas grises de las dos capas del programa: cuántas y por qué. */
 function sinIndice() {
   const n = GT.comunas.filter(function (c) { return !GT.enIndice(c); }).length;
@@ -247,13 +254,14 @@ function filaIndice(c) {
     (GT.origenErosion === 'CIREN' ? 'el inventario CIREN' : 'el cálculo propio') + '</span>' : '';
   if (!GT.enIndice(c)) {
     return fila('Índice de pertinencia' + segun,
-                '<span class="muted">' + GT.motivoSinIndice(c) + '</span>');
+                '<span class="muted">' + GT.motivoSinIndice(c) + '</span>') + comoSeCalcula;
   }
   const cat = GT.categoriaPertinencia(c.indice);
   return fila('Índice de pertinencia' + segun, '<strong class="mono">' + GT.fmt(c.indice, 2) + '</strong>') +
          '<div class="badge" style="background:' + cat.hex + '22;color:' + cat.hex + ';align-self:flex-start">' + cat.nombre +
-           (c.fueraDeDominio ? ' · fuera de dominio' : '') + '</div>';
+           (c.fueraDeDominio ? ' · fuera de dominio' : '') + '</div>' + comoSeCalcula;
 }
+const comoSeCalcula = '<a class="tiny" href="pertinencia.html#metodologia">¿Cómo se calcula el índice?</a>';
 
 function mostrarFicha(c) {
   ficha.hidden = false;
@@ -266,10 +274,14 @@ function mostrarFicha(c) {
     '</div>' +
     '<div style="font-size:18px;font-weight:600;line-height:1.2">' + c.nombre + '</div>' +
     '<div class="tiny muted">Provincia de ' + c.prov + ' · ' + GT.fmt(c.sup) + ' km²</div>' +
+    /* Primero lo que hizo el programa y después dónde cae: la pregunta es
+       si INDAP financia planes en suelos erosionados, no al revés. */
     '<div class="sep"></div>' +
-    filasErosion(c) +
-    '<div class="sep"></div>' +
+    '<div class="tiny muted" style="text-transform:uppercase;letter-spacing:.04em">Programa SIRSD-S de INDAP</div>' +
     filasPrograma(c) +
+    '<div class="sep"></div>' +
+    '<div class="tiny muted" style="text-transform:uppercase;letter-spacing:.04em">Erosión del territorio</div>' +
+    filasErosion(c) +
     '<div class="sep"></div>' +
     /* Con cuál de las dos erosiones se calcula el índice: la del selector
        de origen de la barra superior. */

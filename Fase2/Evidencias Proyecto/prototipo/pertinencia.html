@@ -29,6 +29,38 @@
         </div>
       </div>
 
+      <!-- Nota metodológica: plegada, para quien quiera saber de dónde sale
+           el número antes de usarlo. El visor la enlaza desde la ficha. -->
+      <details class="card plegable" id="metodologia">
+        <summary class="card__head">
+          <div class="card__title">Nota metodológica · cómo se calcula el índice</div>
+          <div class="card__note">qué mide, fuentes y limitaciones</div>
+        </summary>
+        <p class="explica">El índice compara dos cosas en cada comuna: cuánta erosión tiene y cuánto incentivo del
+          programa de suelos de INDAP (SIRSD-S) recibió por cada hectárea erosionada. No evalúa si los planes
+          funcionaron, sino si el dinero llegó a donde el problema es mayor.</p>
+        <div class="pasos">
+          <div class="paso"><span class="paso__n">01</span><strong>Necesidad</strong>
+            <span>Pérdida de suelo media de la comuna, en t/ha/año, del origen elegido en la barra superior
+              (inventario CIREN o cálculo propio). Se lleva a 0–1 entre la comuna más baja y la más alta de la región.</span></div>
+          <div class="paso"><span class="paso__n">02</span><strong>Inversión</strong>
+            <span>Incentivo pagado por el SIRSD-S en el período, en UF (cada año a su UF promedio), dividido por las
+              hectáreas con erosión severa o superior (más de 18 t/ha/año, cálculo propio). Solo cuentan planes
+              ejecutados (declaración jurada o pago de Tesorería). Va de menos de 1 a más de 30 UF/ha entre comunas,
+              así que se lleva a 0–1 en escala logarítmica.</span></div>
+          <div class="paso"><span class="paso__n">03</span><strong>Índice</strong>
+            <span>Índice = (necesidad − inversión + 1) ÷ 2. Cerca de 0: mucho incentivo para poca erosión. Cerca de 1:
+              mucha erosión con poco incentivo. Una comuna sin planes cuenta con inversión 0.</span></div>
+          <div class="paso"><span class="paso__n">04</span><strong>Categorías</strong>
+            <span>Sobre-cobertura hasta 0,25 · cobertura adecuada hasta 0,40 · alineación parcial hasta 0,60 ·
+              brecha alta hasta 0,75 · brecha crítica sobre 0,75.</span></div>
+          <div class="paso"><span class="paso__n">05</span><strong>Limitaciones</strong>
+            <span>Es relativo: ordena las comunas de una región entre sí, no mide una brecha absoluta. No distingue el
+              tipo de práctica de cada plan, porque INDAP no la informa en las planillas. Las comunas donde el cálculo
+              propio sobreestima la erosión (precordillera) quedan fuera, salvo que se marque "fuera de dominio".</span></div>
+        </div>
+      </details>
+
       <div class="grid grid--main">
         <div class="card">
           <div class="card__head">
@@ -359,6 +391,12 @@ GT.evolucionFocalizacion().then(function (e) {
 });
 
 });
+/* Desde el visor se llega con #metodologia: la nota se abre sola. */
+if (location.hash === '#metodologia') {
+  const nota = document.getElementById('metodologia');
+  nota.open = true;
+  nota.scrollIntoView();
+}
 </script>
 </body>
 </html>

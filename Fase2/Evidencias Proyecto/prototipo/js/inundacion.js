@@ -509,15 +509,63 @@ const GTInundacion = (function () {
       .sort(function (a, b) { return (b.valor || 0) - (a.valor || 0); });
     nota.textContent = sobre.length + ' de ' + ev.length + ' sobre el umbral';
 
+    /* Las categorías son filtros: con 300 servicios en una comuna urbana
+       el listado completo se alargaba sin fin. El listado aparece al elegir
+       una categoría o al escribir un nombre. */
     const porCat = Object.keys(CATEGORIAS).map(function (k) {
       const t = ev.filter(function (e) { return e.f.properties.categoria === k; });
       const s = t.filter(function (e) { return e.sobre; });
-      return '<div class="equipo__cat"><i style="background:' + CATEGORIAS[k].color + '"></i>' +
+      return '<button type="button" class="equipo__cat" data-cat="' + k + '" aria-pressed="' +
+               (S.filtroCat === k ? 'true' : 'false') + '" title="Ver ' + CATEGORIAS[k].nombre.toLowerCase() + ' sobre el umbral">' +
+             '<i style="background:' + CATEGORIAS[k].color + '"></i>' +
              '<span>' + CATEGORIAS[k].nombre + '</span><strong>' + s.length + '</strong>' +
-             '<span class="tiny muted">de ' + t.length + '</span></div>';
+             '<span class="tiny muted">de ' + t.length + '</span></button>';
     }).join('');
 
-    const filas = sobre.slice(0, 40).map(function (e) {
+    S.equipoSobre = sobre;
+    cuerpo.innerHTML = '<div class="equipo__cats">' + porCat + '</div>' +
+      (sobre.length
+        ? '<input type="search" class="equipo__buscar" id="equipoBuscar" placeholder="Buscar por nombre" ' +
+            'aria-label="Buscar escuela, centro de salud o cuartel por nombre" autocomplete="off" value="' + esc(S.filtroTexto || '') + '">' +
+          '<div id="equipoLista"></div>'
+        : '<p class="small muted" style="margin:10px 0 0">' +
+          (ev.length ? 'Ninguno queda sobre el umbral actual.' : 'OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.') + '</p>') +
+      '<div class="tiny muted" style="margin-top:8px">Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
+      'con huecos en lo rural. Se evalúa la celda de 30 m donde cae cada punto.</div>';
+
+    cuerpo.querySelectorAll('.equipo__cat').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const k = b.getAttribute('data-cat');
+        S.filtroCat = S.filtroCat === k ? null : k;
+        cuerpo.querySelectorAll('.equipo__cat').forEach(function (x) {
+          x.setAttribute('aria-pressed', x.getAttribute('data-cat') === S.filtroCat ? 'true' : 'false');
+        });
+        pintarListaEquipo();
+      });
+    });
+    const buscar = $('equipoBuscar');
+    if (buscar) buscar.addEventListener('input', function () {
+      S.filtroTexto = buscar.value;
+      pintarListaEquipo();
+    });
+    pintarListaEquipo();
+  }
+
+  /* Solo la lista, para no rehacer la caja de búsqueda mientras se escribe. */
+  function pintarListaEquipo() {
+    const caja = $('equipoLista');
+    if (!caja) return;
+    const texto = norm(S.filtroTexto || '');
+    if (!S.filtroCat && !texto) {
+      caja.innerHTML = '<p class="tiny muted" style="margin:8px 0 0">Elige una categoría o escribe un nombre para ver el listado.</p>';
+      return;
+    }
+    const lista = (S.equipoSobre || []).filter(function (e) {
+      const p = e.f.properties;
+      return (!S.filtroCat || p.categoria === S.filtroCat) &&
+             (!texto || norm(p.nombre || '').indexOf(texto) >= 0);
+    });
+    const filas = lista.slice(0, 40).map(function (e) {
       const p = e.f.properties;
       return '<button type="button" class="equipo" data-id="' + p.id + '">' +
         '<i style="background:' + CATEGORIAS[p.categoria].color + '"></i>' +
@@ -527,17 +575,11 @@ const GTInundacion = (function () {
           '<span class="tiny" style="color:' + colorClase(e.clase) + '">' + CLASES[e.clase] + '</span></span>' +
       '</button>';
     }).join('');
-
-    cuerpo.innerHTML = '<div class="equipo__cats">' + porCat + '</div>' +
-      (sobre.length
-        ? '<div class="stack" style="gap:2px;margin-top:10px">' + filas + '</div>' +
-          (sobre.length > 40 ? '<div class="tiny muted">y ' + (sobre.length - 40) + ' más (ver CSV)</div>' : '')
-        : '<p class="small muted" style="margin:10px 0 0">' +
-          (ev.length ? 'Ninguno queda sobre el umbral actual.' : 'OpenStreetMap no registra escuelas, salud ni cuarteles en esta comuna.') + '</p>') +
-      '<div class="tiny muted" style="margin-top:8px">Según OpenStreetMap (© colaboradores, ODbL): completo en las ciudades, ' +
-      'con huecos en lo rural. Se evalúa la celda de 30 m donde cae cada punto.</div>';
-
-    cuerpo.querySelectorAll('.equipo').forEach(function (b) {
+    caja.innerHTML = lista.length
+      ? '<div class="stack" style="gap:2px;margin-top:8px">' + filas + '</div>' +
+        (lista.length > 40 ? '<div class="tiny muted">y ' + (lista.length - 40) + ' más: afina la búsqueda o descarga el CSV</div>' : '')
+      : '<p class="tiny muted" style="margin:8px 0 0">Ninguno coincide.</p>';
+    caja.querySelectorAll('.equipo').forEach(function (b) {
       b.addEventListener('click', function () { irAEquipo(+b.getAttribute('data-id')); });
     });
   }
@@ -810,6 +852,38 @@ const GTInundacion = (function () {
      Explorador de pesos
      --------------------------------------------------------------------- */
 
+  /* Qué hace cada variable, en palabras de quien no es hidrólogo. */
+  const QUE_MIDE = {
+    acumulacion: 'cuánta agua llega a cada punto desde el terreno más alto que lo rodea; los fondos de quebrada y de valle reciben más',
+    curvatura: 'si el terreno forma una hondonada, donde el agua se junta, o una loma, donde escurre',
+    pendiente: 'qué tan inclinado es el terreno; en lo plano el agua se queda',
+    distancia_cauces: 'qué tan cerca está de un río o estero',
+    twi: 'dónde el suelo tiende a saturarse, combinando pendiente y superficie que drena hacia ahí',
+    cobertura: 'cuánta vegetación hay (NDVI); con más cubierta el agua se infiltra mejor'
+  };
+
+  /* Recuadro bajo el mapa: las variables que pesan hoy y las que no. */
+  function pintarFactores(variables) {
+    const caja = $('factores');
+    if (!caja || !variables) return;
+    const usadas = variables.filter(function (v) { return v.peso > 0; });
+    const otras = variables.filter(function (v) { return !(v.peso > 0); });
+    caja.innerHTML =
+      '<div class="card__title">Qué se considera</div>' +
+      '<p class="small" style="margin:6px 0">La susceptibilidad de cada celda de 30 m sale del relieve. Hoy el índice usa:</p>' +
+      '<ul class="small" style="margin:0 0 6px;padding-left:18px">' + usadas.map(function (v) {
+        return '<li><strong>' + esc(v.nombre) + ' (' + GT.fmt(v.peso, 0) + ' %)</strong>: ' +
+               esc(QUE_MIDE[v.clave] || v.como || '') + '.</li>';
+      }).join('') + '</ul>' +
+      (otras.length
+        ? '<p class="tiny muted" style="margin:0">También se calcularon ' +
+          otras.map(function (v) { return esc(v.nombre.charAt(0).toLowerCase() + v.nombre.slice(1)); }).join(', ') +
+          ', pero no mejoraron la coincidencia con las inundaciones históricas, así que pesan 0. ' +
+          '<a href="#como-se-calcula">Ver cómo se calcula</a></p>'
+        : '<p class="tiny muted" style="margin:0"><a href="#como-se-calcula">Ver cómo se calcula</a></p>');
+    caja.hidden = false;
+  }
+
   function cargarModelo() {
     S.promesaModelo = traerJson(RUTA_VARIABLES, 10000).then(function (d) {
       if (!d || !d.variables) {
@@ -820,6 +894,7 @@ const GTInundacion = (function () {
       S.modelo = new GTCalculo.Modelo(d);
       if (!S.pesos) S.pesos = S.modelo.calibrados.slice();
       montarPesos();
+      pintarFactores(d.variables);
       return S.modelo;
     });
   }

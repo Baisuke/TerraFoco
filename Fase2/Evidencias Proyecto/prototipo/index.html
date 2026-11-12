@@ -170,7 +170,7 @@ GTMapaReal.crearConRespaldo(document.getElementById('mapa'), { capa: 'erosion' }
     // Solo el mapa real expone su instancia de MapLibre; el esquema no.
     if (!(api && api.instancia)) document.getElementById('avisoMapa').hidden = false;
   });
-document.getElementById('leyenda').innerHTML = GTMapa.leyendaClases();
+document.getElementById('leyenda').innerHTML = GTMapa.leyendaClases('erosion');
 document.getElementById('notaMapa').textContent = 't/ha/año · ' +
   (GT.origenErosion === 'TerraFoco'
     ? 'cálculo propio' + (GT.anioPropia ? ' ' + GT.anioPropia : '')

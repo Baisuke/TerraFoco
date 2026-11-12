@@ -77,9 +77,11 @@ const VARIABLES = {
     /* Lo que hay que ver son las clases altas: por dónde se concentra el
        agua. Con Media al 50 % y Alta al 85 %, en tonos vecinos del mismo
        azul, las cuatro clases —cuartiles, un cuarto del territorio cada
-       una— se leían como un solo manto azul. Baja casi no se pinta y Media
-       apenas: así aparece la red de drenaje. */
-    alfas: [0.04, 0.22, 0.78, 1],
+       una— se leían como un solo manto azul. Baja y Media van tenues: así
+       aparece la red de drenaje. Baja iba al 4 %, invisible, y un sector
+       entero de la comuna se veía sin color con la leyenda diciendo "Baja
+       18 %": se leía como falta de dato. Ahora se ve, aunque suave. */
+    alfas: [0.28, 0.4, 0.78, 1],
     /* Umbral ajustable (qué se marca como riesgo) y ciudades y pueblos de la
        comuna. Ver "Umbral" y "Localidades" en GTDetalle.conectar. */
     umbral: true,
@@ -903,6 +905,9 @@ function panel(contenedor, ficha, cfg, estado, alCambiar) {
     }).join('') + '</div>' : '';
 
   const clases = tramos.map(function (t, k) {
+    /* Una clase sin ninguna celda en la comuna no va en la leyenda: la
+       listaba igual, con 0 %, como si el mapa la tuviera. */
+    if (estado && !estado.datos.conteo[k]) return '';
     const pct = estado ? Math.round(100 * estado.datos.conteo[k] / (total || 1)) : null;
     const etiqueta = '<i style="background:' + t.color + '"></i>' +
       '<span>' + t.nombre + '</span>' +
