@@ -459,8 +459,7 @@ const GTInundacion = (function () {
     if (!partes.length) return '';
     return '<div class="lectura-indap"><strong>Para INDAP:</strong> en ' + esc(r.comuna) + ', ' +
       partes.join(' y ') + ' quedan en terreno susceptible con este umbral. Son las superficies y familias a ' +
-      'considerar primero en el plan de emergencias agrícolas y al evaluar inversiones de riego o drenaje en la comuna.' +
-      ' <a href="predios.html">Revisar predios propios →</a></div>';
+      'considerar primero en el plan de emergencias agrícolas y al evaluar inversiones de riego o drenaje en la comuna.</div>';
   }
 
   function cifra(valor, rotulo, sub) {

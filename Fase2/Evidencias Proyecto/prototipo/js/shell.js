@@ -27,7 +27,6 @@ const MENU = [
   { grupo: 'General' },
   { id: 'index',        href: 'index.html',        nombre: 'Inicio',              icono: 'panel' },
   { id: 'visor',        href: 'visor.html',        nombre: 'Visor cartográfico',  icono: 'visor' },
-  { id: 'predios',      href: 'predios.html',      nombre: 'Mis predios',         icono: 'pin' },
   { grupo: 'Módulo 1 — Suelos' },
   { id: 'pertinencia',  href: 'pertinencia.html',  nombre: 'Índice de pertinencia', icono: 'diana' },
   { id: 'comuna',       href: 'comuna.html',       nombre: 'Ficha de comuna',     icono: 'capas' },
