@@ -1,16 +1,15 @@
 # Visor · mapas y módulos
 
-**Carpeta:** `prototipo/js/`. Los scripts que hacen el trabajo pesado del visor: el mapa real, el detalle a 30 m, el cálculo y la interfaz de inundaciones, las exportaciones, el modelo 3D y Mis predios. Base: [[Visor - scripts base]].
+**Carpeta:** `prototipo/js/`. Los scripts que hacen el trabajo pesado del visor: el mapa real, el detalle a 30 m, el cálculo y la interfaz de inundaciones, las exportaciones, el modelo 3D y las simulaciones. Base: [[Visor - scripts base]].
 
 | Archivo | Global | Lo cargan |
 |---|---|---|
-| [[#mapa-real.js]] | `GTMapaReal` | index, visor, inundaciones, urbano, predios |
+| [[#mapa-real.js]] | `GTMapaReal` | index, visor, inundaciones, urbano |
 | [[#detalle-comuna.js]] | `GTDetalle` | visor, inundaciones, urbano |
-| [[#inundacion-calculo.js]] | `GTCalculo` | inundaciones, predios |
+| [[#inundacion-calculo.js]] | `GTCalculo` | inundaciones, urbano |
 | [[#inundacion.js]] | `GTInundacion` | inundaciones |
-| [[#zonas.js]] | `GTZonas` | visor, inundaciones, predios |
+| [[#zonas.js]] | `GTZonas` | visor, inundaciones |
 | [[#modelo3d.js]] | `GTModelo3D` | visor |
-| [[#predios.js]] | `GTPredios` | predios |
 | [[#simulacion-lluvia.js]] | `GTSimLluvia` | inundaciones |
 | [[#simulacion-inundacion.js]] | `GTSimInundacion` | inundaciones |
 | [[#simulacion-calor.js]] | `GTSimCalor` | urbano |
@@ -64,12 +63,6 @@
 - **Datos:** forma desde las teselas `relieve` (NASADEM, ~63 m en z10) y color desde `pendiente` (~31 m en z11) o hipsométrico por elevación (`texturaPendiente`, `texturaElevacion`). Paredes y base cierran el bloque (`construir`).
 - **Controles:** botón izquierdo o rueda apretada giran, derecho desplaza, rueda acerca; táctil: un dedo gira, dos acercan. Exageración vertical, vistas predefinidas, giro automático, brújula, exportar PNG.
 - **three.js** (r170) se carga **recién al abrir el primer modelo** (`cargarThree`, `import()` dinámico de `vendor/`): quien no lo usa no lo descarga.
-
-## predios.js
-- **Qué hace:** **Mis predios**. El ejecutivo de área carga un CSV con sus predios y ve, por predio: clase de inundación, erosión de la celda (y media CIREN de la comuna), pendiente, % cultivo/pradera y pertinencia de la comuna, con una observación.
-- **Todo en el navegador** (Ley 19.628): el archivo no se sube ni se guarda. → [[Privacidad y datos personales]]
-- **Funciones:** `leerCsv` (detecta separador `;`/`,`/tab y coma decimal), `utmAGrados` (UTM WGS84 huso 19 S por omisión, 18 S si se indica), `valorEn` / `rgbEn` / `tesela` / `pixel` (lee el valor de la celda en las teselas), `erosionEn`, `comunaDe`, `evaluar`, `observacion`, `pintarTabla`, `pintarMapa`, `csvResultados`, `kmlResultados`, `plantilla` (CSV de ejemplo). Públicas: `iniciar`, `montar`, `leerCsv`, `utmAGrados`.
-- Un predio es **un punto**: se evalúa la celda donde cae la coordenada, no toda su superficie (se dice en pantalla).
 
 ## simulacion-lluvia.js
 - **Qué es:** las cuentas de la simulación de lluvia, sin interfaz (probadas en Node). → [[Susceptibilidad a inundación#Simulación de lluvia]]
