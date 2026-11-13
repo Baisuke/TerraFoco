@@ -91,7 +91,7 @@ Compose de producción con base, API y Caddy (HTTPS automático) en una VM; el m
 ## Para INDAP
 
 **¿Qué uso real le daría un funcionario de INDAP?**
-Priorizar comunas en el próximo concurso (pertinencia y brecha en UF), revisar si sus predios están en zona de inundación o erosión severa (Mis predios), llevar las zonas a Google Earth en terreno y estimar hectáreas de cultivo y agricultores expuestos ante una emergencia. → [[SIRSD-S e INDAP]]
+Priorizar comunas en el próximo concurso (pertinencia y brecha en UF), ver dentro de cada comuna, a 30 m, dónde está la erosión severa y el terreno susceptible a inundación, llevar esas zonas a Google Earth en terreno y estimar hectáreas de cultivo y agricultores expuestos ante una emergencia. → [[SIRSD-S e INDAP]]
 
 **¿Qué falta para usarlo en producción?**
 La tabla oficial de agencias de área, el desglose del SIRSD-S por práctica (requiere datos de INDAP), una guía de mantenimiento para TI y la prueba de usabilidad con usuarios reales (HU-24).

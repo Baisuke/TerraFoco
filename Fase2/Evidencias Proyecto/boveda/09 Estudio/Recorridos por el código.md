@@ -49,9 +49,9 @@ Seguir una acción concreta a través de todas las capas. Abrir cada archivo mie
 4. `CambioDeFuente` (pydantic) y `_validar_estado` validan contra `ESTADOS` → 422 si no corresponde. → [[API - rutas#fuentes.py]]
 5. `UPDATE operacion.fuente` en una transacción; la respuesta trae la fila nueva con su última carga (de la bitácora).
 
-## 6 · Un ejecutivo de INDAP evalúa sus predios
+## 6 · Un ejecutivo de INDAP lleva una zona a terreno
 
-1. `predios.html` → arrastra un CSV. `GTPredios.leerCsv` detecta separador y coma decimal; `utmAGrados` convierte si vienen en UTM. → [[Visor - mapas y módulos#predios.js]]
-2. Para cada punto: `comunaDe` (punto en polígono), `valorEn` lee la celda en `inundacion.pmtiles`, `pendiente.pmtiles` y `agricola.pmtiles`; `erosionEn` la erosión (teselas o PNG); la pertinencia de la comuna viene de `GT.comunas`.
-3. `evaluar` + `observacion` arman la fila; `pintarTabla` y `pintarMapa` la muestran; `csvResultados` / `kmlResultados` exportan.
-4. **Nada se envía a un servidor:** solo se piden teselas públicas; el CSV se olvida al cerrar la pestaña. → [[Privacidad y datos personales]]
+1. `inundaciones.html` → abre una comuna; `GTInundacion` pinta la grilla de 30 m desde las teselas. → [[Visor - mapas y módulos#inundacion.js]]
+2. Mueve el **umbral**: `GTCalculo` vuelve a contar en el navegador las celdas, las personas y las hectáreas de cultivo sobre el umbral, sin volver al servidor.
+3. **Exportar → KML**: `GTZonas` junta las celdas marcadas en rectángulos (corridas por fila y luego filas iguales) y escribe el KML para Google Earth, o GeoJSON para QGIS. → [[Visor - mapas y módulos#zonas.js]]
+4. **Nada se envía a un servidor:** se usan las teselas públicas que el visor ya descargó.

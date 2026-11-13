@@ -26,7 +26,7 @@
 | **INDAP** | Instituto de Desarrollo Agropecuario; cliente final y ejecutor del SIRSD-S | [[SIRSD-S e INDAP]] |
 | **Idempotente** | Que se puede correr varias veces con el mismo resultado (migraciones, `inicializar.sh`) | [[Migraciones]] |
 | **Isla fresca** | Cuánto más fresca está un área verde que su entorno; aquí se mide en la propia ciudad | [[Áreas verdes y calor urbano#Simular un área verde]] |
-| **KML** | Formato de Google Earth; las zonas y predios se exportan así | [[Visor - mapas y módulos#zonas.js]] |
+| **KML** | Formato de Google Earth; las zonas marcadas se exportan así | [[Visor - mapas y módulos#zonas.js]] |
 | **MapLibre GL** | Librería de mapas web en GPU (fork libre de Mapbox GL) | [[Visor - mapas y módulos#mapa-real.js]] |
 | **Migración** | Script SQL numerado que cambia el esquema de forma ordenada | [[Migraciones]] |
 | **NDVI** | Índice de vegetación: (NIR − rojo)/(NIR + rojo); de −1 a 1 | [[Motor - ingesta#sentinel.py]] |
