@@ -15,7 +15,7 @@ Una plataforma web que:
 1. **Mide el territorio** con datos públicos y satelitales: erosión (RUSLE a 30 m), susceptibilidad a inundación (seis variables del relieve, validada contra eventos) y calor urbano (ECOSTRESS) más déficit de áreas verdes.
 2. **Carga la inversión** del SIRSD-S 2012–2025 por comuna y año, deflactada a UF.
 3. **Cruza ambas** en el [[Índice de pertinencia]]: necesidad normalizada menos inversión normalizada.
-4. **Lo muestra** en un visor para personas sin formación informática, con mapas a 30 m, fichas por comuna, exportaciones (CSV, KML, GeoJSON) y un análisis de los predios propios.
+4. **Lo muestra** en un visor para personas sin formación informática, con mapas a 30 m, fichas por comuna y exportaciones (CSV, KML, GeoJSON).
 
 El **aporte original** está en que la variable evaluada —las prácticas de conservación— **ya vive dentro del modelo físico**: es el factor **P** (y en parte C) de RUSLE. Por eso el cruce no es una correlación forzada. → [[RUSLE y erosión]]
 
@@ -27,7 +27,7 @@ El **aporte original** está en que la variable evaluada —las prácticas de co
 | 2 · Inundaciones | ¿Qué terreno es susceptible y qué queda encima? | `inundaciones.html` | [[Susceptibilidad a inundación]], [[Exposición]] |
 | 3 · Ciudades | ¿Dónde hace más calor y falta área verde? | `urbano.html` | [[Áreas verdes y calor urbano]] |
 
-Más dos pantallas transversales: **Mis predios** (`predios.html`, para el ejecutivo de área de INDAP) y **Fuentes** (`fuentes.html`, administración del catálogo y la bitácora). → [[Visor - páginas]]
+Más una pantalla transversal: **Fuentes** (`fuentes.html`, administración del catálogo y la bitácora, con inicio de sesión). → [[Visor - páginas]]
 
 ## Objetivos específicos (del perfil)
 

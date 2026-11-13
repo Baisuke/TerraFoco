@@ -39,8 +39,7 @@ Desde el punto de vista de un funcionario de INDAP se implementaron:
 1. Exposición **agrícola y rural** en inundaciones (hectáreas de cultivo/pradera y población rural, no solo escuelas urbanas). → [[Exposición]]
 2. **Zonas descargables** para Google Earth (KML) y QGIS (GeoJSON). → [[Visor - mapas y módulos#zonas.js]]
 3. **Recomendación** en la ficha de comuna ("Priorizar en el próximo concurso…"). → [[Visor - scripts base#data.js]]
-4. **Mis predios**: el ejecutivo de área carga un CSV con sus predios y ve el riesgo de cada uno, sin subir nada a un servidor. → [[Visor - mapas y módulos#predios.js]]
-5. Lectura "modo INDAP" en el visor de inundaciones.
+4. Lectura "modo INDAP" en el visor de inundaciones.
 
 Pendientes que dependen de datos de INDAP: tabla oficial de **agencias de área**, desglose del SIRSD-S **por subprograma/práctica**, y guía de mantenimiento para TI de INDAP.
 

@@ -9,7 +9,6 @@ El proyecto declaró ante INDAP que trabaja **solo con agregados comunales**. La
 | RUT, nombre, sexo, etnia del beneficiario; rol y nombre del predio | Planillas oficiales de INDAP ("1- Solo Planes <año>.xlsx") | **No se versionan ni se cargan.** `agregar_entrega_indap.py` lee solo columnas no personales, **por nombre**, y escribe el agregado comuna-año. → [[Herramientas#agregar_entrega_indap.py]] |
 | `nom_operad` (nombre del agricultor), `rol_4` (rol de la propiedad) | Servicio público de IDE MINAGRI | `sirsd_ide.py` los **descarta explícitamente** y agrega por comuna antes de escribir. Que la fuente los publique no obliga a replicarlos. → [[Motor - ingesta#sirsd_ide.py]] |
 | Datos por persona del Censo | — | Nunca se leen: la base del INE ya viene agregada por manzana/entidad; se toman solo totales de personas y viviendas. → [[Motor - ingesta#poblacion_censal.py]] |
-| Los predios del usuario | Mis predios (`predios.html`) | **Todo ocurre en el navegador**: el CSV se lee ahí, se cruza con las teselas y se olvida al cerrar la pestaña. No se sube a ningún servidor. → [[Visor - mapas y módulos#predios.js]] |
 
 ## Credenciales y secretos
 
