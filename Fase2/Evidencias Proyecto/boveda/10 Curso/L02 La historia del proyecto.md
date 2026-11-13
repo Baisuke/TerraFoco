@@ -43,7 +43,7 @@ $$A = R \times K \times LS \times C \times P$$
    - calor urbano (satélite ECOSTRESS) y déficit de áreas verdes.
 2. **Carga** la inversión: la serie del SIRSD-S 2012–2025 por comuna y año, convertida a UF.
 3. **Cruza** ambas en el **índice de pertinencia**: necesidad normalizada menos inversión normalizada.
-4. **Muestra** todo en un visor web para personas sin formación informática: mapas a 30 m, fichas por comuna, exportación a Google Earth y QGIS, y un análisis de los propios predios.
+4. **Muestra** todo en un visor web para personas sin formación informática: mapas a 30 m, fichas por comuna y exportación a Google Earth y QGIS.
 
 ## 4. Los tres módulos
 
@@ -53,14 +53,14 @@ $$A = R \times K \times LS \times C \times P$$
 | **2 · Inundaciones** | ¿Qué terreno es susceptible y qué queda encima? | Inundaciones (+ simulación de lluvia) | Completo y validado |
 | **3 · Ciudades** | ¿Dónde hace más calor y falta área verde? | Ciudades (+ simular un parque) | Complementario |
 
-Más tres pantallas transversales: **Mis predios** (el ejecutivo de INDAP sube sus predios y ve el riesgo de cada uno), **Fuentes de datos** (catálogo y bitácora) y **Ayuda**.
+Más dos pantallas transversales: **Fuentes de datos** (catálogo y bitácora) y **Ayuda**.
 
 ## 5. Para quién
 
 El usuario principal es el **ejecutivo de área de INDAP** y quien distribuye el SIRSD-S en la región. Lo que el sistema le permite:
 
 - **Priorizar comunas** en el próximo concurso: el índice y la "brecha en UF" (cuánto le falta a cada comuna para llegar a la inversión típica de la región).
-- **Revisar sus predios**: si están en zona de inundación, erosión severa o pendiente fuerte.
+- **Bajar a la comuna**: ver a 30 m dónde están la erosión severa, la pendiente fuerte y el terreno susceptible a inundación.
 - **Llevar zonas a terreno**: exportar a Google Earth las celdas marcadas.
 - **Estimar exposición** ante una emergencia: hectáreas de cultivo y agricultores en zona susceptible.
 

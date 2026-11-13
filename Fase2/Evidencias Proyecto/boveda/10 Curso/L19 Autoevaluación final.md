@@ -13,11 +13,11 @@
 > [!question]- 2. ¿Cuál es el aporte original, en una frase?
 > Las prácticas que financia el SIRSD-S actúan sobre los factores C y P de RUSLE: la variable evaluada vive dentro del modelo físico, así que el cruce tiene un mecanismo y no es una correlación forzada.
 
-> [!question]- 3. Nombra los tres módulos y las tres pantallas transversales.
-> Módulos: Suelos agrícolas (erosión y pertinencia), Inundaciones, Ciudades. Transversales: Mis predios, Fuentes de datos, Ayuda (más el Panel general y el Visor).
+> [!question]- 3. Nombra los tres módulos y las dos pantallas transversales.
+> Módulos: Suelos agrícolas (erosión y pertinencia), Inundaciones, Ciudades. Transversales: Fuentes de datos y Ayuda (más el Inicio y el Visor).
 
 > [!question]- 4. ¿Quién es el usuario principal y qué tres usos tiene?
-> El ejecutivo de área de INDAP (y quien distribuye el SIRSD-S): priorizar comunas en el concurso (índice y brecha en UF), revisar el riesgo de sus predios, llevar zonas a terreno (KML) y estimar exposición ante emergencias.
+> El ejecutivo de área de INDAP (y quien distribuye el SIRSD-S): priorizar comunas en el concurso (índice y brecha en UF), ver a 30 m dónde está el riesgo dentro de la comuna, llevar zonas a terreno (KML) y estimar exposición ante emergencias.
 
 > [!question]- 5. ¿Qué declara el proyecto que NO hace?
 > No predice inundaciones; el modelo propio no es confiable en precordillera; la inversión incluye subprogramas que no actúan sobre la erosión; con 33 comunas las correlaciones son sugerentes, no concluyentes.
@@ -151,8 +151,8 @@
 > [!question]- 44. ¿Cómo se calcula la población sobre el umbral?
 > En el navegador: cada unidad censal reparte sus personas entre las celdas cuyo centro cae dentro; se suman las de las celdas que pasan el umbral. Se recalcula al mover el umbral (evento `detalle:umbral`).
 
-> [!question]- 45. ¿Por qué Mis predios no sube el archivo?
-> Privacidad: se cruza en el navegador con las teselas públicas y se olvida al cerrar la pestaña (Ley 19.628).
+> [!question]- 45. ¿Cómo se lleva una zona marcada a Google Earth?
+> `GTZonas` junta las celdas marcadas en rectángulos (corridas por fila y luego filas iguales) y escribe un KML; para QGIS, GeoJSON.
 
 > [!question]- 46. Las tres piezas de la simulación de lluvia.
 > Número de Curva (cuánto escurre), embalse lineal (cuánto se retiene; ahí entra la intensidad), orden del índice calibrado (dónde se junta).

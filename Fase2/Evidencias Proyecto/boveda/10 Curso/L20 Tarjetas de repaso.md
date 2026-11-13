@@ -101,7 +101,7 @@
 ¿Qué pasa si MapLibre no carga?::Mapa esquemático de mapa.js, rotulado.
 ¿Qué hace el Web Worker del detalle?::Refina la grilla de 30 m a la resolución de la pantalla sin trabar la página.
 ¿Dónde se cruza la exposición?::En el navegador (inundacion-calculo.js), sobre la grilla pintada, siguiendo al umbral.
-¿Mis predios envía datos al servidor?::No: todo ocurre en el navegador y se olvida al cerrar.
+¿Cómo se exporta una zona a Google Earth?::GTZonas junta las celdas en rectángulos y escribe un KML (o GeoJSON para QGIS).
 ¿Simulación de lluvia: tres piezas?::Número de curva, embalse lineal, orden del índice calibrado.
 ¿Isla fresca de Rancagua?::0,44 °C (22 parques de 1 ha o más contra su entorno de 100–500 m).
 

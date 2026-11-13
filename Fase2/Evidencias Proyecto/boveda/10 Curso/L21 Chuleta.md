@@ -55,7 +55,7 @@ Erosión: ≤ 10 Ligera · ≤ 18 Moderada · ≤ 26 Severa · ≤ 34 Muy severa
 | API | `api/main.py` · `api/seguridad.py` · `api/focalizacion.py` · `api/rutas/pertinencia.py` |
 | Visor base | `js/api-base.js` · `js/paleta.js` · `js/data.js` · `js/datos-api.js` · `js/shell.js` |
 | Visor mapa | `js/mapa-real.js` · `js/detalle-comuna.js` · `js/mapa.js` |
-| Pantallas | `js/inundacion.js` + `inundacion-calculo.js` · `js/predios.js` · `js/simulacion-*.js` |
+| Pantallas | `js/inundacion.js` + `inundacion-calculo.js` · `js/zonas.js` · `js/simulacion-*.js` |
 
 ## Comandos
 

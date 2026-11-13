@@ -60,8 +60,8 @@
 > **Mostrar:** `motor/config.py`, `api/config.py`, `.gitignore`.
 
 > [!question]- ¿Cómo manejan los datos personales de INDAP?
-> No entran al sistema. Las planillas de la entrega oficial traen RUT y nombres; `herramientas/agregar_entrega_indap.py` lee solo columnas no personales por nombre, suma por comuna y año y escribe el agregado. Mis predios procesa el CSV en el navegador y no lo envía.
-> **Mostrar:** docstring de `herramientas/agregar_entrega_indap.py`, `prototipo/js/predios.js`.
+> No entran al sistema. Las planillas de la entrega oficial traen RUT y nombres; `herramientas/agregar_entrega_indap.py` lee solo columnas no personales por nombre, suma por comuna y año y escribe el agregado. El visor solo muestra agregados por comuna y celdas de 30 m, nunca datos de un beneficiario.
+> **Mostrar:** docstring de `herramientas/agregar_entrega_indap.py`.
 
 ## Rendimiento
 
@@ -128,7 +128,7 @@
 ## Preguntas sobre tu rol (Antonio: frontend, visualización y calidad)
 
 > [!question]- ¿Qué hiciste tú?
-> Prepárala con tus propias palabras. Pistas de lo que corresponde a tu rol: el visor (las nueve pantallas, el marco común `shell.js`, la hidratación con respaldo `datos-api.js`), los mapas (MapLibre, detalle a 30 m, teselas en el navegador), los gráficos SVG, Mis predios, las simulaciones, el sistema de diseño y la calidad (pruebas, validación de contraste, accesibilidad).
+> Prepárala con tus propias palabras. Pistas de lo que corresponde a tu rol: el visor (las ocho pantallas, el marco común `shell.js`, la hidratación con respaldo `datos-api.js`), los mapas (MapLibre, detalle a 30 m, teselas en el navegador), los gráficos SVG, las simulaciones, el sistema de diseño y la calidad (pruebas, validación de contraste, accesibilidad).
 
 > [!question]- ¿Cómo aseguraron que el visor sea usable por alguien de INDAP?
 > Cada pantalla responde una pregunta y la escribe arriba; los números van con coma decimal y unidades; el badge dice siempre de dónde vienen los datos; las recomendaciones están en lenguaje del programa; se exporta a las herramientas que ya usan (Google Earth, QGIS, Excel). El contraste del texto pasa AA. Pendiente: la prueba de usabilidad con usuarios reales (HU-24, `docs/16-plan-de-usabilidad.md`).

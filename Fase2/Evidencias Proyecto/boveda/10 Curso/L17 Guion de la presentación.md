@@ -3,7 +3,7 @@
 > [!abstract] En una frase
 > Contar **una historia** (problema → idea clave → cómo funciona → demostración → cómo sabemos que está bien → límites), con la demo siguiendo **una pregunta de INDAP** de pantalla en pantalla y con un plan B para cada cosa que pueda fallar.
 
-Este guion está pensado para **18 minutos** (5 de exposición, 10 de demo, 3 de calidad y cierre). Al final hay versiones de 5 y 10 minutos. Ajusta los tiempos al formato que te pidan.
+Este guion está pensado para **17 minutos** (5 de exposición, 9 de demo, 3 de calidad y cierre). Al final hay versiones de 5 y 10 minutos. Ajusta los tiempos al formato que te pidan.
 
 ---
 
@@ -19,9 +19,8 @@ Este guion está pensado para **18 minutos** (5 de exposición, 10 de demo, 3 de
   3. `comuna.html?id=6205` (Navidad)
   4. `visor.html`
   5. `inundaciones.html`
-  6. `predios.html`
-  7. `fuentes.html`
-  8. `http://localhost:8000/docs`
+  6. `fuentes.html`
+  7. `http://localhost:8000/docs`
 - [ ] Tema: oscuro en pantalla de computador; **`?tema=claro` si es proyector** (el oscuro se ve lavado).
 - [ ] Copia portable en el escritorio, probada una vez (plan B).
 - [ ] Nada de la clave de administración a la vista. No abrir el `.env`.
@@ -55,7 +54,7 @@ Este guion está pensado para **18 minutos** (5 de exposición, 10 de demo, 3 de
 
 ---
 
-## Parte 4 · Demostración (10 min)
+## Parte 4 · Demostración (9 min)
 
 > [!tip] El hilo de la demo
 > Seguir **la pregunta de un funcionario de INDAP**: "¿a qué comunas debería priorizar en el próximo concurso, y dónde dentro de ellas?". Cada pantalla responde un pedazo.
@@ -104,13 +103,7 @@ Este guion está pensado para **18 minutos** (5 de exposición, 10 de demo, 3 de
 >
 > (Simulación) "Y aquí un escenario: con una tormenta concentrada sobre esta comuna, esto es lo que quedaría bajo el agua hora a hora. No es un pronóstico: es para comparar escenarios."
 
-### 4.6 Mis predios — `predios.html` (1 min)
-
-**Hacer:** "Probar con predios de ejemplo" → mostrar la tabla y la columna de observaciones.
-
-> "El ejecutivo de área sube un CSV con sus predios y ve el riesgo de cada uno: inundación, erosión, pendiente, cobertura agrícola y la pertinencia de su comuna. **Nada sale del navegador**: el archivo se cruza aquí con los mapas y se olvida al cerrar. Por eso se puede usar con la planilla interna de la agencia sin exponer datos personales."
-
-### 4.7 Fuentes — `fuentes.html` (30 s)
+### 4.6 Fuentes — `fuentes.html` (30 s)
 
 > "Y la operación: cada fuente con su última carga real, sacada de la bitácora que deja el motor en cada corrida. El catálogo es lo único que se edita desde la web, y está protegido con una clave."
 
