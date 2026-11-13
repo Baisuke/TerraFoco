@@ -512,7 +512,7 @@ const portada = [
   new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Sistema de Análisis Geoespacial Multipropósito para la Evaluación Territorial y de Política Pública', size: 21, font: FUENTE, color: GRIS })] }),
   new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Proyecto APT · Capstone 2026 · Ingeniería en Informática · Duoc UC', size: 21, font: FUENTE, color: GRIS })] }),
   new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Equipo: Bastián Cárcamo · Carla Morales · Antonio Lankin', size: 21, font: FUENTE, color: GRIS })] }),
-  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Versión del 12 de octubre de 2026', size: 21, font: FUENTE, color: GRIS })] }),
+  new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: 'Versión del 12 de noviembre de 2026 (versión de título)', size: 21, font: FUENTE, color: GRIS })] }),
 ];
 
 const comoUsar = [
