@@ -138,7 +138,7 @@ Especificación de requerimientos (12) y Plan de pruebas (13).
   mensual, inundación trimestral, CIREN anual) y registra cada corrida en una
   bitácora.
 - **API**: lectura pública; la única escritura (catálogo de fuentes) exige clave.
-- **Visor**: páginas por módulo, comuna y predio; si la API no responde, sigue mostrando la
+- **Visor**: páginas por módulo y por comuna; si la API no responde, sigue mostrando la
   cartografía y los datos embebidos.
 
 La arquitectura completa está documentada como vista **4+1** (lógica,

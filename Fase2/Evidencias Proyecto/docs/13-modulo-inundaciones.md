@@ -221,11 +221,6 @@ servicios críticos como puntos. Las celdas se juntan en rectángulos y, si una
 comuna tiene demasiadas, en bloques de 60 o 90 m por mayoría (se declara en el
 nombre del archivo).
 
-**Mis predios** (`prototipo/predios.html`): el ejecutivo de área carga un CSV
-con sus predios (grados o UTM) y ve la inundación, la erosión, la pendiente y
-la cobertura de la celda de cada uno, y la pertinencia de su comuna. El
-archivo se procesa en el navegador y no se guarda.
-
 ### Recálculo automático y calibración
 
 `indicadores.inundacion` escribe cada recálculo con `calibrado = FALSE`. El
