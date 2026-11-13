@@ -7,16 +7,15 @@
 
 ```
 prototipo/
-├── index.html, visor.html, predios.html, pertinencia.html, comuna.html,
-│   inundaciones.html, urbano.html, fuentes.html, ayuda.html   ← 9 páginas
+├── index.html, visor.html, pertinencia.html, comuna.html, inundaciones.html,
+│   urbano.html, fuentes.html, login.html, ayuda.html   ← 9 páginas
 ├── css/styles.css        ← una sola hoja de estilos (sistema de diseño monocromo)
-├── js/                   ← ~25 módulos
+├── js/                   ← 19 módulos
 ├── datos/
 │   ├── comunas.js / .geojson     ← copia estática de las 33 geometrías
 │   ├── indicadores.js            ← COPIA LOCAL de los últimos datos reales
 │   ├── teselas/*.pmtiles         ← las pirámides de valores
-│   ├── erosion/, inundacion/, calor/   ← PNG por comuna + índices (respaldo)
-│   └── predios_ejemplo*.csv      ← 12 predios ficticios
+│   └── erosion/, inundacion/, calor/   ← PNG por comuna + índices (respaldo)
 └── vendor/               ← MapLibre, PMTiles, three.js (copias locales)
 ```
 
@@ -79,7 +78,7 @@ GT.hidratar().then(function () {               // ← espera los datos
 | `GTMapaReal` | `mapa-real.js` | El mapa con MapLibre |
 | `GTDetalle` | `detalle-comuna.js` | El detalle a 30 m |
 | `GTGrafico` | `graficos.js` | Gráficos en SVG sin librerías |
-| `GTCalculo`, `GTInundacion`, `GTZonas`, `GTPredios`, `GTModelo3D`, `GTSim*` | sus archivos | Módulos de cada pantalla |
+| `GTCalculo`, `GTInundacion`, `GTZonas`, `GTModelo3D`, `GTSim*` | sus archivos | Módulos de cada pantalla |
 
 ## 3. Los scripts base, uno por uno
 

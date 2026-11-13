@@ -1,7 +1,7 @@
 # L13 · El visor: las pantallas
 
 > [!abstract] En una frase
-> Nueve páginas con el mismo marco, cada una responde **una pregunta** de quien usa el sistema: el panel resume la región, el visor explora capas, pertinencia responde la pregunta del proyecto, la ficha baja a una comuna, inundaciones y ciudades son los módulos 2 y 3, mis predios baja el análisis al predio, fuentes administra los datos y ayuda explica.
+> Ocho pantallas con el mismo marco, cada una responde **una pregunta** de quien usa el sistema: el inicio resume la región, el visor explora capas, pertinencia responde la pregunta del proyecto, la ficha baja a una comuna, inundaciones y ciudades son los módulos 2 y 3, fuentes administra los datos y ayuda explica.
 
 Para cada pantalla: **la pregunta**, **qué muestra**, **con qué código** y **qué decir en la demo**.
 
@@ -143,35 +143,7 @@ Al mover el umbral, `detalle-comuna.js` recalcula `base.clases` y emite `detalle
 
 ---
 
-## 7. Mis predios — `predios.html`
-
-**Pregunta del ejecutivo de INDAP:** ¿cuáles de **mis** predios tienen riesgo?
-
-1. Arrastra un **CSV** con nombre y coordenadas (grados decimales o UTM 19S), o lo pega, o prueba con los **12 predios de ejemplo ficticios**.
-2. `GTPredios.leerCsv` detecta el separador y la coma decimal; `utmAGrados` convierte UTM si hace falta.
-3. Para cada punto, `evaluar`:
-
-```javascript
-function evaluar(p) {
-  const comuna = comunaDe(p.lat, p.lon);                                  // punto en polígono
-  return Promise.all([
-    valorEn('datos/teselas/inundacion.pmtiles', p.lat, p.lon, 1000),     // índice de su celda
-    valorEn('datos/teselas/pendiente.pmtiles', p.lat, p.lon, 1),         // pendiente
-    rgbEn('datos/teselas/agricola.pmtiles', p.lat, p.lon),               // % cultivo y pradera
-    erosionEn(p.lat, p.lon, comuna),                                      // erosión de la celda
-  ]).then(...)   // + la categoría de pertinencia de su comuna
-}
-```
-
-4. `observacion` arma la alerta: *"Revisar: terreno susceptible a inundación, erosión severa o mayor en su celda, pendiente fuerte"*.
-5. Tabla, mapa con los predios coloreados, exportación **CSV** y **KML**.
-
-> [!important] Privacidad por diseño
-> **Todo ocurre en el navegador.** El archivo no se sube a ningún servidor ni se guarda: se cruza con las teselas que el visor ya descarga y se olvida al cerrar la pestaña. Así se puede usar con la planilla interna de la agencia sin sacar datos personales (Ley 19.628). → [[Privacidad y datos personales]]
-
----
-
-## 8. Fuentes de datos — `fuentes.html`
+## 7. Fuentes de datos — `fuentes.html`
 
 **Pregunta:** ¿qué datos tiene el sistema, de cuándo y cómo están?
 
@@ -185,13 +157,13 @@ function evaluar(p) {
 
 ---
 
-## 9. Ayuda y glosario — `ayuda.html`
+## 8. Ayuda y glosario — `ayuda.html`
 
 Qué es TerraFoco, atajos de teclado, qué responde cada pantalla, glosario, **"lo que esta herramienta no dice"** (sus límites) y las licencias de los datos.
 
 ---
 
-## 10. Piezas compartidas
+## 9. Piezas compartidas
 
 | Módulo | Qué hace | Dónde se ve |
 |---|---|---|
@@ -206,19 +178,15 @@ Qué es TerraFoco, atajos de teclado, qué responde cada pantalla, glosario, **"
 2. `pertinencia.html`: pasa el cursor por Navidad en la dispersión; mira "¿Ha mejorado la focalización?".
 3. `comuna.html?id=6205` (Navidad), o búscala en el buscador de la barra: descomposición RUSLE y recomendación.
 4. `inundaciones.html`: abre Coinco, mueve el umbral, clic en una celda, descarga el KML.
-5. `predios.html`: "Probar con predios de ejemplo".
-6. `fuentes.html`: el catálogo y las últimas ejecuciones.
+5. `fuentes.html`: el catálogo y las últimas ejecuciones.
 
 ## Autoevaluación
 
 > [!question]- ¿Qué pregunta responde cada pantalla?
-> Panel: cómo está la región. Visor: qué hay en el territorio, capa por capa. Pertinencia: si la inversión llega donde está el problema. Ficha: qué pasa en una comuna y qué hacer. Inundaciones: qué terreno es susceptible y qué queda encima. Ciudades: dónde hace calor y falta verde. Mis predios: cuáles de mis predios tienen riesgo. Fuentes: qué datos hay y cómo están. Ayuda: cómo se usa y qué no dice.
+> Panel: cómo está la región. Visor: qué hay en el territorio, capa por capa. Pertinencia: si la inversión llega donde está el problema. Ficha: qué pasa en una comuna y qué hacer. Inundaciones: qué terreno es susceptible y qué queda encima. Ciudades: dónde hace calor y falta verde. Fuentes: qué datos hay y cómo están. Ayuda: cómo se usa y qué no dice.
 
 > [!question]- ¿Cómo se calcula cuánta gente queda sobre el umbral?
 > En el navegador: cada unidad censal reparte sus personas entre las celdas de 30 m cuyo centro cae dentro (`rasterizarManzanas`), y `exposicion` suma las personas de las celdas que pasan el umbral. Al mover el umbral se recalcula sin volver al servidor.
-
-> [!question]- ¿Por qué Mis predios no envía nada al servidor?
-> Por privacidad: las planillas de INDAP pueden tener datos personales. El CSV se lee y se cruza en el navegador con las teselas públicas y se olvida al cerrar la pestaña.
 
 > [!question]- ¿De dónde sale la recomendación de la ficha?
 > De `GT.recomendacion` en `data.js`: un texto según la categoría del índice y la brecha en UF, sin agregar juicios que los datos no respalden.
