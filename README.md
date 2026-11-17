@@ -7,7 +7,10 @@ identificar las comunas donde la necesidad es alta y la intervención baja.**
 Proyecto APT (Capstone PTY4614) · Duoc UC, sede Antonio Varas
 Docente guía: Rocío Contreras Aguila
 
-Sitio publicado: **https://terrafoco.tech**
+Sitio publicado (esta versión): **https://titulo.terrafoco.tech**
+
+Versión extendida, con datos de INDAP de la Región Metropolitana y herramientas
+para el trabajo en terreno: https://terrafoco.tech
 
 ---
 
