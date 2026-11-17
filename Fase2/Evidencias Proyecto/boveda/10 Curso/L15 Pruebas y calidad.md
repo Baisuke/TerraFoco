@@ -1,7 +1,7 @@
 # L15 · Pruebas y calidad
 
 > [!abstract] En una frase
-> ~270 pruebas del motor y ~96 de la API, escritas con **pytest**, que se concentran en **lo que falla en silencio** (unidades, rangos, cadencias, codificación, clases) y que pueden existir porque las cuentas viven en **funciones puras**, separadas de la base y de la red; además, cada modelo tiene su **validación estadística** contra datos reales.
+> 387 pruebas (270 del motor, 96 de la API y 21 de integración con PostgreSQL), escritas con **pytest**, que se concentran en **lo que falla en silencio** (unidades, rangos, cadencias, codificación, clases) y que pueden existir porque las cuentas viven en **funciones puras**, separadas de la base y de la red; además, cada modelo tiene su **validación estadística** contra datos reales.
 
 ## 1. Tres niveles de calidad
 
@@ -108,8 +108,8 @@ monkeypatch.setattr(config, "CLAVE_ADMIN", "...")   # cambiar algo solo durante 
 ## 5. Cómo correrlas
 
 ```bash
-docker exec -i terrafoco-programador python -m pytest tests -q     # motor (~270)
-docker compose exec -T api python -m pytest tests -q               # API (~96)
+docker exec -i terrafoco-programador python -m pytest tests -q     # motor (279: 270 + 9 de integración)
+docker compose exec -T api python -m pytest tests -q               # API (108: 96 + 12 de integración)
 ```
 
 `-q` = salida corta. El resultado esperado: una línea de puntos y "N passed".

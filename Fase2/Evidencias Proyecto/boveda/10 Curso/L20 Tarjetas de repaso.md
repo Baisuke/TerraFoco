@@ -107,7 +107,7 @@
 
 ## Calidad y despliegue
 
-¿Cuántas pruebas hay?::~270 del motor y ~96 de la API.
+¿Cuántas pruebas hay?::387: 270 del motor, 96 de la API y 21 de integración.
 ¿Qué persiguen las pruebas?::Los errores que no revientan: unidades, rangos, cadencias, codificación.
 ¿Qué corre en el servidor público?::Base, API y Caddy (HTTPS). No el motor.
 ¿Qué hace Caddy?::Certificado HTTPS automático, /api → API, el resto archivos del visor.

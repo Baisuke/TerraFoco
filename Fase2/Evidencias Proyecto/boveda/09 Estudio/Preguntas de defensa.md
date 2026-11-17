@@ -83,7 +83,7 @@ El visor usa la copia local de los últimos valores reales y lo dice en el badge
 Solo el catálogo de fuentes escribe, con clave por encabezado, cerrada por defecto, comparación en tiempo constante. La base no expone puerto en producción. → [[API - núcleo#seguridad.py]]
 
 **¿Cómo aseguran la calidad?**
-~270 pruebas del motor y ~96 de la API, centradas en lo que falla en silencio (unidades, rangos, cadencias, cuartiles, codificación de teselas); funciones puras separadas de la E/S; validación estadística de ambos modelos. → [[Motor - pruebas]] · [[API - pruebas]]
+387 pruebas automatizadas (270 del motor, 96 de la API y 21 de integración con PostgreSQL), centradas en lo que falla en silencio (unidades, rangos, cadencias, cuartiles, codificación de teselas); funciones puras separadas de la E/S; validación estadística de ambos modelos. → [[Motor - pruebas]] · [[API - pruebas]]
 
 **¿Cómo se despliega?**
 Compose de producción con base, API y Caddy (HTTPS automático) en una VM; el motor procesa en el PC y se publica el resultado. Respaldo: Codespaces para la demo y una copia portable para Windows. → [[Despliegue y Codespaces]]

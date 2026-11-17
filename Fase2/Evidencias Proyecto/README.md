@@ -60,10 +60,10 @@ motor/          Procesamiento: ingesta, indicadores, orquestación
   ingesta/      Un módulo por fuente de datos
   indicadores/  RUSLE, terreno, inundación, áreas verdes y el almacén de factores
   orquestacion/ El programador de tareas
-  tests/        ~270 pruebas, casi todas sin base de datos ni red
+  tests/        270 pruebas, casi todas sin base de datos ni red
                 (+ tests/integracion: 9 contra PostgreSQL)
-api/            FastAPI: expone los indicadores al visor (~96 pruebas
-                + 12 de integración en tests/integracion)
+api/            FastAPI: expone los indicadores al visor (96 pruebas
+                + 12 de integración en tests/integracion; 387 en total)
 prototipo/      Front-end, funciona sin servidor
 bd/             esquema.sql, migraciones numeradas y semillas
 herramientas/   Inicializar, servir el visor, copia local, portable, entrega

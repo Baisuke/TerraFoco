@@ -54,8 +54,8 @@ Cada paso es `docker exec -i terrafoco-motor python -m <módulo>`. El orden comp
 ## 6. Pruebas
 
 ```bash
-docker exec -i terrafoco-programador python -m pytest tests -q   # motor (~270)
-docker compose exec -T api python -m pytest tests -q             # api (~96)
+docker exec -i terrafoco-programador python -m pytest tests -q   # motor (279: 270 + 9 de integración)
+docker compose exec -T api python -m pytest tests -q             # api (108: 96 + 12 de integración)
 ```
 
 → [[Motor - pruebas]] · [[API - pruebas]]

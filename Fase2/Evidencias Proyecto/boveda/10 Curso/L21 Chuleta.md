@@ -21,7 +21,7 @@
 | Pesos de inundación | a priori ρ −0,16 → acumulación 50 + curvatura 50 |
 | Focalización | más erosionadas: 61 % del problema, ≈ 46–47 % del incentivo |
 | Isla fresca Rancagua | 0,44 °C · diferencia térmica 6 °C (Graneros 26,4 / Machalí 20,4) |
-| Pruebas | ~270 motor + ~96 API |
+| Pruebas | 387: 270 motor + 96 API + 21 integración |
 
 ## Fórmulas
 

@@ -82,7 +82,7 @@ El usuario principal es el **ejecutivo de área de INDAP** y quien distribuye el
 | Validación de inundación | **43 de 63 eventos (68 %)** en comunas Alta o Muy alta, frente a **52 %** del azar; ρ ≈ +0,36 | `validar_inundacion` |
 | Focalización | Las comunas más erosionadas tienen el **61 %** de la superficie con erosión severa y recibieron **≈ 47 %** del incentivo (2012–2018) y **≈ 46 %** (2019–2025) | `/pertinencia/evolucion` |
 | Calor urbano | Graneros 26,4 °C frente a Machalí 20,4 °C: **6 °C** de diferencia en la conurbación de Rancagua | Ciudades |
-| Pruebas automatizadas | **~270** del motor y **~96** de la API | `pytest` |
+| Pruebas automatizadas | **387**: 270 del motor, 96 de la API y 21 de integración | `pytest` |
 
 > [!warning] Las cifras pueden moverse
 > Salen de los datos cargados (CIREN 2024, cálculo propio 2025, serie SIRSD-S 2012–2025). Si se recalcula algo, cambian. Antes de presentar, confírmalas en el visor: el panel general, pertinencia y la ficha de Navidad.

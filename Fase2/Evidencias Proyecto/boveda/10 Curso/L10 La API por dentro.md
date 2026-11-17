@@ -26,7 +26,7 @@ api/
 │   ├── urbano.py        GET /urbano, /urbano/areas-verdes, /urbano/areas-verdes/geojson
 │   ├── fuentes.py       GET /fuentes, /fuentes/{id} · POST /fuentes · PATCH /fuentes/{id}
 │   └── ejecuciones.py   GET /ejecuciones, /ejecuciones/resumen
-└── tests/            ← ~96 pruebas
+└── tests/            ← 96 pruebas (+ 12 de integración)
 ```
 
 ## 2. `main.py`: arma la aplicación

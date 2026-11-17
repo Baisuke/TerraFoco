@@ -22,7 +22,7 @@ motor/
 ├── ingesta/           ← un archivo por fuente externa (~22)
 ├── indicadores/       ← modelos y cálculos (RUSLE, inundación, superficie, área verde…)
 ├── orquestacion/      ← el programador
-└── tests/             ← ~270 pruebas
+└── tests/             ← 270 pruebas (+ 9 de integración)
 ```
 
 Regla de reparto: **`ingesta/` trae datos de afuera**, **`indicadores/` calcula**, los de la raíz **producen** (mapas, teselas, informes).
