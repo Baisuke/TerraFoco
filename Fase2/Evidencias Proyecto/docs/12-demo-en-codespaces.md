@@ -1,5 +1,12 @@
 # Demostrar el sistema sin el computador de nadie
 
+> **Vigencia.** Este procedimiento se escribió cuando el código estaba en la
+> raíz del repositorio. Desde que se movió a `Fase2/Evidencias Proyecto`,
+> Codespaces ya no encuentra `.devcontainer/` (solo lo busca en la raíz), así
+> que no se abre solo. Para mostrar el sistema funcionando hoy se usa el sitio
+> publicado, https://titulo.terrafoco.tech. Lo que sigue queda como registro de
+> cómo se preparó la demo del avance.
+
 Cómo presentar TerraFoco —modelo de datos, lectura y **escritura** a la base—
 desde cualquier navegador, con GitHub Codespaces. Pensado para la entrega del
 20% funcionando.
@@ -8,8 +15,9 @@ desde cualquier navegador, con GitHub Codespaces. Pensado para la entrega del
 
 ## 1. Por qué Codespaces y no otra cosa
 
-La API es solo lectura: no tiene ningún endpoint que escriba. **Toda la
-escritura la hace el motor**, con `docker exec`, descargando de fuentes
+La API es de lectura, salvo el catálogo de fuentes, que se edita con la clave
+de administración (`PATCH /fuentes/{id}`). **La escritura de los datos la hace
+el motor**, con `docker exec`, descargando de fuentes
 externas. Por eso "mostrar escritura" significa correr una ingesta en vivo, y
 eso exige un sitio que ejecute el `docker-compose` completo.
 
@@ -210,7 +218,7 @@ API. Abrir el visor otra vez con el enlace completo, con `?api=`.
 - **Horas.** 60 al mes con esta máquina. La carga inicial consume unas dos; la
   demo, una fracción. Detener el Codespace al terminar cada sesión.
 - **Puerto 8000 público.** La API queda accesible a quien tenga la URL mientras
-  el Codespace esté encendido. Es solo lectura y no expone nada sensible, pero
+  el Codespace esté encendido. Sin la clave de administración solo permite leer y no expone nada sensible, pero
   es una razón más para detenerlo al terminar.
 - **Credenciales satelitales.** No hacen falta para esta demo. Si se quisieran
   cargar factores por Sentinel, van como *Codespaces secrets* del repo, nunca
