@@ -147,7 +147,8 @@ desarrollo, procesos, física y escenarios) en
 componentes y de estados y los procesos BPMN. El modelo entidad-relación con su
 diccionario de datos y el diagrama de clases (dominio y diseño del código)
 están en los documentos 10 y 11, con sus archivos editables de draw.io en
-`Modelo de datos/` y `Diagrama de clases/`.
+`Modelo de datos/` y `Diagrama de clases/`. El diagrama de arquitectura por capas
+de la versión de título está en `Fase3/Evidencias Grupales`.
 
 ---
 
@@ -173,6 +174,11 @@ Fase2/
     despliegue/              Servidor público (compose de producción, Caddy)
     docs/                    Documentación técnica del proyecto
     herramientas/            Inicialización, copia local, versión portable
+Fase3/
+  Evidencias Individuales/   Diarios de reflexión 3.1 y autoevaluaciones 3.2 de cada
+                             integrante
+  Evidencias Grupales/       Cuestionario de satisfacción de INDAP (anónimo) y diagrama
+                             de arquitectura de la versión de título (PNG y SVG editable)
 ```
 
 ---
