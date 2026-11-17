@@ -177,7 +177,8 @@ Fase2/
 Fase3/
   Evidencias Individuales/   Diarios de reflexión 3.1 y autoevaluaciones 3.2 de cada
                              integrante
-  Evidencias Grupales/       Planilla de evaluación de la presentación final, cuestionario
+  Evidencias Grupales/       Presentación final, planilla de evaluación de la presentación
+                             final, cuestionario
                              de satisfacción de INDAP (anónimo) y diagrama de arquitectura
                              de la versión de título (PNG y SVG editable)
 ```
