@@ -292,6 +292,8 @@ GTMapaReal.crearConRespaldo(document.getElementById('mapa'), {
   alSeleccionar: function (c) {
     if (metrica === 'verde' && conVerde) mostrarComunaVerde(c.nombre, true);
   },
+  // De vuelta a la región, las zonas de la comuna que estaba abierta sobran.
+  alDeseleccionar: function () { limpiarZonas(); },
   // Con la simulación activa, un clic dentro de la comuna abierta pone el parque.
   alClicEnAbierta: function (lngLat) { GTSimVerde.alClic(lngLat); }
 }).then(function (api) {
@@ -349,7 +351,13 @@ document.querySelectorAll('#panel-filtros .tabs button').forEach(function (b) {
       capasVerde(metrica === 'verde');
     });
     GTSimVerde.activar(metrica === 'simular');
-    if (metrica === 'verde' && conVerde) mostrarComunaVerde(comunaVerde || 'Rancagua', true);
+    /* Cambiar de capa no elige comuna ni mueve la cámara: si había una
+       abierta se ven sus zonas donde está el mapa; si no, queda la región. */
+    if (metrica === 'verde' && conVerde) {
+      const abierta = mapa && mapa.seleccionada && mapa.seleccionada();
+      if (abierta) mostrarComunaVerde(abierta, true, false);
+      else limpiarZonas();
+    }
     pintarLeyenda();
   });
 });
@@ -432,8 +440,8 @@ function fechaLarga(iso) {
 
 /* La tabla, el detalle y —si el mapa está en áreas verdes— las zonas de una
    comuna. `enMapa` evita mover la cámara cuando se cambia desde la tabla con
-   el mapa en temperatura. */
-function mostrarComunaVerde(nombre, enMapa) {
+   el mapa en temperatura; `encuadrar` en false dibuja las zonas sin moverla. */
+function mostrarComunaVerde(nombre, enMapa, encuadrar) {
   if (!nombre) return;
   const d = GT.areasVerdes;
   const c = d.comunas.find(function (x) { return x.nombre === nombre; });
@@ -469,7 +477,7 @@ function mostrarComunaVerde(nombre, enMapa) {
   });
 
   detalleComuna(c);
-  if (enMapa) dibujarZonas(c);
+  if (enMapa) dibujarZonas(c, encuadrar !== false);
 }
 
 function fila(k, v) {
@@ -574,7 +582,16 @@ function capasVerde(visible) {
   });
 }
 
-function dibujarZonas(c) {
+function limpiarZonas() {
+  conMapa(function (m) {
+    const map = m.instancia;
+    if (!map || !map.getSource('av-zonas')) return;
+    map.getSource('av-zonas').setData(VACIO);
+    map.getSource('av-areas').setData(VACIO);
+  });
+}
+
+function dibujarZonas(c, encuadrar) {
   conMapa(function (m) {
     const map = m.instancia;
     if (!map) return;   // mapa esquemático: sin zonas, queda la tabla
@@ -585,6 +602,7 @@ function dibujarZonas(c) {
       map.getSource('av-areas').setData(geo.areas);
       capasVerde(metrica === 'verde');
       if (m.seleccionar) m.seleccionar(c.nombre);
+      if (!encuadrar) return;
       // Encuadre a las zonas de la comuna: es la ciudad, no la comuna rural.
       let o = 180, s = 90, e = -180, n = -90;
       geo.zonas.features.forEach(function (f) {

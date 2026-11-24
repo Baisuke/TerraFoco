@@ -195,6 +195,11 @@ function enriquecer(geojson, capa) {
    de este proyecto SE CALCULA con Sentinel-2. Ver la misma familia de imagen
    con la que se hizo el cálculo evita el error de validar un dato de 2024
    contra una fotografía de fecha desconocida.
+
+   Pero 10 m por píxel se agotan cerca del zoom 13: más cerca, el visor solo
+   agranda los mismos píxeles y las manzanas se vuelven manchas. Desde ese
+   zoom se encima Esri World Imagery (ortofoto submétrica), que deja ver
+   casas, árboles y canales. Lejos sigue mandando Sentinel-2.
    ------------------------------------------------------------------------- */
 
 const BASES = {
@@ -206,11 +211,18 @@ const BASES = {
   },
   satelital: {
     nombre: 'Satelital',
-    detalle: 'Sentinel-2 cloudless 2023 · 10 m',
+    detalle: 'Sentinel-2 cloudless 2023 · 10 m; de cerca, Esri World Imagery',
     teselas: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/g/{z}/{y}/{x}.jpg'],
     // CC BY-NC-SA 4.0. La atribución es obligatoria y va literal.
     atribucion: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless 2023</a> por EOX IT Services GmbH (Copernicus Sentinel modificado)',
     zoomMaximo: 15,
+    // Encima, desde que Sentinel-2 se queda sin detalle.
+    cerca: {
+      teselas: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      atribucion: 'Imagen de cerca: Esri, Maxar, Earthstar Geographics y la comunidad de usuarios SIG',
+      zoomMinimo: 13,
+      zoomMaximo: 19,
+    },
     // Sobre imagen oscura el coropleto tapa; se entra más transparente.
     opacidadTema: 0.45,
   },
@@ -218,6 +230,8 @@ const BASES = {
 
 const ID_FUENTE_BASE = 'base-satelital';
 const ID_CAPA_BASE = 'base-satelital-capa';
+const ID_FUENTE_CERCA = 'base-satelital-cerca';
+const ID_CAPA_CERCA = 'base-satelital-cerca-capa';
 const ID_ANCLA = 'ancla-relieve';
 
 /* -------------------------------------------------------------------------
@@ -708,6 +722,20 @@ GTMapaReal.crear = function (contenedor, opciones) {
             layout: { visibility: 'none' },
             paint: { 'raster-fade-duration': 200 },
           }, punto.sobreElFondo);
+          mapa.addSource(ID_FUENTE_CERCA, {
+            type: 'raster',
+            tiles: BASES.satelital.cerca.teselas,
+            tileSize: 256,
+            minzoom: BASES.satelital.cerca.zoomMinimo,
+            maxzoom: BASES.satelital.cerca.zoomMaximo,
+            attribution: BASES.satelital.cerca.atribucion,
+          });
+          mapa.addLayer({
+            id: ID_CAPA_CERCA, type: 'raster', source: ID_FUENTE_CERCA,
+            minzoom: BASES.satelital.cerca.zoomMinimo,
+            layout: { visibility: 'none' },
+            paint: { 'raster-fade-duration': 200 },
+          }, punto.sobreElFondo);
 
           /* El coropleto va bajo los caminos: es el fondo temático sobre el
              que se leen calles, pueblos y ríos, no una tapa sobre el mapa. */
@@ -806,7 +834,7 @@ GTMapaReal.crear = function (contenedor, opciones) {
               }
             });
             mapa.getStyle().layers.forEach(function (c) {
-              if (c.type !== 'symbol' || c.id === ID_CAPA_BASE) return;
+              if (c.type !== 'symbol' || c.id === ID_CAPA_BASE || c.id === ID_CAPA_CERCA) return;
               if (!mapa.getLayer(c.id)) return;
               try {
                 mapa.setPaintProperty(c.id, 'text-halo-width', conImagen ? 2 : 1.2);
@@ -824,8 +852,9 @@ GTMapaReal.crear = function (contenedor, opciones) {
           function cambiarBase(id) {
             const base = BASES[id] || BASES.mapa;
             const conImagen = id === 'satelital';
-            mapa.setLayoutProperty(ID_CAPA_BASE, 'visibility',
-                                   conImagen ? 'visible' : 'none');
+            [ID_CAPA_BASE, ID_CAPA_CERCA].forEach(function (capa) {
+              mapa.setLayoutProperty(capa, 'visibility', conImagen ? 'visible' : 'none');
+            });
             ajustarParaImagen(conImagen);
             relieve.base(conImagen);
             /* Cada base entra con la opacidad que la hace legible: sobre foto
